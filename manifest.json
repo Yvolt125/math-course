@@ -1,0 +1,19 @@
+{
+  "name": "Math for Machine Learning",
+  "short_name": "Math for ML",
+  "description": "Week 1 & 2 study materials — Luis Serrano course",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#2c3e50",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
