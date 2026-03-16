@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>Week 1 Flashcards — Math for ML</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+            onload="initApp()"></script>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #2980b9;
+            --accent:    #16a085;
+            --front-bg:  #ffffff;
+            --back-bg:   #eaf5fb;
+            --muted:     #7f8c8d;
+            --border:    #d5d8dc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+
+        header { background: var(--primary); color: white; padding: 14px 20px 10px; text-align: center; }
+        header h1 { font-size: 1.05em; letter-spacing: 2px; text-transform: uppercase; }
+        header p  { font-size: 0.78em; opacity: 0.65; margin-top: 3px; }
+
+        .progress-wrap { height: 5px; background: #e1e8ed; }
+        .progress-fill { height: 100%; background: var(--secondary); transition: width 0.3s; }
+
+        .filter-bar { background: white; padding: 10px 14px; display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; border-bottom: 1px solid #e1e8ed; }
+        .pill { padding: 5px 12px; border-radius: 20px; font-size: 0.72em; font-weight: 700; cursor: pointer; border: 1.5px solid var(--secondary); background: #eaf4fb; color: var(--secondary); transition: all 0.2s; white-space: nowrap; user-select: none; }
+        .pill.active { background: var(--secondary); color: white; }
+        .pill:hover  { opacity: 0.8; }
+
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 18px 14px 24px; gap: 14px; }
+
+        .stats-row { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 680px; font-size: 0.82em; color: var(--muted); }
+        .stats-row strong { color: var(--primary); }
+        .known-badge { background: #d5f5e3; color: #1e8449; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 0.9em; }
+
+        .card-scene { width: 100%; max-width: 680px; perspective: 1400px; }
+        .card-flipper { position: relative; width: 100%; min-height: 300px; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+        .card-flipper.flipped { transform: rotateY(180deg); }
+
+        .card-face { position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 18px; padding: 28px 26px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 6px 28px rgba(0,0,0,0.09); }
+        .card-front { background: var(--front-bg); border: 2px solid #e1e8ed; }
+        .card-back  { background: var(--back-bg); border: 2px solid var(--secondary); transform: rotateY(180deg); align-items: flex-start; text-align: left; }
+
+        .card-tag { font-size: 0.7em; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+        .card-front .card-tag { color: var(--muted); }
+        .card-back  .card-tag { color: var(--secondary); }
+
+        .card-question { font-size: 1.2em; font-weight: 700; color: var(--primary); line-height: 1.55; }
+        .card-hint     { margin-top: 22px; font-size: 0.75em; color: var(--muted); }
+
+        .card-answer { font-size: 0.97em; color: #2c3e50; line-height: 1.75; width: 100%; }
+        .card-answer b    { color: var(--secondary); }
+        .card-answer i    { color: var(--accent); font-style: normal; font-weight: 600; }
+        .card-answer code { background: #d0eaf8; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.9em; }
+        .card-answer ul   { padding-left: 18px; margin-top: 8px; }
+        .card-answer li   { margin-bottom: 4px; }
+        .card-answer .ml-note { margin-top: 12px; padding: 9px 12px; background: rgba(41,128,185,0.09); border-left: 3px solid var(--secondary); border-radius: 0 6px 6px 0; font-size: 0.9em; }
+        .card-answer .formula { margin: 10px 0; text-align: center; font-size: 1em; }
+
+        .nav-row { display: flex; gap: 10px; width: 100%; max-width: 680px; }
+        .nav-btn { flex: 1; padding: 14px 8px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .nav-btn:active { transform: scale(0.97); }
+        .btn-prev { background: #ecf0f1; color: var(--primary); }
+        .btn-flip { background: var(--accent); color: white; flex: 1.2; }
+        .btn-next { background: var(--secondary); color: white; }
+
+        .bottom-row { display: flex; gap: 10px; width: 100%; max-width: 680px; }
+        .ctrl-btn { flex: 1; padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px; background: white; color: var(--primary); font-size: 0.8em; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+        .ctrl-btn:hover  { background: #eaf4fb; }
+        .ctrl-btn.marked { border-color: #1e8449; color: #1e8449; background: #d5f5e3; }
+
+        .kb-hint { font-size: 0.7em; color: var(--muted); text-align: center; }
+        .katex   { font-size: 1.05em !important; }
+
+        @media (max-width: 480px) {
+            .card-question { font-size: 1.08em; }
+            .card-face     { padding: 22px 18px; min-height: 260px; }
+            .card-flipper  { min-height: 260px; }
+            .kb-hint       { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Week 1 Flashcards — Math for Machine Learning</h1>
+    <p>Linear Algebra Foundations · Luis Serrano Course</p>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="filter-bar" id="filterBar">
+    <span class="pill active" data-filter="all">All</span>
+    <span class="pill" data-filter="1">1 · Data &amp; Geometry</span>
+    <span class="pill" data-filter="2">2 · Linear Equations</span>
+    <span class="pill" data-filter="3">3 · Systems</span>
+    <span class="pill" data-filter="4">4 · Independence &amp; Rank</span>
+    <span class="pill" data-filter="5">5 · Determinant</span>
+    <span class="pill" data-filter="6">6 · Gaussian Elim.</span>
+    <span class="pill" data-filter="7">7 · Matrix Inverse</span>
+    <span class="pill" data-filter="8">8 · Python / NumPy</span>
+    <span class="pill" data-filter="connect">★ Connections</span>
+</div>
+
+<main>
+    <div class="stats-row">
+        <span><strong id="counterText">1 / —</strong></span>
+        <span class="known-badge" id="knownBadge">0 known</span>
+    </div>
+    <div class="card-scene">
+        <div class="card-flipper" id="cardFlipper">
+            <div class="card-face card-front">
+                <div class="card-tag" id="frontTag"></div>
+                <div class="card-question" id="cardQuestion"></div>
+                <div class="card-hint">Tap to reveal answer</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="card-tag" id="backTag"></div>
+                <div class="card-answer" id="cardAnswer"></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-row">
+        <button class="nav-btn btn-prev" id="btnPrev">← Prev</button>
+        <button class="nav-btn btn-flip" id="btnFlip">Flip</button>
+        <button class="nav-btn btn-next" id="btnNext">Next →</button>
+    </div>
+    <div class="bottom-row">
+        <button class="ctrl-btn" id="markBtn">Mark as Known ✓</button>
+        <button class="ctrl-btn" id="btnShuffle">Shuffle 🔀</button>
+        <button class="ctrl-btn" id="btnReset">Reset ↺</button>
+    </div>
+    <div class="kb-hint">Keyboard: ← → navigate &nbsp;·&nbsp; Space = flip &nbsp;·&nbsp; K = mark known</div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CARD DATA  — stored as HTML so LaTeX backslashes need no escaping
+     Each <div> = one card. class="f" = front, class="b" = back.
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="card-db" hidden>
+
+    <!-- §1 Data as Geometric Objects -->
+    <div data-section="1" data-topic="Scalar">
+        <span class="f">What is a <b>scalar</b>?</span>
+        <span class="b">A single number — magnitude only, no direction.
+            <div class="formula">\( 22, \quad -3.7, \quad \pi \)</div>
+            Geometrically, a scalar is a point on a 1D number line. It answers "how much" but never "which direction."
+            <div class="ml-note">In ML: a prediction output, a loss value, a learning rate — all scalars.</div></span>
+    </div>
+
+    <div data-section="1" data-topic="Vector">
+        <span class="f">What is a <b>vector</b> in ML?</span>
+        <span class="b">An <b>ordered list of scalars</b>, also called a <b>feature vector</b>. Each entry is one measured property of a data point.
+            <div class="formula">\( \vec{v} = \begin{bmatrix} 2100 \\ 3 \end{bmatrix} \leftarrow \text{house: 2100 sqft, 3 beds} \)</div>
+            Geometrically: an arrow from the origin to a specific coordinate in space. The number of entries = the number of dimensions.</span>
+    </div>
+
+    <div data-section="1" data-topic="Matrix">
+        <span class="f">What is a <b>matrix</b>?</span>
+        <span class="b">A rectangular grid of numbers — a collection of vectors stacked as rows. It represents a <b>complete dataset</b>.
+            <div class="formula">\( A = \begin{bmatrix} 2100 & 3 \\ 1500 & 2 \\ 3000 & 4 \end{bmatrix} \leftarrow 3 \text{ houses} \times 2 \text{ features} \)</div>
+            Shape notation: <b>m × n</b> = m rows × n columns.</span>
+    </div>
+
+    <div data-section="1" data-topic="Rows &amp; Columns">
+        <span class="f">In a data matrix, what does each <b>row</b> represent? Each <b>column</b>?</span>
+        <span class="b"><ul>
+            <li><b>Row</b> = one data point (one observation / sample)</li>
+            <li><b>Column</b> = one feature (one measured property across all samples)</li>
+        </ul>
+        <div class="formula">\( X \in \mathbb{R}^{m \times n}: \quad m \text{ samples}, \quad n \text{ features} \)</div>
+        <div class="ml-note">A dataset of 1,000 houses with 5 features → X is 1000 × 5.</div></span>
+    </div>
+
+    <div data-section="1" data-topic="Hierarchy">
+        <span class="f">State the hierarchy: <b>scalar → vector → matrix</b></span>
+        <span class="b"><ul>
+            <li><b>Scalar</b>: one value (0D)</li>
+            <li><b>Vector</b>: a column of scalars — one data point (1D)</li>
+            <li><b>Matrix</b>: a grid of vectors — an entire dataset (2D)</li>
+            <li><b>Tensor</b>: higher-dimensional array (e.g. image = 3D)</li>
+        </ul>
+        Each level adds one more dimension of structure.</span>
+    </div>
+
+    <div data-section="1" data-topic="Geometric view">
+        <span class="f">Why do we treat data <b>geometrically</b>?</span>
+        <span class="b">Every data point is a <b>coordinate in space</b>. Geometry gives us powerful tools:
+            <ul>
+                <li>Distance = similarity between data points</li>
+                <li>Direction = relationship between features</li>
+                <li>Intersection = the point satisfying all constraints</li>
+            </ul>
+            <div class="ml-note">This geometric view is what makes linear algebra the native language of ML.</div></span>
+    </div>
+
+    <div data-section="1" data-topic="Feature vector example">
+        <span class="f">A house has 2100 sq ft and 3 bedrooms. Write its <b>feature vector</b>.</span>
+        <span class="b"><div class="formula">\( \vec{v} = \begin{bmatrix} 2100 \\ 3 \end{bmatrix} \)</div>
+            This vector is a point in 2D space where the <b>x-axis</b> = square footage and the <b>y-axis</b> = bedrooms. Every house in the dataset is its own arrow pointing to its own location in this space.</span>
+    </div>
+
+    <div data-section="1" data-topic="Vector as arrow">
+        <span class="f">Geometrically, what is a vector?</span>
+        <span class="b">An <b>arrow from the origin (0, 0, …) to a specific coordinate</b>.
+            <ul>
+                <li>Arrow's <b>length</b> = magnitude of the vector</li>
+                <li>Arrow's <b>direction</b> = the combination of its components</li>
+            </ul>
+            Two vectors are equal if and only if they have the same magnitude AND direction — regardless of where in space they're drawn.</span>
+    </div>
+
+    <!-- §2 The Linear Equation -->
+    <div data-section="2" data-topic="General form">
+        <span class="f">Write the general form of a <b>linear equation</b> in ML notation.</span>
+        <span class="b"><div class="formula">\( y = w_1 x_1 + w_2 x_2 + \cdots + w_n x_n + b \)</div>
+            <ul>
+                <li>\(y\) — label / prediction (output)</li>
+                <li>\(x_i\) — features (inputs you know)</li>
+                <li>\(w_i\) — weights (importance of each feature)</li>
+                <li>\(b\) — bias (y-intercept)</li>
+            </ul></span>
+    </div>
+
+    <div data-section="2" data-topic="Weights">
+        <span class="f">What do <b>weights</b> \(w_i\) represent in a linear model?</span>
+        <span class="b">Weights measure the <b>importance / contribution</b> of each feature.
+            <ul>
+                <li>Large \(|w_i|\) → feature \(x_i\) strongly drives the output</li>
+                <li>\(w_i = 0\) → feature has no effect</li>
+                <li>Negative \(w_i\) → feature is inversely related to the output</li>
+            </ul>
+            <div class="ml-note"><b>Training a model = finding the right weights.</b> The learning algorithm adjusts them until predictions match the data.</div></span>
+    </div>
+
+    <div data-section="2" data-topic="Bias">
+        <span class="f">What does the <b>bias</b> \(b\) do in a linear model?</span>
+        <span class="b">The bias is the <b>y-intercept</b>. It shifts the model so it doesn't have to pass through the origin.
+            <div class="formula">\( y = wx + b \quad \Rightarrow \quad b = y \text{ when } x = 0 \)</div>
+            Without bias, the line is forced through (0, 0) — unrealistic for most real data (a house with 0 sqft should not predict a $0 price).</span>
+    </div>
+
+    <div data-section="2" data-topic="Why linear">
+        <span class="f">Why is \(y = w_1 x_1 + w_2 x_2 + b\) called <b>linear</b>?</span>
+        <span class="b">It uses only <b>addition and scalar multiplication</b> — no squaring, no exponents, no products of variables.
+            <ul>
+                <li>In 2D: produces a <b>straight line</b></li>
+                <li>In 3D: produces a <b>flat plane</b></li>
+                <li>In nD: produces a <b>hyperplane</b></li>
+            </ul>
+            This constraint makes the math tractable and leads naturally to matrices and systems of equations.</span>
+    </div>
+
+    <div data-section="2" data-topic="Training">
+        <span class="f">What does <b>training a model</b> mean in terms of linear equations?</span>
+        <span class="b">Training means <b>finding the weights</b> \(w_1, w_2, \ldots, b\) that make the model's predictions best match the actual data.
+            <div class="ml-note">Each data point gives one equation. The full dataset is a system of equations. Training = solving that system for the unknown weights.</div></span>
+    </div>
+
+    <div data-section="2" data-topic="Geometry 2D">
+        <span class="f">What does a single linear equation look like geometrically in <b>2D</b>?</span>
+        <span class="b">A <b>straight line</b>.
+            <div class="formula">\( y = mx + b \)</div>
+            Every point on the line satisfies the equation.
+            <div class="ml-note">In ML: the regression line of a linear model, or the decision boundary of a linear classifier.</div></span>
+    </div>
+
+    <div data-section="2" data-topic="Geometry 3D">
+        <span class="f">What does a single linear equation look like geometrically in <b>3D</b>?</span>
+        <span class="b">A <b>flat plane</b>.
+            <div class="formula">\( w_1 x_1 + w_2 x_2 + w_3 x_3 = b \)</div>
+            In 3D, one equation constrains the solution to lie on an infinite flat sheet. You need <b>three</b> independent equations to pinpoint a single point.</span>
+    </div>
+
+    <div data-section="2" data-topic="High school → ML">
+        <span class="f">How does \(y = mx + b\) extend to ML with many features?</span>
+        <span class="b">The slope \(m\) becomes <b>multiple weights</b>, one per feature:
+            <div class="formula">\( y = w_1 x_1 + w_2 x_2 + \cdots + w_n x_n + b \)</div>
+            In vector notation:
+            <div class="formula">\( y = \vec{w}^{\,T} \vec{x} + b \)</div>
+            Still a linear combination — just in a higher-dimensional space.</span>
+    </div>
+
+    <!-- §3 Systems of Equations -->
+    <div data-section="3" data-topic="Definition">
+        <span class="f">What is a <b>system of linear equations</b>?</span>
+        <span class="b">A collection of linear equations that must all be <b>satisfied simultaneously</b>. Each equation is one <b>constraint</b>.
+            <div class="formula">\( \begin{cases} x + y = 5 \\ x - y = 1 \end{cases} \)</div>
+            Solving the system = finding values that make every equation true at once.</span>
+    </div>
+
+    <div data-section="3" data-topic="Geometric meaning">
+        <span class="f">What does <b>solving a system</b> mean geometrically?</span>
+        <span class="b">Finding the <b>point of intersection</b> — the one location in space that lies on every line (2D) or plane (3D) simultaneously.
+            <div class="ml-note">If the lines/planes don't meet at exactly one point, the system has no solution or infinitely many solutions.</div></span>
+    </div>
+
+    <div data-section="3" data-topic="Three outcomes">
+        <span class="f">Name the <b>3 possible outcomes</b> when solving a system.</span>
+        <span class="b"><ul>
+            <li><b>Unique solution</b> — lines/planes meet at exactly one point</li>
+            <li><b>No solution</b> — lines/planes are parallel (never meet)</li>
+            <li><b>Infinite solutions</b> — lines/planes are identical (overlap entirely)</li>
+        </ul>
+        <div class="ml-note">Only a unique solution means the data has fully determined the model.</div></span>
+    </div>
+
+    <div data-section="3" data-topic="No solution">
+        <span class="f">What causes a system to have <b>no solution</b>?</span>
+        <span class="b">Two equations have the <b>same left-hand side</b> but <b>different right-hand values</b>.
+            <div class="formula">\( x + y = 10 \quad \text{and} \quad x + y = 20 \)</div>
+            Geometrically: <b>parallel lines</b> — same slope, different intercepts. No pair of numbers can sum to both 10 and 20 simultaneously.</span>
+    </div>
+
+    <div data-section="3" data-topic="Infinite solutions">
+        <span class="f">What causes a system to have <b>infinitely many solutions</b>?</span>
+        <span class="b">One equation is a <b>scaled copy</b> of another — they describe the same geometric object.
+            <div class="formula">\( x + y = 3 \quad \text{and} \quad 2x + 2y = 6 \)</div>
+            Geometrically: <b>identical lines</b> lying on top of each other. Any point on the line satisfies both. No unique intersection exists.</span>
+    </div>
+
+    <div data-section="3" data-topic="Augmented matrix">
+        <span class="f">What is an <b>augmented matrix</b>?</span>
+        <span class="b">A compact encoding of a system: coefficients on the <b>left</b> of a bar, constants on the <b>right</b>.
+            <div class="formula">\( 2x + y = 5, \; x - y = 1 \;\Rightarrow\; \left[\begin{array}{cc|c} 2 & 1 & 5 \\ 1 & -1 & 1 \end{array}\right] \)</div>
+            Each row = one equation. Each column = one variable. This compact form is what Gaussian Elimination operates on.</span>
+    </div>
+
+    <div data-section="3" data-topic="ML connection">
+        <span class="f">In ML, what does each equation in a system represent?</span>
+        <span class="b">Each equation represents <b>one data point imposing a constraint</b> on the model weights.
+            <div class="ml-note">100 data points with 2 unknowns (w, b) = 100 equations in 2 unknowns. Solving = finding the weights consistent with all observations.</div></span>
+    </div>
+
+    <div data-section="3" data-topic="Unique solution in ML">
+        <span class="f">What does a <b>unique solution</b> mean for an ML model?</span>
+        <span class="b">The data has <b>fully determined</b> the model — one set of weights fits all observations.
+            <div class="ml-note"><i>"We found the rule."</i><br><br>
+                Infinite solutions → <i>"Can't tell which rule."</i><br>
+                No solution → <i>"No such rule exists."</i></div></span>
+    </div>
+
+    <!-- §4 Linear Independence, Rank, Singularity -->
+    <div data-section="4" data-topic="Linear independence">
+        <span class="f">What does <b>linearly independent</b> mean for equations/vectors?</span>
+        <span class="b">Each equation/vector points in a <b>genuinely new direction</b> that cannot be produced by scaling or combining the others.
+            <div class="formula">No equation = linear combination of the rest</div>
+            Each adds real new information, narrowing the solution further toward a unique point.</span>
+    </div>
+
+    <div data-section="4" data-topic="Linear dependence">
+        <span class="f">What does <b>linearly dependent</b> mean?</span>
+        <span class="b">At least one equation/vector can be expressed as a <b>linear combination</b> of the others.
+            <div class="formula">e.g., Row 3 = 2 × Row 1 + Row 2</div>
+            It adds <b>zero new information</b>. The system collapses — it can no longer pinpoint a unique solution.</span>
+    </div>
+
+    <div data-section="4" data-topic="Rank">
+        <span class="f">What is the <b>rank</b> of a matrix?</span>
+        <span class="b">Rank = the number of <b>linearly independent rows</b> — the <b>true dimensionality</b> of the data.
+            <ul>
+                <li>Rank 3 in a 3×3 system → 3 independent equations → unique solution possible</li>
+                <li>Rank 2 in a 3×3 system → data lives on a 2D plane</li>
+                <li>Rank 1 → everything collapses to a single line</li>
+            </ul></span>
+    </div>
+
+    <div data-section="4" data-topic="Full rank">
+        <span class="f">What does <b>full rank</b> mean?</span>
+        <span class="b">Rank equals the <b>smaller dimension</b> of the matrix — all rows/columns are linearly independent.
+            <div class="formula">Full rank n×n matrix: rank = n</div>
+            A full-rank square matrix is <b>non-singular</b>: unique solution, non-zero determinant, invertible.</span>
+    </div>
+
+    <div data-section="4" data-topic="Singular matrix">
+        <span class="f">What is a <b>singular matrix</b>?</span>
+        <span class="b">A square matrix that is <b>not full rank</b> — at least one row is linearly dependent on the others.
+            <ul>
+                <li>\(\det(A) = 0\)</li>
+                <li>No unique solution</li>
+                <li>No inverse exists</li>
+            </ul>
+            <div class="ml-note">A singular data matrix means the model cannot be uniquely determined from the data.</div></span>
+    </div>
+
+    <div data-section="4" data-topic="Two failure modes">
+        <span class="f">What are the <b>two failure modes</b> caused by linear dependence?</span>
+        <span class="b"><b>1. Infinite solutions (redundant equations):</b><br>
+            One equation is a scaled copy → lines/planes overlap → infinitely many intersections.
+            <br><br>
+            <b>2. No solution (contradictory equations):</b><br>
+            Same direction, different targets → parallel lines/planes → no intersection.</span>
+    </div>
+
+    <div data-section="4" data-topic="Shadow analogy">
+        <span class="f">Explain the <b>"shadow analogy"</b> for rank.</span>
+        <span class="b">A 3D object casts a shadow. Depending on the light angle:
+            <ul>
+                <li><b>2D shadow</b> (Rank 2): depth lost</li>
+                <li><b>1D shadow — a line</b> (Rank 1): two dimensions lost</li>
+            </ul>
+            <b>Rank = the number of genuine dimensions that survived.</b> A rank-deficient matrix is like a shadow — it looks full-dimensional but information is gone.</span>
+    </div>
+
+    <div data-section="4" data-topic="ML warning">
+        <span class="f">Why are <b>redundant features</b> dangerous in ML?</span>
+        <span class="b">If one feature is a linear combination of others, the data matrix becomes <b>rank-deficient → singular</b>.
+            <ul>
+                <li>\(\det(X^T X) = 0\)</li>
+                <li>\((X^T X)^{-1}\) doesn't exist</li>
+                <li>Linear regression formula breaks</li>
+            </ul>
+            <div class="ml-note">PCA is fundamentally about finding and removing redundant directions before they cause singularity.</div></span>
+    </div>
+
+    <div data-section="4" data-topic="Dependence example">
+        <span class="f">Give a real-world example of <b>linear dependence in ML features</b>.</span>
+        <span class="b">Including both <b>Temperature in °C</b> and <b>Temperature in °F</b>:
+            <div class="formula">\( F = 1.8C + 32 \)</div>
+            One is always exactly derivable from the other — they point in the same geometric direction. Including both gives zero extra information but breaks the matrix algebra.</span>
+    </div>
+
+    <div data-section="4" data-topic="Rank table">
+        <span class="f">Fill in: Rank = n (full) → ? &nbsp;&nbsp; Rank &lt; n → ?</span>
+        <span class="b"><ul>
+            <li><b>Rank = n:</b> All independent · Unique solution · det ≠ 0 · Inverse exists · <i>Non-singular</i></li>
+            <li><b>Rank &lt; n:</b> At least one dependent equation · No unique solution · det = 0 · No inverse · <i>Singular</i></li>
+        </ul></span>
+    </div>
+
+    <!-- §5 The Determinant -->
+    <div data-section="5" data-topic="What det measures">
+        <span class="f">What does the <b>determinant</b> measure geometrically?</span>
+        <span class="b">How much a matrix transformation <b>stretches or squashes space</b> — the <b>signed area/volume scaling factor</b>.
+            <ul>
+                <li>\(\det = 6\): unit square → parallelogram with area 6</li>
+                <li>\(\det = -6\): same area, orientation flipped (mirror)</li>
+                <li>\(\det = 0\): space squashed flat — a dimension was destroyed</li>
+            </ul></span>
+    </div>
+
+    <div data-section="5" data-topic="2×2 formula">
+        <span class="f">Give the formula for the <b>2×2 determinant</b>.</span>
+        <span class="b"><div class="formula">\( \det\!\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc \)</div>
+            Multiply the <b>main diagonal</b> \((a \times d)\), subtract the <b>off-diagonal</b> \((b \times c)\).
+            <div class="ml-note">Example: \(\det\!\begin{pmatrix}3&1\\1&2\end{pmatrix} = 6 - 1 = 5 \neq 0\) → non-singular.</div></span>
+    </div>
+
+    <div data-section="5" data-topic="det = 0">
+        <span class="f">What does \(\det(A) = 0\) tell you?</span>
+        <span class="b">The transformation <b>permanently destroyed a dimension</b> — squashed 3D space into a flat plane (or a plane into a line).
+            <ul>
+                <li>Matrix is <b>singular</b></li>
+                <li>Rank is <b>deficient</b></li>
+                <li><b>No unique solution</b> to \(Ax = b\)</li>
+                <li><b>No inverse</b> exists</li>
+            </ul>
+            Once information is destroyed, it cannot be recovered.</span>
+    </div>
+
+    <div data-section="5" data-topic="det ≠ 0">
+        <span class="f">What does \(\det(A) \neq 0\) guarantee?</span>
+        <span class="b"><ul>
+            <li>Matrix is <b>non-singular</b></li>
+            <li><b>Full rank</b> — all equations are independent</li>
+            <li>A <b>unique solution</b> exists for \(Ax = b\)</li>
+            <li>The <b>inverse</b> \(A^{-1}\) exists</li>
+        </ul>
+        \(\det \neq 0\) is the single-number green light: the system is fully solvable.</span>
+    </div>
+
+    <div data-section="5" data-topic="Negative det">
+        <span class="f">What does a <b>negative determinant</b> mean?</span>
+        <span class="b">The transformation <b>flipped orientation</b> — like a mirror reflection.
+            <div class="formula">det = −6: area/volume is still 6, handedness reversed.</div>
+            The <b>sign</b> encodes orientation. The <b>magnitude</b> \(|\det|\) gives the area/volume scaling factor. Negative det is still perfectly invertible.</span>
+    </div>
+
+    <div data-section="5" data-topic="3×3 Sarrus">
+        <span class="f">State the <b>Rule of Sarrus</b> for a 3×3 determinant.</span>
+        <span class="b"><div class="formula">\( \det(A) = (aei + bfg + cdh) - (ceg + afh + bdi) \)</div>
+            <ul>
+                <li><b>Add</b> the three "down-right" diagonal products</li>
+                <li><b>Subtract</b> the three "down-left" diagonal products</li>
+            </ul>
+            Result = signed volume of the parallelepiped formed by the three column vectors.</span>
+    </div>
+
+    <div data-section="5" data-topic="Four faces of singularity">
+        <span class="f">List the <b>four equivalent conditions</b> for a singular matrix.</span>
+        <span class="b">All four are the <b>same underlying event</b>:
+            <ul>
+                <li>\(\det(A) = 0\)</li>
+                <li>Rank-deficient (rank &lt; n)</li>
+                <li>No unique solution to \(Ax = b\)</li>
+                <li>No inverse \(A^{-1}\)</li>
+            </ul>
+            <div class="ml-note">Once you see these as one collapse — not four separate facts — linear algebra clicks.</div></span>
+    </div>
+
+    <div data-section="5" data-topic="Geometric example">
+        <span class="f">What does \(\det(A) = 8\) tell you about the transformation?</span>
+        <span class="b">The transformation <b>stretches space by a factor of 8</b>.
+            <ul>
+                <li>Unit square (area 1) → parallelogram with <b>area 8</b></li>
+                <li>Unit cube (volume 1) → parallelepiped with <b>volume 8</b></li>
+            </ul>
+            Positive sign → orientation <b>preserved</b>. Non-zero → matrix is <b>non-singular</b> → unique solution and inverse both exist.</span>
+    </div>
+
+    <!-- §6 Gaussian Elimination -->
+    <div data-section="6" data-topic="Goal">
+        <span class="f">What is the <b>goal</b> of Gaussian Elimination?</span>
+        <span class="b">Transform the augmented matrix step-by-step into <b>Reduced Row Echelon Form (RREF)</b>, where the coefficient side becomes the Identity Matrix and the solution is directly readable on the right.
+            <div class="formula">\( \left[\begin{array}{cc|c}1&0&x_1\\0&1&x_2\end{array}\right] \) — done!</div></span>
+    </div>
+
+    <div data-section="6" data-topic="Identity matrix">
+        <span class="f">What is the <b>Identity Matrix</b>?</span>
+        <span class="b">A square matrix with <b>1s on the main diagonal</b> and <b>0s everywhere else</b>.
+            <div class="formula">\( I_2 = \begin{bmatrix}1&0\\0&1\end{bmatrix}, \quad I_3 = \begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix} \)</div>
+            The "number 1 of the matrix world": \(AI = IA = A\). It performs no transformation — every vector is left unchanged.</span>
+    </div>
+
+    <div data-section="6" data-topic="RREF">
+        <span class="f">What is <b>Reduced Row Echelon Form (RREF)</b>?</span>
+        <span class="b">A matrix where:
+            <ul>
+                <li>Each <b>pivot = 1</b></li>
+                <li>All entries <b>above and below</b> each pivot are 0</li>
+                <li>Coefficient side = Identity Matrix</li>
+            </ul>
+            <div class="formula">\( \left[\begin{array}{cc|c}1&0&1\\0&1&2\end{array}\right] \Rightarrow x=1, \; y=2 \)</div>
+            Solution is directly visible — no further calculation needed.</span>
+    </div>
+
+    <div data-section="6" data-topic="REF vs RREF">
+        <span class="f">What is the difference between <b>REF</b> and <b>RREF</b>?</span>
+        <span class="b"><b>REF (Row Echelon Form):</b> Zeros below each pivot only (staircase). Pivots need not be 1. Requires back-substitution.
+            <br><br>
+            <b>RREF (Reduced REF):</b> Each pivot = 1, zeros above AND below. Solution directly visible on the right.
+            <div class="ml-note">RREF is the fully simplified final state. REF is a useful intermediate step.</div></span>
+    </div>
+
+    <div data-section="6" data-topic="Row operations">
+        <span class="f">List the <b>3 elementary row operations</b>.</span>
+        <span class="b"><ul>
+            <li><b>Swap:</b> Exchange any two rows &nbsp; \(R_1 \leftrightarrow R_2\)</li>
+            <li><b>Scale:</b> Multiply a row by any non-zero number &nbsp; \(R_1 \leftarrow kR_1\)</li>
+            <li><b>Combine:</b> Add a multiple of one row to another &nbsp; \(R_2 \leftarrow R_2 - 2R_1\)</li>
+        </ul></span>
+    </div>
+
+    <div data-section="6" data-topic="Why safe">
+        <span class="f">Why are elementary row operations <b>safe</b>?</span>
+        <span class="b">Each operation changes the <b>appearance</b> of the equations but never changes the <b>underlying truth</b> — the solution point stays exactly the same.
+            <div class="ml-note">Analogy: translating a legal contract into another language. The words change; the agreement does not. Scaling an equation by 5 gives a different-looking equation that still represents the same geometric line.</div></span>
+    </div>
+
+    <div data-section="6" data-topic="Pivot">
+        <span class="f">What is a <b>pivot</b> in Gaussian Elimination?</span>
+        <span class="b">The <b>first non-zero entry</b> in a row (after earlier steps). At each step, the pivot zeroes out all other entries in its column — above and below.
+            <div class="formula">\( \left[\begin{array}{cc|c}\mathbf{1}&1&3\\2&4&10\end{array}\right] \) — bold 1 is the pivot</div>
+            Pivots march down the diagonal, driving the matrix toward the identity pattern.</span>
+    </div>
+
+    <div data-section="6" data-topic="Worked example">
+        <span class="f">Solve \(x + y = 3\) and \(2x + 4y = 10\) using Gaussian Elimination.</span>
+        <span class="b"><b>Step 1 — Augmented matrix:</b>
+            <div class="formula">\( \left[\begin{array}{cc|c}1&1&3\\2&4&10\end{array}\right] \)</div>
+            <b>Step 2 — \(R_2 \leftarrow R_2 - 2R_1\):</b>
+            <div class="formula">\( \left[\begin{array}{cc|c}1&1&3\\0&2&4\end{array}\right] \)</div>
+            <b>Step 3 — \(R_2 \leftarrow \frac{1}{2}R_2\), then \(R_1 \leftarrow R_1 - R_2\):</b>
+            <div class="formula">\( \left[\begin{array}{cc|c}1&0&1\\0&1&2\end{array}\right] \)</div>
+            <b>Answer: \(x = 1, \; y = 2\)</b></span>
+    </div>
+
+    <div data-section="6" data-topic="Spotting failure">
+        <span class="f">During elimination, how do you spot <b>no solution</b> vs <b>infinite solutions</b>?</span>
+        <span class="b"><b>No solution:</b> A row becomes \([0 \;\; 0 \;|\; c]\) with \(c \neq 0\) — an impossible constraint (\(0 = c\)).
+            <br><br>
+            <b>Infinite solutions:</b> A row becomes \([0 \;\; 0 \;|\; 0]\) — the equation vanishes entirely, leaving a free variable unconstrained.</span>
+    </div>
+
+    <!-- §7 The Matrix Inverse -->
+    <div data-section="7" data-topic="Definition">
+        <span class="f">What is the <b>inverse matrix</b> \(A^{-1}\)?</span>
+        <span class="b">The matrix that <b>perfectly reverses</b> whatever \(A\) does.
+            <div class="formula">\( A^{-1}A = AA^{-1} = I \)</div>
+            If \(A\) maps \(\vec{x} \mapsto \vec{b}\) (i.e. \(Ax = b\)), then \(A^{-1}\) maps back: \(\vec{b} \mapsto \vec{x}\).</span>
+    </div>
+
+    <div data-section="7" data-topic="Solve Ax=b">
+        <span class="f">How do you solve \(Ax = b\) using the inverse?</span>
+        <span class="b">Multiply both sides on the left by \(A^{-1}\):
+            <div class="formula">\( Ax = b \;\Rightarrow\; A^{-1}Ax = A^{-1}b \;\Rightarrow\; x = A^{-1}b \)</div>
+            <div class="ml-note">In practice, prefer <code>np.linalg.solve(A, b)</code> — it's faster and more numerically stable than computing \(A^{-1}\) explicitly.</div></span>
+    </div>
+
+    <div data-section="7" data-topic="Existence">
+        <span class="f">When does the inverse \(A^{-1}\) <b>exist</b>?</span>
+        <span class="b">If and only if \(\det(A) \neq 0\) — equivalently, when \(A\) is:
+            <ul>
+                <li><b>Non-singular</b></li>
+                <li><b>Full rank</b></li>
+                <li>Has a <b>unique solution</b> for every right-hand side \(b\)</li>
+            </ul>
+            These are all the same condition.</span>
+    </div>
+
+    <div data-section="7" data-topic="Why not invertible">
+        <span class="f">Why can't a <b>singular matrix</b> be inverted?</span>
+        <span class="b">Because the transformation <b>permanently destroyed information</b>.
+            <div class="ml-note">If \(A\) squashes 3D space into a flat 2D plane, then multiple different 3D objects map to the same 2D shadow. You cannot reconstruct the unique original from the shadow — infinitely many originals are possible.<br><br>Inversion requires lossless transformation. Any information loss makes it impossible.</div></span>
+    </div>
+
+    <div data-section="7" data-topic="Egg analogy">
+        <span class="f">Explain the <b>"egg analogy"</b> for matrix inversion.</span>
+        <span class="b">Think of matrix \(A\) as scrambling an egg.
+            <ul>
+                <li>\(A^{-1}\) would <b>unscramble</b> it — only possible if no information was lost</li>
+                <li>A singular matrix is like <b>cooking</b> the egg — irreversible</li>
+            </ul>
+            The inverse exists only when the original transformation was <b>lossless and reversible</b>.</span>
+    </div>
+
+    <div data-section="7" data-topic="Linear regression formula">
+        <span class="f">Write the <b>closed-form linear regression</b> formula using the matrix inverse.</span>
+        <span class="b"><div class="formula">\( \hat{w} = (X^T X)^{-1} X^T y \)</div>
+            <ul>
+                <li>\(X\): feature matrix (m × n)</li>
+                <li>\(y\): label vector</li>
+                <li>\(\hat{w}\): optimal weight vector</li>
+            </ul>
+            This requires \(X^T X\) to be invertible — i.e., no redundant features.</span>
+    </div>
+
+    <div data-section="7" data-topic="Singular XᵀX">
+        <span class="f">What happens if \(X^T X\) is <b>singular</b> in linear regression?</span>
+        <span class="b">The formula \(\hat{w} = (X^T X)^{-1} X^T y\) <b>breaks down completely</b> — the inverse doesn't exist.
+            <div class="ml-note">This is the mathematical root of why <b>correlated / redundant features cause instability</b> in linear models. The model has infinitely many equally valid weight vectors and cannot choose one.<br><br>Fix: remove redundant features, add regularisation (Ridge), or use the pseudoinverse.</div></span>
+    </div>
+
+    <div data-section="7" data-topic="solve vs inv">
+        <span class="f">Why prefer <code>np.linalg.solve(A,b)</code> over <code>np.linalg.inv(A) @ b</code>?</span>
+        <span class="b"><code>np.linalg.solve</code> uses a <b>numerically stable Gaussian Elimination</b> internally — never computes the full inverse.
+            <ul>
+                <li><b>Faster</b> — avoids extra matrix operations</li>
+                <li><b>More accurate</b> — less floating-point rounding error on large systems</li>
+            </ul>
+            Computing \(A^{-1}\) explicitly is rarely necessary in practice.</span>
+    </div>
+
+    <!-- §8 Python / NumPy -->
+    <div data-section="8" data-topic="Solve system">
+        <span class="f">Solve \(Ax = b\) in NumPy.</span>
+        <span class="b"><code>x = np.linalg.solve(A, b)</code>
+            <br><br>Full pattern:<br>
+            <code>A = np.array([[1,2],[3,4]])</code><br>
+            <code>b = np.array([5, 11])</code><br>
+            <code>x = np.linalg.solve(A, b)</code>
+            <div class="ml-note">Uses stable Gaussian Elimination. Preferred over <code>inv(A) @ b</code>.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Determinant">
+        <span class="f">Compute the <b>determinant</b> in NumPy.</span>
+        <span class="b"><code>det = np.linalg.det(A)</code>
+            <br><br>Check singularity safely:<br>
+            <code>if np.isclose(det, 0):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;print("Singular!")</code>
+            <div class="ml-note">Use <code>np.isclose</code> not <code>det == 0</code> — floating-point rarely gives exact zero.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Rank">
+        <span class="f">Find the <b>rank</b> of a matrix in NumPy.</span>
+        <span class="b"><code>rank = np.linalg.matrix_rank(A)</code>
+            <br><br>Interpret result:<br>
+            <code>n = A.shape[0]</code><br>
+            <code>full_rank = (rank == n)</code>
+            <div class="ml-note">If <code>rank &lt; n</code> → matrix is singular → no unique solution → no inverse.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Inverse">
+        <span class="f">Compute the matrix <b>inverse</b> in NumPy.</span>
+        <span class="b"><code>A_inv = np.linalg.inv(A)</code>
+            <br><br>Always check first:<br>
+            <code>if not np.isclose(np.linalg.det(A), 0):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;A_inv = np.linalg.inv(A)</code>
+            <div class="ml-note">Calling <code>inv</code> on a singular matrix raises a <code>LinAlgError</code>.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="np.isclose">
+        <span class="f">Why use <code>np.isclose(det, 0)</code> instead of <code>det == 0</code>?</span>
+        <span class="b">Floating-point arithmetic rarely produces an <b>exact</b> zero even when the true answer is 0.
+            <div class="ml-note">Example: a near-singular matrix might give det = 1.2e-16 instead of 0. <code>det == 0</code> misses it; <code>np.isclose(det, 0)</code> correctly catches it.</div>
+            \( \text{isclose}(a,b) : \; |a - b| \leq \text{atol} + \text{rtol} \cdot |b| \)</span>
+    </div>
+
+    <div data-section="8" data-topic="@ operator">
+        <span class="f">What does the <code>@</code> operator do in NumPy?</span>
+        <span class="b"><code>@</code> is the <b>matrix multiplication</b> operator.
+            <div class="ml-note">
+                <code>A @ b</code> &nbsp;≡&nbsp; <code>np.matmul(A, b)</code><br>
+                <code>X.T @ X</code> — computes \(X^T X\)<br>
+                <code>A_inv @ b</code> — applies inverse to b
+            </div>
+            Do not confuse with <code>*</code> which is element-wise multiplication.</span>
+    </div>
+
+    <div data-section="8" data-topic="Full workflow">
+        <span class="f">Write the complete NumPy workflow: represent → check → solve.</span>
+        <span class="b"><code>import numpy as np</code><br>
+            <code>A = np.array([[1,2],[3,4]])</code><br>
+            <code>b = np.array([5, 11])</code><br><br>
+            <code>det  = np.linalg.det(A)</code><br>
+            <code>rank = np.linalg.matrix_rank(A)</code><br><br>
+            <code>if not np.isclose(det, 0):</code><br>
+            <code>&nbsp;&nbsp;x = np.linalg.solve(A, b)</code><br>
+            <code>&nbsp;&nbsp;print(x)&nbsp;&nbsp;# [1. 2.]</code></span>
+    </div>
+
+    <!-- ★ Connections -->
+    <div data-section="connect" data-topic="Grand connection">
+        <span class="f">What do <b>rank</b>, <b>determinant</b>, and <b>inverse</b> all measure?</span>
+        <span class="b">They are three different views of the <b>same underlying event</b>: whether the matrix transformation lost a dimension.
+            <ul>
+                <li><b>Geometrically:</b> Did the transformation squash space flat? (det = 0)</li>
+                <li><b>Information-wise:</b> Are any equations redundant? (rank &lt; n)</li>
+                <li><b>Algebraically:</b> Can we reverse the transformation? (no inverse)</li>
+            </ul></span>
+    </div>
+
+    <div data-section="connect" data-topic="Logic chain">
+        <span class="f">Describe the <b>logical chain</b> of Week 1 in one flow.</span>
+        <span class="b">
+            <b>1 Data</b> — numbers are coordinates in space<br>
+            ↓ features connect to outcomes via…<br>
+            <b>2 Linear Equations</b> — \(y = wx + b\)<br>
+            ↓ many data points give…<br>
+            <b>3 Systems</b> — multiple constraints, one intersection<br>
+            ↓ when does the system fail?<br>
+            <b>4 Independence/Rank</b> — real vs redundant information<br>
+            ↓ fast solvability test:<br>
+            <b>5 Determinant</b> — one number encodes everything<br>
+            ↓ now solve it:<br>
+            <b>6 Gaussian Elimination</b> → RREF<br>
+            ↓ general reversal tool:<br>
+            <b>7 Inverse</b> — undoes the transformation<br>
+            ↓ at scale: <b>8 NumPy</b>
+        </span>
+    </div>
+
+    <div data-section="connect" data-topic="ML needs LA">
+        <span class="f">In one sentence: why does <b>ML need linear algebra</b>?</span>
+        <span class="b">Because <b>data is geometric</b>, predictions are <b>linear combinations</b>, and training is <b>solving a system of equations</b> for unknown weights — all requiring the language and tools of linear algebra.
+            <div class="ml-note">Every forward pass, gradient update, and weight matrix in a neural network is a matrix operation.</div></span>
+    </div>
+
+    <div data-section="connect" data-topic="Three outcomes + ML">
+        <span class="f">Map the <b>three system outcomes</b> to their ML meanings.</span>
+        <span class="b"><ul>
+            <li><b>Unique solution</b> → <i>"We found the rule."</i> — data fully determines the model</li>
+            <li><b>Infinite solutions</b> → <i>"Can't tell which rule."</i> — underdetermined, redundant data</li>
+            <li><b>No solution</b> → <i>"No such rule exists."</i> — contradictory data, linear model can't fit</li>
+        </ul></span>
+    </div>
+
+    <div data-section="connect" data-topic="GE computes what">
+        <span class="f">What does Gaussian Elimination <b>actually compute</b>?</span>
+        <span class="b">GE computes the <b>inverse implicitly</b> — it finds exactly what \(A^{-1}\) does to \(b\) without ever forming \(A^{-1}\).
+            <div class="formula">\( [A \;|\; b] \;\xrightarrow{\text{GE}}\; [I \;|\; A^{-1}b] = [I \;|\; x] \)</div>
+            To compute \(A^{-1}\) directly: run GE on \([A \;|\; I]\) to get \([I \;|\; A^{-1}]\).</span>
+    </div>
+
+    <div data-section="connect" data-topic="Singularity checklist">
+        <span class="f">If \(\det(A) = 0\), list <b>everything</b> you know about A.</span>
+        <span class="b"><ul>
+            <li>Matrix is <b>singular</b></li>
+            <li>Rank is <b>deficient</b> (rank &lt; n)</li>
+            <li>At least one equation is <b>linearly dependent</b></li>
+            <li><b>No unique solution</b> to \(Ax = b\)</li>
+            <li><b>No inverse</b> \(A^{-1}\)</li>
+            <li>Transformation <b>collapsed</b> a dimension to zero volume</li>
+            <li>In ML: model is <b>underdetermined or contradictory</b></li>
+        </ul></span>
+    </div>
+
+    <div data-section="connect" data-topic="PCA connection">
+        <span class="f">How does linear dependence connect to <b>PCA</b>?</span>
+        <span class="b">PCA finds and discards <b>redundant directions</b> in the data — directions of near-zero variance (effectively linearly dependent dimensions).
+            <div class="ml-note">Correlated features → partially linearly dependent → near-singular matrices. PCA rotates to find truly independent axes, directly addressing the rank/singularity problem by working in the subspace of genuine information.</div></span>
+    </div>
+
+    <div data-section="connect" data-topic="Dot product preview">
+        <span class="f">Why is \(y = \vec{w}^{\,T} \vec{x} + b\) a <b>scalar</b> output from <b>vector</b> inputs?</span>
+        <span class="b">Because \(\vec{w}^T \vec{x}\) is the <b>dot product</b> — multiply corresponding components and sum:
+            <div class="formula">\( \vec{w}^T \vec{x} = w_1 x_1 + w_2 x_2 + \cdots + w_n x_n \in \mathbb{R} \)</div>
+            A row vector times a column vector always collapses to a single number — the prediction \(y\).</span>
+    </div>
+
+    <div data-section="connect" data-topic="Rank vs dimension">
+        <span class="f">Distinguish: <b>dimension of the space</b> vs <b>rank of the data matrix</b>.</span>
+        <span class="b"><ul>
+            <li><b>Dimension of space</b> = number of features (columns of X) — the apparent dimensionality</li>
+            <li><b>Rank</b> = the true dimensionality — how many genuinely independent directions the data spans</li>
+        </ul>
+        <div class="ml-note">A 1,000-feature dataset might only have rank 50 if features are correlated. PCA reveals this intrinsic dimension.</div></span>
+    </div>
+
+    <div data-section="connect" data-topic="Matrix × vector">
+        <span class="f">Geometrically, what does \(A\vec{x}\) do to a vector?</span>
+        <span class="b">It applies a <b>linear transformation</b> — rotating, scaling, shearing, or reflecting the vector in space.
+            <div class="formula">\( A\vec{x} = \vec{b} \) maps point \(\vec{x}\) to new point \(\vec{b}\)</div>
+            The columns of \(A\) tell you where the standard basis vectors land. Every other vector follows by linearity.
+            <div class="ml-note">In a neural network, each layer is a matrix multiplication — a geometric transformation of the data cloud.</div></span>
+    </div>
+
+</div>
+<!-- end #card-db -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// Build ALL_CARDS from HTML data
+// ═══════════════════════════════════════════════════════
+const ALL_CARDS = Array.from(document.querySelectorAll('#card-db > div')).map(el => ({
+    section: isNaN(el.dataset.section) ? el.dataset.section : parseInt(el.dataset.section),
+    topic:   el.dataset.topic,
+    front:   el.querySelector('.f').innerHTML.trim(),
+    back:    el.querySelector('.b').innerHTML.trim()
+}));
+
+const SECTION_LABELS = {
+    1: '§1 · Data & Geometry',
+    2: '§2 · Linear Equations',
+    3: '§3 · Systems',
+    4: '§4 · Independence & Rank',
+    5: '§5 · Determinant',
+    6: '§6 · Gaussian Elimination',
+    7: '§7 · Matrix Inverse',
+    8: '§8 · Python / NumPy',
+    connect: '★ Connections'
+};
+
+const KATEX_OPTS = {
+    delimiters: [
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+    ],
+    throwOnError: false
+};
+
+// ═══════════════════════════════════════════════════════
+// State
+// ═══════════════════════════════════════════════════════
+let deck        = [];
+let idx         = 0;
+let isFlipped   = false;
+let knownSet    = new Set();
+let activeFilter = 'all';
+
+function buildDeck() {
+    deck = activeFilter === 'all'
+        ? ALL_CARDS.map((_,i) => i)
+        : ALL_CARDS.map((_,i) => i).filter(i => ALL_CARDS[i].section === activeFilter);
+    idx = 0;
+}
+
+function renderCard() {
+    if (!deck.length) return;
+    const c = ALL_CARDS[deck[idx]];
+
+    document.getElementById('counterText').textContent = `${idx + 1} / ${deck.length}`;
+    document.getElementById('progressFill').style.width = `${((idx+1)/deck.length)*100}%`;
+
+    const knownInDeck = [...knownSet].filter(i => deck.includes(i)).length;
+    document.getElementById('knownBadge').textContent = `${knownInDeck} known`;
+
+    const label = `${SECTION_LABELS[c.section]} · ${c.topic}`;
+    document.getElementById('frontTag').textContent = label;
+    document.getElementById('backTag').textContent  = label;
+
+    document.getElementById('cardQuestion').innerHTML = c.front;
+    document.getElementById('cardAnswer').innerHTML   = c.back;
+
+    const markBtn = document.getElementById('markBtn');
+    const isKnown = knownSet.has(deck[idx]);
+    markBtn.textContent = isKnown ? 'Unmark ✕' : 'Mark as Known ✓';
+    markBtn.classList.toggle('marked', isKnown);
+
+    document.getElementById('cardFlipper').classList.toggle('flipped', isFlipped);
+
+    renderMathInElement(document.getElementById('cardQuestion'), KATEX_OPTS);
+    renderMathInElement(document.getElementById('cardAnswer'),   KATEX_OPTS);
+}
+
+function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('cardFlipper').classList.toggle('flipped', isFlipped);
+}
+
+function navigate(dir) {
+    idx = (idx + dir + deck.length) % deck.length;
+    isFlipped = false;
+    renderCard();
+}
+
+function toggleKnown() {
+    const gi = deck[idx];
+    knownSet.has(gi) ? knownSet.delete(gi) : knownSet.add(gi);
+    renderCard();
+}
+
+function shuffleDeck() {
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    idx = 0; isFlipped = false; renderCard();
+}
+
+function initApp() {
+    buildDeck();
+    renderCard();
+
+    // Filter pills
+    document.querySelectorAll('.pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            const f = pill.dataset.filter;
+            activeFilter = f === 'all' ? 'all' : (isNaN(f) ? f : parseInt(f));
+            buildDeck(); isFlipped = false; renderCard();
+        });
+    });
+
+    document.getElementById('btnPrev').addEventListener('click', () => navigate(-1));
+    document.getElementById('btnNext').addEventListener('click', () => navigate(1));
+    document.getElementById('btnFlip').addEventListener('click', flipCard);
+    document.getElementById('markBtn').addEventListener('click', toggleKnown);
+    document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
+    document.getElementById('btnReset').addEventListener('click', () => {
+        buildDeck(); knownSet.clear(); isFlipped = false; renderCard();
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') navigate(1);
+        else if (e.key === 'ArrowLeft') navigate(-1);
+        else if (e.key === ' ') { e.preventDefault(); flipCard(); }
+        else if (e.key === 'k' || e.key === 'K') toggleKnown();
+    });
+
+    // Touch swipe on card
+    let tx = 0;
+    const flipper = document.getElementById('cardFlipper');
+    flipper.addEventListener('touchstart', e => { tx = e.changedTouches[0].clientX; }, {passive:true});
+    flipper.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+        else flipCard();
+    }, {passive:true});
+}
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>
