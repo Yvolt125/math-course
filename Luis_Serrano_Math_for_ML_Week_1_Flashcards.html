@@ -79,7 +79,13 @@
         .bottom-row { display: flex; gap: 10px; width: 100%; max-width: 680px; }
         .ctrl-btn { flex: 1; padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px; background: white; color: var(--primary); font-size: 0.8em; font-weight: 700; cursor: pointer; transition: background 0.15s; }
         .ctrl-btn:hover  { background: #eaf4fb; }
-        .ctrl-btn.marked { border-color: #1e8449; color: #1e8449; background: #d5f5e3; }
+        .btn-right { border-color: #1e8449; color: #1e8449; }
+        .btn-right:hover { background: #d5f5e3; }
+        .btn-right.selected { background: #1e8449; color: white; }
+        .btn-wrong { border-color: #c0392b; color: #c0392b; }
+        .btn-wrong:hover { background: #fdecea; }
+        .btn-wrong.selected { background: #c0392b; color: white; }
+        .known-badge { background: #eaf4fb; color: var(--secondary); padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 0.9em; }
 
         .kb-hint { font-size: 0.7em; color: var(--muted); text-align: center; }
         .katex   { font-size: 1.05em !important; }
@@ -94,7 +100,8 @@
 </head>
 <body>
 
-<header>
+<header style="position:relative;">
+    <a href="index.html" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.75); font-size:0.8em; font-weight:700; text-decoration:none; letter-spacing:0.5px; white-space:nowrap;">← Menu</a>
     <h1>Week 1 Flashcards — Math for Machine Learning</h1>
     <p>Linear Algebra Foundations · Luis Serrano Course</p>
 </header>
@@ -137,11 +144,12 @@
         <button class="nav-btn btn-next" id="btnNext">Next →</button>
     </div>
     <div class="bottom-row">
-        <button class="ctrl-btn" id="markBtn">Mark as Known ✓</button>
-        <button class="ctrl-btn" id="btnShuffle">Shuffle 🔀</button>
+        <button class="ctrl-btn btn-right" id="btnRight">✓ Got it Right</button>
+        <button class="ctrl-btn btn-wrong" id="btnWrong">✗ Got it Wrong</button>
+        <button class="ctrl-btn" id="btnShuffle">Shuffle</button>
         <button class="ctrl-btn" id="btnReset">Reset ↺</button>
     </div>
-    <div class="kb-hint">Keyboard: ← → navigate &nbsp;·&nbsp; Space = flip &nbsp;·&nbsp; K = mark known</div>
+    <div class="kb-hint">Keyboard: ← → navigate &nbsp;·&nbsp; Space = flip &nbsp;·&nbsp; G = right &nbsp;·&nbsp; B = wrong</div>
 </main>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -866,7 +874,8 @@ const KATEX_OPTS = {
 let deck        = [];
 let idx         = 0;
 let isFlipped   = false;
-let knownSet    = new Set();
+let rightSet    = new Set();
+let wrongSet    = new Set();
 let activeFilter = 'all';
 
 function buildDeck() {
@@ -883,8 +892,9 @@ function renderCard() {
     document.getElementById('counterText').textContent = `${idx + 1} / ${deck.length}`;
     document.getElementById('progressFill').style.width = `${((idx+1)/deck.length)*100}%`;
 
-    const knownInDeck = [...knownSet].filter(i => deck.includes(i)).length;
-    document.getElementById('knownBadge').textContent = `${knownInDeck} known`;
+    const rightInDeck = [...rightSet].filter(i => deck.includes(i)).length;
+    const wrongInDeck = [...wrongSet].filter(i => deck.includes(i)).length;
+    document.getElementById('knownBadge').textContent = `${rightInDeck} ✓  ${wrongInDeck} ✗`;
 
     const label = `${SECTION_LABELS[c.section]} · ${c.topic}`;
     document.getElementById('frontTag').textContent = label;
@@ -893,10 +903,9 @@ function renderCard() {
     document.getElementById('cardQuestion').innerHTML = c.front;
     document.getElementById('cardAnswer').innerHTML   = c.back;
 
-    const markBtn = document.getElementById('markBtn');
-    const isKnown = knownSet.has(deck[idx]);
-    markBtn.textContent = isKnown ? 'Unmark ✕' : 'Mark as Known ✓';
-    markBtn.classList.toggle('marked', isKnown);
+    const gi = deck[idx];
+    document.getElementById('btnRight').classList.toggle('selected', rightSet.has(gi));
+    document.getElementById('btnWrong').classList.toggle('selected', wrongSet.has(gi));
 
     document.getElementById('cardFlipper').classList.toggle('flipped', isFlipped);
 
@@ -915,10 +924,36 @@ function navigate(dir) {
     renderCard();
 }
 
-function toggleKnown() {
+function saveFlashcardResult(cardIdx, result) {
+    const card  = ALL_CARDS[cardIdx];
+    const entry = {
+        date:    new Date().toISOString(),
+        cardSet: 'Week 1',
+        section: card.section,
+        topic:   card.topic,
+        result
+    };
+    const stored = JSON.parse(localStorage.getItem('mathCourse_flashcardResults') || '[]');
+    stored.push(entry);
+    localStorage.setItem('mathCourse_flashcardResults', JSON.stringify(stored));
+}
+
+function markRight() {
     const gi = deck[idx];
-    knownSet.has(gi) ? knownSet.delete(gi) : knownSet.add(gi);
+    rightSet.add(gi);
+    wrongSet.delete(gi);
+    saveFlashcardResult(gi, 'right');
     renderCard();
+    if (idx < deck.length - 1) navigate(1);
+}
+
+function markWrong() {
+    const gi = deck[idx];
+    wrongSet.add(gi);
+    rightSet.delete(gi);
+    saveFlashcardResult(gi, 'wrong');
+    renderCard();
+    if (idx < deck.length - 1) navigate(1);
 }
 
 function shuffleDeck() {
@@ -947,10 +982,11 @@ function initApp() {
     document.getElementById('btnPrev').addEventListener('click', () => navigate(-1));
     document.getElementById('btnNext').addEventListener('click', () => navigate(1));
     document.getElementById('btnFlip').addEventListener('click', flipCard);
-    document.getElementById('markBtn').addEventListener('click', toggleKnown);
+    document.getElementById('btnRight').addEventListener('click', markRight);
+    document.getElementById('btnWrong').addEventListener('click', markWrong);
     document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
     document.getElementById('btnReset').addEventListener('click', () => {
-        buildDeck(); knownSet.clear(); isFlipped = false; renderCard();
+        buildDeck(); rightSet.clear(); wrongSet.clear(); isFlipped = false; renderCard();
     });
 
     // Keyboard
@@ -958,7 +994,8 @@ function initApp() {
         if (e.key === 'ArrowRight') navigate(1);
         else if (e.key === 'ArrowLeft') navigate(-1);
         else if (e.key === ' ') { e.preventDefault(); flipCard(); }
-        else if (e.key === 'k' || e.key === 'K') toggleKnown();
+        else if (e.key === 'g' || e.key === 'G') markRight();
+        else if (e.key === 'b' || e.key === 'B') markWrong();
     });
 
     // Touch swipe on card

@@ -47,6 +47,7 @@
             border-radius: 14px 14px 0 0;
             padding: 36px 44px 30px;
             text-align: center;
+            position: relative;
         }
 
         .quiz-header h1 {
@@ -419,6 +420,7 @@
 
     <!-- HEADER -->
     <div class="quiz-header">
+        <a href="#" onclick="confirmExit(event)" style="position:absolute; left:18px; top:18px; color:rgba(255,255,255,0.75); font-size:0.82em; font-weight:700; text-decoration:none; letter-spacing:0.5px;">← Menu</a>
         <h1>Linear Algebra for ML — Week 1</h1>
         <p>Interactive Quiz · Based on the full Mastery Guide</p>
         <div class="meta-strip">
@@ -1074,7 +1076,10 @@
         <div class="results-body">
             <h3>Score by Section</h3>
             <div class="section-scores" id="section-scores-grid"></div>
-            <button class="btn-retry" onclick="window.location.reload()">Retake Quiz</button>
+            <div style="display:flex; gap:12px; margin-top:26px; flex-wrap:wrap;">
+                <button class="btn-retry" onclick="window.location.reload()">Retake Quiz</button>
+                <button class="btn-retry" style="background:#16a085;" onclick="exportQuizResults()">Export Results ↓</button>
+            </div>
         </div>
     </div>
 
@@ -1234,11 +1239,33 @@ function styleTF(n, val) {
     document.getElementById('tf' + n + '-false').className = 'tf-btn' + (val === 'false' ? ' selected-false' : '');
 }
 
+// ── Menu navigation ───────────────────────────────────────────────────────────
+function confirmExit(e) {
+    e.preventDefault();
+    const submitted = document.getElementById('btn-submit').disabled;
+    if (submitted || confirm('Leave the quiz? Your current answers will be lost.')) {
+        window.location.href = 'index.html';
+    }
+}
+
+// ── Results persistence ───────────────────────────────────────────────────────
+function exportQuizResults() {
+    const data = localStorage.getItem('mathCourse_quizResults') || '[]';
+    const blob = new Blob([data], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'quiz_results.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // ── Grading ───────────────────────────────────────────────────────────────────
 document.getElementById('btn-submit').addEventListener('click', function () {
 
     let totalScore = 0;
     const sectionScores = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0};
+    const questionResults = [];
 
     QUESTIONS.forEach(q => {
         let correct = false;
@@ -1257,6 +1284,8 @@ document.getElementById('btn-submit').addEventListener('click', function () {
             const sel = document.querySelector(`input[name="${q.id}"]:checked`);
             if (sel) { userVal = sel.value; correct = userVal === q.answer; }
         }
+
+        questionResults.push({ id: q.id, section: q.section, correct, userAnswer: userVal });
 
         const card = document.getElementById('card-' + q.id);
         const fb   = document.getElementById('fb-' + q.id);
@@ -1309,6 +1338,21 @@ document.getElementById('btn-submit').addEventListener('click', function () {
     document.getElementById('results-panel').style.display = 'block';
     this.disabled = true;
     document.getElementById('results-panel').scrollIntoView({ behavior:'smooth' });
+
+    // Save to localStorage
+    const resultData = {
+        date: new Date().toISOString(),
+        quiz: 'Week 1 Linear Algebra',
+        score: totalScore,
+        total: QUESTIONS.length,
+        percentage: pct,
+        grade,
+        sectionScores: { ...sectionScores },
+        questions: questionResults
+    };
+    const stored = JSON.parse(localStorage.getItem('mathCourse_quizResults') || '[]');
+    stored.push(resultData);
+    localStorage.setItem('mathCourse_quizResults', JSON.stringify(stored));
 });
 </script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>

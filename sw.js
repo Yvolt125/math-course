@@ -5,8 +5,6 @@ const FILES = [
   './Luis_Serrano_Math_for_ML_Week_1_Quiz.html',
   './Luis_Serrano_Math_for_ML_Week_1_Flashcards.html',
   './Luis_Serrano_Math_for_ML_Week_1_Mastery_Guide.html',
-  './Luis_Serrano_Math_for_ML_Week_1_Summary.html',
-  './Luis_Serrano_Math_for_ML_Week_1_Final_Test.html',
   './Luis_Serrano_Math_for_ML_Week_2_Mastery_Guide.html',
   './manifest.json',
   './icon.svg'
