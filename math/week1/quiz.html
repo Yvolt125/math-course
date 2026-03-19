@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="../../icon.svg">
+    <title>Interactive Quiz — Linear Algebra for ML, Week 1</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #2980b9;
+            --accent:    #16a085;
+            --warning:   #f39c12;
+            --danger:    #e74c3c;
+            --success:   #27ae60;
+            --light:     #f8fbff;
+            --bg:        #eef2f7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+            line-height: 1.7;
+            padding: 30px 20px 80px;
+        }
+
+        /* ── Shell ────────────────────────────────────── */
+        .quiz-shell {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* ── Header ───────────────────────────────────── */
+        .quiz-header {
+            background: var(--primary);
+            color: white;
+            border-radius: 14px 14px 0 0;
+            padding: 36px 44px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .quiz-header h1 {
+            font-size: 1.7em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .quiz-header p { opacity: 0.75; font-size: 0.95em; }
+
+        .meta-strip {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 18px;
+            font-size: 0.88em;
+        }
+
+        .meta-strip span {
+            background: rgba(255,255,255,0.12);
+            padding: 5px 16px;
+            border-radius: 20px;
+        }
+
+        /* ── Progress bar ─────────────────────────────── */
+        .progress-wrap {
+            background: white;
+            padding: 14px 44px;
+            border-bottom: 1px solid #dde4ed;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            background: #e0e7f0;
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* ── Quiz body ────────────────────────────────── */
+        .quiz-body {
+            background: white;
+            padding: 10px 44px 44px;
+            border-radius: 0 0 14px 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
+
+        /* ── Section headers ──────────────────────────── */
+        .section-block {
+            margin-top: 50px;
+        }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-bottom: 28px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        .section-label .sec-num {
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        .sec-color-1 { background: var(--secondary); }
+        .sec-color-2 { background: #8e44ad; }
+        .sec-color-3 { background: var(--accent); }
+        .sec-color-4 { background: #c0392b; }
+        .sec-color-5 { background: #d35400; }
+        .sec-color-6 { background: #27ae60; }
+        .sec-color-7 { background: #2c3e50; }
+        .sec-color-8 { background: #16a085; }
+
+        /* ── Question card ────────────────────────────── */
+        .q-card {
+            border: 1px solid #e3eaf3;
+            border-radius: 10px;
+            padding: 22px 26px;
+            margin-bottom: 18px;
+            background: #fafcff;
+            transition: border-color 0.2s;
+        }
+
+        .q-card:focus-within { border-color: var(--secondary); }
+
+        .q-number {
+            font-size: 0.78em;
+            font-weight: 700;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .q-type-badge {
+            display: inline-block;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            background: #e8f4fd;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .q-text {
+            font-size: 1.02em;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .q-context {
+            background: #f0f4f8;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0 16px;
+            font-size: 0.93em;
+        }
+
+        /* ── Input styles ─────────────────────────────── */
+        .fill-blank {
+            border: none;
+            border-bottom: 2px solid var(--primary);
+            background: transparent;
+            padding: 4px 10px;
+            font-size: 1em;
+            width: 180px;
+            text-align: center;
+            color: var(--secondary);
+            font-weight: 600;
+            border-radius: 0;
+        }
+
+        .fill-blank:focus { outline: none; border-bottom-color: var(--accent); }
+
+        input[type="number"].num-input {
+            padding: 8px 14px;
+            border: 1px solid #ccd6e0;
+            border-radius: 6px;
+            font-size: 1em;
+            width: 110px;
+            text-align: center;
+        }
+
+        input[type="number"].num-input:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(41,128,185,0.15); }
+
+        /* ── Radio / MC options ───────────────────────── */
+        .mc-options { display: flex; flex-direction: column; gap: 9px; }
+
+        .mc-opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 11px 15px;
+            border: 1.5px solid #dde4ef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            font-size: 0.96em;
+        }
+
+        .mc-opt:hover { background: #eef5fb; border-color: #aac8e4; }
+
+        .mc-opt input[type="radio"] {
+            margin-top: 3px;
+            flex-shrink: 0;
+            accent-color: var(--secondary);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ── True / False ─────────────────────────────── */
+        .tf-row { display: flex; gap: 12px; }
+
+        .tf-btn {
+            flex: 1;
+            padding: 11px;
+            border: 1.5px solid #dde4ef;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .tf-btn:hover { background: #eef5fb; border-color: #aac8e4; }
+        .tf-btn input { display: none; }
+        .tf-btn.selected-true  { background: #e8f8f2; border-color: var(--success); color: var(--success); }
+        .tf-btn.selected-false { background: #fde8e8; border-color: var(--danger); color: var(--danger); }
+
+        /* ── Math box ─────────────────────────────────── */
+        .math-box {
+            background: #f5f8fb;
+            border: 1px solid #dde4ef;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        /* ── Feedback ─────────────────────────────────── */
+        .feedback {
+            display: none;
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 7px;
+            font-size: 0.92em;
+            line-height: 1.5;
+        }
+
+        .feedback.correct   { background: #d4edda; color: #155724; border-left: 4px solid var(--success); }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border-left: 4px solid var(--danger); }
+        .feedback.correct::before   { content: "✓  "; font-weight: bold; }
+        .feedback.incorrect::before { content: "✗  "; font-weight: bold; }
+
+        /* ── Result states on cards ───────────────────── */
+        .q-card.is-correct   { border-color: var(--success); background: #f6fffa; }
+        .q-card.is-incorrect { border-color: var(--danger);  background: #fff8f8; }
+
+        /* ── Submit area ──────────────────────────────── */
+        .submit-area {
+            text-align: center;
+            padding: 44px 0 10px;
+            border-top: 2px solid #e3eaf3;
+            margin-top: 50px;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 52px;
+            font-size: 1.15em;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-submit:hover { background: var(--secondary); transform: translateY(-2px); }
+        .btn-submit:disabled { background: #aaa; cursor: default; transform: none; }
+
+        /* ── Results panel ────────────────────────────── */
+        .results-panel {
+            display: none;
+            margin-top: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .results-top {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 5px solid rgba(255,255,255,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .score-big   { font-size: 2.6em; font-weight: 800; line-height: 1; color: var(--warning); }
+        .score-denom { font-size: 0.85em; opacity: 0.7; }
+        .grade-badge { font-size: 1.8em; font-weight: 700; margin-bottom: 6px; }
+        .grade-msg   { opacity: 0.8; font-size: 0.95em; }
+
+        .results-body {
+            background: white;
+            padding: 30px 36px 36px;
+        }
+
+        .results-body h3 { color: var(--primary); margin-bottom: 18px; font-size: 1.1em; }
+
+        .section-scores {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .sec-score-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--light);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .sec-score-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sec-score-label { flex: 1; font-weight: 600; color: var(--primary); }
+        .sec-score-val   { font-weight: 700; color: var(--secondary); }
+
+        .btn-retry {
+            display: block;
+            margin: 26px auto 0;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 13px 40px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-retry:hover { background: #13866f; }
+
+        code {
+            background: #f1f3f5;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.92em;
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-shell">
+
+    <!-- HEADER -->
+    <div class="quiz-header">
+        <a href="#" onclick="confirmExit(event)" style="position:absolute; left:18px; top:18px; color:rgba(255,255,255,0.75); font-size:0.82em; font-weight:700; text-decoration:none; letter-spacing:0.5px;">← Menu</a>
+        <h1>Linear Algebra for ML — Week 1</h1>
+        <p>Interactive Quiz · Based on the full Mastery Guide</p>
+        <div class="meta-strip">
+            <span>42 Questions</span>
+            <span>8 Sections</span>
+            <span>All question types</span>
+        </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-wrap">
+        <span id="progress-label">0 / 42 answered</span>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span id="progress-pct">0%</span>
+    </div>
+
+    <!-- QUIZ BODY -->
+    <div class="quiz-body">
+    <form id="quiz-form">
+
+        <!-- ════════════════════════════════════════
+             SECTION 1: DATA AS GEOMETRIC OBJECTS
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-1">
+                <div class="sec-num">1</div>
+                <div>Data as Geometric Objects — Scalars · Vectors · Matrices</div>
+            </div>
+
+            <!-- Q1 fill -->
+            <div class="q-card" id="card-q1">
+                <div class="q-number">Question 1 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">A single number that has magnitude but no direction — a point on a number line — is called a <input type="text" class="fill-blank" id="q1" placeholder="___">.</div>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+
+            <!-- Q2 MC -->
+            <div class="q-card" id="card-q2">
+                <div class="q-number">Question 2 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">What does a vector represent geometrically?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q2" value="a"> A single number with a positive or negative sign</label>
+                    <label class="mc-opt"><input type="radio" name="q2" value="b"> An arrow pointing from the origin to a specific coordinate in space</label>
+                    <label class="mc-opt"><input type="radio" name="q2" value="c"> A rectangular grid of numbers representing a full dataset</label>
+                </div>
+                <div class="feedback" id="fb-q2"></div>
+            </div>
+
+            <!-- Q3 numeric -->
+            <div class="q-card" id="card-q3">
+                <div class="q-number">Question 3 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">A house is described by the feature vector <span style="white-space:nowrap">[1800 sqft, 4 bedrooms, 2 bathrooms]</span>. How many components does this vector have?</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q3"></div>
+                <div class="feedback" id="fb-q3"></div>
+            </div>
+
+            <!-- Q4 MC -->
+            <div class="q-card" id="card-q4">
+                <div class="q-number">Question 4 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">In a machine learning dataset, what does a matrix represent?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q4" value="a"> A single data point (one observation)</label>
+                    <label class="mc-opt"><input type="radio" name="q4" value="b"> One feature column (e.g., just the house sizes)</label>
+                    <label class="mc-opt"><input type="radio" name="q4" value="c"> The full dataset — a collection of all feature vectors stacked as rows</label>
+                </div>
+                <div class="feedback" id="fb-q4"></div>
+            </div>
+
+            <!-- Q5 MC -->
+            <div class="q-card" id="card-q5">
+                <div class="q-number">Question 5 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A dataset contains 200 houses, each described by 6 features. What are the dimensions of the data matrix?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q5" value="a"> 6 rows × 200 columns</label>
+                    <label class="mc-opt"><input type="radio" name="q5" value="b"> 200 rows × 6 columns</label>
+                    <label class="mc-opt"><input type="radio" name="q5" value="c"> 1200 rows × 1 column</label>
+                </div>
+                <div class="feedback" id="fb-q5"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 2: THE LINEAR EQUATION
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-2">
+                <div class="sec-num">2</div>
+                <div>The Linear Equation — Modeling Relationships</div>
+            </div>
+
+            <!-- Q6 fill -->
+            <div class="q-card" id="card-q6">
+                <div class="q-number">Question 6 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">In \(y = w_1x_1 + w_2x_2 + b\), the term \(b\) is called the <input type="text" class="fill-blank" id="q6" placeholder="___">. Without it, the model would be forced to pass through the origin \((0,0)\).</div>
+                <div class="feedback" id="fb-q6"></div>
+            </div>
+
+            <!-- Q7 numeric -->
+            <div class="q-card" id="card-q7">
+                <div class="q-number">Question 7 <span class="q-type-badge">Numeric calculation</span></div>
+                <div class="q-text">Using \(y = w_1x_1 + w_2x_2 + b\), calculate the predicted value \(y\):</div>
+                <div class="q-context">\(w_1 = 200,\quad x_1 = 15,\quad w_2 = -50,\quad x_2 = 4,\quad b = 500\)</div>
+                <div>Result: \(y =\) <input type="number" class="num-input" id="q7"></div>
+                <div class="feedback" id="fb-q7"></div>
+            </div>
+
+            <!-- Q8 true/false -->
+            <div class="q-card" id="card-q8">
+                <div class="q-number">Question 8 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: A linear equation can model a curved relationship between features and output, as long as you have enough data points.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf8-true"><input type="radio" name="q8" value="true" onchange="styleTF(8,'true')"> True</label>
+                    <label class="tf-btn" id="tf8-false"><input type="radio" name="q8" value="false" onchange="styleTF(8,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q8"></div>
+            </div>
+
+            <!-- Q9 MC -->
+            <div class="q-card" id="card-q9">
+                <div class="q-number">Question 9 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">In the ML equation \(y = w_1x_1 + w_2x_2 + b\), what role do the \(w_i\) (weights) play?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q9" value="a"> They are the input data provided by the dataset</label>
+                    <label class="mc-opt"><input type="radio" name="q9" value="b"> They quantify how much importance to give each feature — finding them is the goal of training</label>
+                    <label class="mc-opt"><input type="radio" name="q9" value="c"> They represent the final prediction \(y\)</label>
+                </div>
+                <div class="feedback" id="fb-q9"></div>
+            </div>
+
+            <!-- Q10 fill -->
+            <div class="q-card" id="card-q10">
+                <div class="q-number">Question 10 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">The reason we call the model "linear" is that we only use addition and <input type="text" class="fill-blank" id="q10" placeholder="___"> — no powers or exponents — which guarantees the relationship is always a straight line or flat plane.</div>
+                <div class="feedback" id="fb-q10"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 3: SYSTEMS OF EQUATIONS
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-3">
+                <div class="sec-num">3</div>
+                <div>Systems of Equations — Many Rules, One Answer</div>
+            </div>
+
+            <!-- Q11 MC -->
+            <div class="q-card" id="card-q11">
+                <div class="q-number">Question 11 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">In an ML context, the variables we are solving for when we solve a system of equations are:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q11" value="a"> The feature values in the dataset</label>
+                    <label class="mc-opt"><input type="radio" name="q11" value="b"> The model's weights — the one set consistent with every observed data point</label>
+                    <label class="mc-opt"><input type="radio" name="q11" value="c"> The number of rows in the matrix</label>
+                </div>
+                <div class="feedback" id="fb-q11"></div>
+            </div>
+
+            <!-- Q12 MC -->
+            <div class="q-card" id="card-q12">
+                <div class="q-number">Question 12 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A model has 2 unknown weights. You have exactly 2 independent data points — giving you 2 independent equations. The system will have:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q12" value="a"> No solution</label>
+                    <label class="mc-opt"><input type="radio" name="q12" value="b"> A unique solution</label>
+                    <label class="mc-opt"><input type="radio" name="q12" value="c"> Infinite solutions</label>
+                </div>
+                <div class="feedback" id="fb-q12"></div>
+            </div>
+
+            <!-- Q13 fill -->
+            <div class="q-card" id="card-q13">
+                <div class="q-number">Question 13 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">In the Augmented Matrix \(\left[\begin{array}{cc|c} 2 & 1 & 5 \\ 1 & -1 & 1\end{array}\right]\), the vertical bar separates the <input type="text" class="fill-blank" id="q13" placeholder="___"> from the right-hand side results.</div>
+                <div class="feedback" id="fb-q13"></div>
+            </div>
+
+            <!-- Q14 true/false -->
+            <div class="q-card" id="card-q14">
+                <div class="q-number">Question 14 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: If a system of equations has infinite solutions, the model is fully determined — we have found the exact rule the data follows.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf14-true"><input type="radio" name="q14" value="true" onchange="styleTF(14,'true')"> True</label>
+                    <label class="tf-btn" id="tf14-false"><input type="radio" name="q14" value="false" onchange="styleTF(14,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q14"></div>
+            </div>
+
+            <!-- Q15 MC -->
+            <div class="q-card" id="card-q15">
+                <div class="q-number">Question 15 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A system of equations has <strong>no solution</strong>. What does this mean for the ML model?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q15" value="a"> The model needs to be retrained with more data</label>
+                    <label class="mc-opt"><input type="radio" name="q15" value="b"> No linear set of weights can satisfy all the data simultaneously — a linear model cannot exist for this data in this form</label>
+                    <label class="mc-opt"><input type="radio" name="q15" value="c"> The model has too many features and needs to be simplified</label>
+                </div>
+                <div class="feedback" id="fb-q15"></div>
+            </div>
+
+            <!-- Q41 graph — read intersection from coordinate graph -->
+            <div class="q-card" id="card-q16">
+                <div class="q-number">Question 16 <span class="q-type-badge">Graph — Multiple choice</span></div>
+                <div class="q-text">The graph shows two linear equations. At which point do the two lines intersect?</div>
+                <!-- SVG: origin (50,225), scale 40px/unit, x 0–5, y 0–5
+                     Line 1 (blue)  y = x+1 : (0,1)→svg(50,185)  (4,5)→svg(210,25)
+                     Line 2 (red)   y = −x+5: (0,5)→svg(50,25)   (5,0)→svg(250,225)
+                     Intersection (2,3) → svg(130,105) -->
+                <svg width="300" height="260" viewBox="0 0 300 260" style="display:block;margin:14px auto;background:#f8faff;border-radius:8px;border:1px solid #dde4ef;max-width:100%;">
+                    <!-- Grid -->
+                    <line x1="90"  y1="20" x2="90"  y2="225" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="130" y1="20" x2="130" y2="225" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="170" y1="20" x2="170" y2="225" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="210" y1="20" x2="210" y2="225" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="50" y1="65"  x2="260" y2="65"  stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="50" y1="105" x2="260" y2="105" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="50" y1="145" x2="260" y2="145" stroke="#e0e8f5" stroke-width="1"/>
+                    <line x1="50" y1="185" x2="260" y2="185" stroke="#e0e8f5" stroke-width="1"/>
+                    <!-- Axes -->
+                    <line x1="50" y1="225" x2="265" y2="225" stroke="#2c3e50" stroke-width="2"/>
+                    <line x1="50" y1="15"  x2="50"  y2="230" stroke="#2c3e50" stroke-width="2"/>
+                    <polygon points="265,221 273,225 265,229" fill="#2c3e50"/>
+                    <polygon points="46,15 50,7 54,15"         fill="#2c3e50"/>
+                    <text x="278" y="229" font-size="12" fill="#555" font-style="italic">x</text>
+                    <text x="42"  y="9"   font-size="12" fill="#555" font-style="italic">y</text>
+                    <!-- X tick labels -->
+                    <text x="90"  y="242" text-anchor="middle" font-size="11" fill="#888">1</text>
+                    <text x="130" y="242" text-anchor="middle" font-size="11" fill="#888">2</text>
+                    <text x="170" y="242" text-anchor="middle" font-size="11" fill="#888">3</text>
+                    <text x="210" y="242" text-anchor="middle" font-size="11" fill="#888">4</text>
+                    <text x="250" y="242" text-anchor="middle" font-size="11" fill="#888">5</text>
+                    <!-- Y tick labels -->
+                    <text x="40" y="189" text-anchor="end" font-size="11" fill="#888">1</text>
+                    <text x="40" y="149" text-anchor="end" font-size="11" fill="#888">2</text>
+                    <text x="40" y="109" text-anchor="end" font-size="11" fill="#888">3</text>
+                    <text x="40" y="69"  text-anchor="end" font-size="11" fill="#888">4</text>
+                    <text x="40" y="29"  text-anchor="end" font-size="11" fill="#888">5</text>
+                    <!-- Line 1: y = x + 1  (blue) -->
+                    <line x1="50" y1="185" x2="210" y2="25" stroke="#2980b9" stroke-width="2.5" stroke-linecap="round"/>
+                    <text x="214" y="24" font-size="11" fill="#2980b9" font-weight="600">y = x + 1</text>
+                    <!-- Line 2: y = −x + 5  (red) -->
+                    <line x1="50" y1="25" x2="250" y2="225" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
+                    <text x="147" y="253" text-anchor="middle" font-size="11" fill="#e74c3c" font-weight="600">y = −x + 5</text>
+                    <!-- Intersection at (2,3) → svg(130,105) -->
+                    <circle cx="130" cy="105" r="7"   fill="white"   stroke="#27ae60" stroke-width="2.5"/>
+                    <circle cx="130" cy="105" r="3.5" fill="#27ae60"/>
+                </svg>
+                <div class="mc-options" style="margin-top:14px;">
+                    <label class="mc-opt"><input type="radio" name="q16" value="a"> \((1,\ 2)\)</label>
+                    <label class="mc-opt"><input type="radio" name="q16" value="b"> \((2,\ 3)\)</label>
+                    <label class="mc-opt"><input type="radio" name="q16" value="c"> \((3,\ 2)\)</label>
+                    <label class="mc-opt"><input type="radio" name="q16" value="d"> \((0,\ 5)\)</label>
+                </div>
+                <div class="feedback" id="fb-q16"></div>
+            </div>
+
+            <!-- Q42 graph — identify system type from three mini-graphs -->
+            <div class="q-card" id="card-q17">
+                <div class="q-number">Question 17 <span class="q-type-badge">Graph — Multiple choice</span></div>
+                <div class="q-text">The three graphs each show a pair of linear equations. Which graph represents a system with <strong>infinite solutions</strong>?</div>
+                <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:18px 0;">
+
+                    <!-- Graph A: two crossing lines (unique solution) -->
+                    <div style="text-align:center;">
+                        <svg width="155" height="125" viewBox="0 0 155 125" style="border:1px solid #dde4ef;border-radius:6px;background:#f8faff;display:block;">
+                            <line x1="15" y1="105" x2="148" y2="105" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="10"  x2="20"  y2="108" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="100" x2="148" y2="20" stroke="#2980b9" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="20" y1="20"  x2="148" y2="100" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
+                            <circle cx="84" cy="60" r="5"   fill="white"   stroke="#27ae60" stroke-width="2"/>
+                            <circle cx="84" cy="60" r="2.5" fill="#27ae60"/>
+                            <text x="77" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#444">Graph A</text>
+                        </svg>
+                    </div>
+
+                    <!-- Graph B: two parallel lines (no solution) -->
+                    <div style="text-align:center;">
+                        <svg width="155" height="125" viewBox="0 0 155 125" style="border:1px solid #dde4ef;border-radius:6px;background:#f8faff;display:block;">
+                            <line x1="15" y1="105" x2="148" y2="105" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="10"  x2="20"  y2="108" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="80"  x2="148" y2="30"  stroke="#2980b9" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="20" y1="100" x2="148" y2="50"  stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
+                            <text x="77" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#444">Graph B</text>
+                        </svg>
+                    </div>
+
+                    <!-- Graph C: overlapping lines (infinite solutions) -->
+                    <div style="text-align:center;">
+                        <svg width="155" height="125" viewBox="0 0 155 125" style="border:1px solid #dde4ef;border-radius:6px;background:#f8faff;display:block;">
+                            <line x1="15" y1="105" x2="148" y2="105" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="10"  x2="20"  y2="108" stroke="#bbb" stroke-width="1.5"/>
+                            <line x1="20" y1="95"  x2="148" y2="25"  stroke="#2980b9" stroke-width="6"   stroke-linecap="round" opacity="0.55"/>
+                            <line x1="20" y1="95"  x2="148" y2="25"  stroke="#e74c3c" stroke-width="2"   stroke-dasharray="7,5" stroke-linecap="round"/>
+                            <text x="77" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#444">Graph C</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q17" value="a"> Graph A</label>
+                    <label class="mc-opt"><input type="radio" name="q17" value="b"> Graph B</label>
+                    <label class="mc-opt"><input type="radio" name="q17" value="c"> Graph C</label>
+                </div>
+                <div class="feedback" id="fb-q17"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 4: INDEPENDENCE, RANK, SINGULARITY
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-4">
+                <div class="sec-num">4</div>
+                <div>Linear Independence, Rank and Singularity</div>
+            </div>
+
+            <!-- Q16 MC -->
+            <div class="q-card" id="card-q18">
+                <div class="q-number">Question 18 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Two equations are described as <em>linearly dependent</em> when:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q18" value="a"> They produce the same output value for all inputs</label>
+                    <label class="mc-opt"><input type="radio" name="q18" value="b"> One can be produced by scaling or combining the others — it adds no new geometric direction or information</label>
+                    <label class="mc-opt"><input type="radio" name="q18" value="c"> They have different numbers of variables on the left-hand side</label>
+                </div>
+                <div class="feedback" id="fb-q18"></div>
+            </div>
+
+            <!-- Q17 numeric -->
+            <div class="q-card" id="card-q19">
+                <div class="q-number">Question 19 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">A dataset has 8 features, but the matrix has Rank 5. How many of the features are redundant (linearly dependent on others)?</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q19"></div>
+                <div class="feedback" id="fb-q19"></div>
+            </div>
+
+            <!-- Q18 MC scenario -->
+            <div class="q-card" id="card-q20">
+                <div class="q-number">Question 20 <span class="q-type-badge">Scenario</span></div>
+                <div class="q-text">A dataset includes both "Temperature in °C" and "Temperature in °F" as separate features. What is the mathematical consequence?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q20" value="a"> The model becomes more accurate because it has two perspectives on the same information</label>
+                    <label class="mc-opt"><input type="radio" name="q20" value="b"> The feature matrix becomes singular (rank-deficient), causing matrix operations to crash or produce unstable results</label>
+                    <label class="mc-opt"><input type="radio" name="q20" value="c"> The bias term automatically compensates for the redundancy</label>
+                </div>
+                <div class="feedback" id="fb-q20"></div>
+            </div>
+
+            <!-- Q19 MC -->
+            <div class="q-card" id="card-q21">
+                <div class="q-number">Question 21 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">The Shadow Analogy describes Rank by comparing it to the dimensionality of a shadow. What does a Rank 1 shadow correspond to?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q21" value="a"> A full 3D object casting a 2D shadow — one dimension lost</label>
+                    <label class="mc-opt"><input type="radio" name="q21" value="b"> A 3D object whose shadow is a single thin line — two dimensions lost, only one direction of information survives</label>
+                    <label class="mc-opt"><input type="radio" name="q21" value="c"> A 3D object with no shadow at all — all information preserved</label>
+                </div>
+                <div class="feedback" id="fb-q21"></div>
+            </div>
+
+            <!-- Q20 fill -->
+            <div class="q-card" id="card-q22">
+                <div class="q-number">Question 22 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">A matrix in which the number of linearly independent rows equals the total number of rows is said to have <input type="text" class="fill-blank" id="q22" placeholder="___"> rank.</div>
+                <div class="feedback" id="fb-q22"></div>
+            </div>
+
+            <!-- Q21 MC -->
+            <div class="q-card" id="card-q23">
+                <div class="q-number">Question 23 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A 3×3 matrix has Rank 2. Which outcome does this produce?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q23" value="a"> A unique solution — the system is fully determined</label>
+                    <label class="mc-opt"><input type="radio" name="q23" value="b"> The solution space collapses onto a 2D plane — the system is singular (either infinite or no solutions)</label>
+                    <label class="mc-opt"><input type="radio" name="q23" value="c"> No change — Rank 2 is still full rank for a 3×3 matrix</label>
+                </div>
+                <div class="feedback" id="fb-q23"></div>
+            </div>
+
+            <!-- Q22 true/false -->
+            <div class="q-card" id="card-q24">
+                <div class="q-number">Question 24 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: Linear dependence between equations always causes a system to have <em>no solution</em>.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf24-true"><input type="radio" name="q24" value="true" onchange="styleTF(24,'true')"> True</label>
+                    <label class="tf-btn" id="tf24-false"><input type="radio" name="q24" value="false" onchange="styleTF(24,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q24"></div>
+            </div>
+
+            <!-- Q23 MC -->
+            <div class="q-card" id="card-q25">
+                <div class="q-number">Question 25 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Why does PCA (Principal Component Analysis) relate directly to the concept of Rank?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q25" value="a"> PCA computes the determinant of the dataset to test for singularity</label>
+                    <label class="mc-opt"><input type="radio" name="q25" value="b"> PCA finds the true rank of the data and discards redundant (linearly dependent) dimensions</label>
+                    <label class="mc-opt"><input type="radio" name="q25" value="c"> PCA increases the rank of a dataset by adding new synthetic features</label>
+                </div>
+                <div class="feedback" id="fb-q25"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 5: THE DETERMINANT
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-5">
+                <div class="sec-num">5</div>
+                <div>The Determinant — A One-Number Test for Solvability</div>
+            </div>
+
+            <!-- Q24 numeric -->
+            <div class="q-card" id="card-q26">
+                <div class="q-number">Question 26 <span class="q-type-badge">Numeric calculation</span></div>
+                <div class="q-text">Calculate the determinant of matrix \(A\):</div>
+                <div class="math-box">\[ A = \begin{bmatrix} 4 & 2 \\ 1 & 3 \end{bmatrix} \]</div>
+                <div>Result: <input type="number" class="num-input" id="q26"></div>
+                <div class="feedback" id="fb-q26"></div>
+            </div>
+
+            <!-- Q25 MC -->
+            <div class="q-card" id="card-q27">
+                <div class="q-number">Question 27 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A matrix transformation takes a unit square (area = 1) and stretches it into a parallelogram with area = 5. What is the determinant?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q27" value="a"> 0 — the space was squashed</label>
+                    <label class="mc-opt"><input type="radio" name="q27" value="b"> 1 — the identity transformation</label>
+                    <label class="mc-opt"><input type="radio" name="q27" value="c"> 5 — the area scaling factor</label>
+                </div>
+                <div class="feedback" id="fb-q27"></div>
+            </div>
+
+            <!-- Q26 MC -->
+            <div class="q-card" id="card-q28">
+                <div class="q-number">Question 28 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A matrix has \(\det(A) = -4\). What does the <em>negative sign</em> indicate?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q28" value="a"> The matrix is singular and cannot be inverted</label>
+                    <label class="mc-opt"><input type="radio" name="q28" value="b"> The transformation flips the orientation of space — like a mirror reflection — while scaling area by 4</label>
+                    <label class="mc-opt"><input type="radio" name="q28" value="c"> The system has exactly 4 solutions</label>
+                </div>
+                <div class="feedback" id="fb-q28"></div>
+            </div>
+
+            <!-- Q27 fill -->
+            <div class="q-card" id="card-q29">
+                <div class="q-number">Question 29 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">Singularity, rank deficiency, and det = <input type="text" class="fill-blank" id="q29" placeholder="___"> are three different descriptions of the same underlying collapse of a matrix transformation.</div>
+                <div class="feedback" id="fb-q29"></div>
+            </div>
+
+            <!-- Q28 MC -->
+            <div class="q-card" id="card-q30">
+                <div class="q-number">Question 30 <span class="q-type-badge">Identify the singular matrix</span></div>
+                <div class="q-text">Which of these matrices is singular?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q30" value="a"> \(\begin{bmatrix} 3 & 1 \\ 1 & 2 \end{bmatrix}\)</label>
+                    <label class="mc-opt"><input type="radio" name="q30" value="b"> \(\begin{bmatrix} 2 & 6 \\ 1 & 3 \end{bmatrix}\)</label>
+                    <label class="mc-opt"><input type="radio" name="q30" value="c"> \(\begin{bmatrix} 5 & 2 \\ 1 & 4 \end{bmatrix}\)</label>
+                </div>
+                <div class="feedback" id="fb-q30"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 6: GAUSSIAN ELIMINATION
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-6">
+                <div class="sec-num">6</div>
+                <div>Gaussian Elimination — Solving Systems Step by Step</div>
+            </div>
+
+            <!-- Q29 MC -->
+            <div class="q-card" id="card-q31">
+                <div class="q-number">Question 31 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">What is the correct order of forms when performing Gaussian Elimination, from start to goal?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q31" value="a"> RREF → REF → Augmented Matrix</label>
+                    <label class="mc-opt"><input type="radio" name="q31" value="b"> Augmented Matrix → REF → RREF</label>
+                    <label class="mc-opt"><input type="radio" name="q31" value="c"> REF → Augmented Matrix → RREF</label>
+                </div>
+                <div class="feedback" id="fb-q31"></div>
+            </div>
+
+            <!-- Q30 true/false -->
+            <div class="q-card" id="card-q32">
+                <div class="q-number">Question 32 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: During Gaussian Elimination, you may multiply a row by zero to simplify the matrix.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf32-true"><input type="radio" name="q32" value="true" onchange="styleTF(32,'true')"> True</label>
+                    <label class="tf-btn" id="tf32-false"><input type="radio" name="q32" value="false" onchange="styleTF(32,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q32"></div>
+            </div>
+
+            <!-- Q31 numeric -->
+            <div class="q-card" id="card-q33">
+                <div class="q-number">Question 33 <span class="q-type-badge">Numeric — read the matrix</span></div>
+                <div class="q-text">The augmented matrix below is already in RREF. What is the value of \(y\)?</div>
+                <div class="math-box">\[\left[\begin{array}{cc|c} 1 & 0 & 4 \\ 0 & 1 & 7 \end{array}\right]\]</div>
+                <div>\(y =\) <input type="number" class="num-input" id="q33"></div>
+                <div class="feedback" id="fb-q33"></div>
+            </div>
+
+            <!-- Q32 MC -->
+            <div class="q-card" id="card-q34">
+                <div class="q-number">Question 34 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">The Identity Matrix is the target of Gaussian Elimination on the coefficient side because:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q34" value="a"> It always has a determinant of zero, making the system easy to solve</label>
+                    <label class="mc-opt"><input type="radio" name="q34" value="b"> It is the "number 1 of the matrix world" — when the coefficient side looks like \(I\), the right-hand side directly shows the solution values</label>
+                    <label class="mc-opt"><input type="radio" name="q34" value="c"> It transforms the system into a non-linear one that is easier to interpret</label>
+                </div>
+                <div class="feedback" id="fb-q34"></div>
+            </div>
+
+            <!-- Q33 fill -->
+            <div class="q-card" id="card-q35">
+                <div class="q-number">Question 35 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">In Gaussian Elimination, the first non-zero entry in a row — used to eliminate all other entries in its column — is called the <input type="text" class="fill-blank" id="q35" placeholder="___">.</div>
+                <div class="feedback" id="fb-q35"></div>
+            </div>
+
+            <!-- Q34 MC -->
+            <div class="q-card" id="card-q36">
+                <div class="q-number">Question 36 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">You perform the row operation \(R_2 \leftarrow R_2 - 5R_1\) on an augmented matrix. What happens to the solution of the system?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q36" value="a"> The intersection point shifts — the solution changes</label>
+                    <label class="mc-opt"><input type="radio" name="q36" value="b"> The solution remains exactly the same — row operations change the representation, not the underlying truth</label>
+                    <label class="mc-opt"><input type="radio" name="q36" value="c"> The determinant becomes zero</label>
+                </div>
+                <div class="feedback" id="fb-q36"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════
+             SECTION 7: THE MATRIX INVERSE
+             ════════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-7">
+                <div class="sec-num">7</div>
+                <div>The Matrix Inverse — Undoing a Transformation</div>
+            </div>
+
+            <!-- Q35 MC -->
+            <div class="q-card" id="card-q37">
+                <div class="q-number">Question 37 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">If \(Ax = b\), the formula using the inverse matrix to recover \(x\) is:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q37" value="a"> \(x = Ab\)</label>
+                    <label class="mc-opt"><input type="radio" name="q37" value="b"> \(x = A^{-1}b\)</label>
+                    <label class="mc-opt"><input type="radio" name="q37" value="c"> \(x = b - A\)</label>
+                </div>
+                <div class="feedback" id="fb-q37"></div>
+            </div>
+
+            <!-- Q36 MC -->
+            <div class="q-card" id="card-q38">
+                <div class="q-number">Question 38 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Why is it impossible to invert a singular matrix?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q38" value="a"> Singular matrices are too large for the computer to process in a reasonable time</label>
+                    <label class="mc-opt"><input type="radio" name="q38" value="b"> The transformation permanently destroyed a dimension — like trying to reconstruct a 3D object from its 2D shadow. The lost information cannot be recovered.</label>
+                    <label class="mc-opt"><input type="radio" name="q38" value="c"> The inverse formula only works for matrices with positive determinants</label>
+                </div>
+                <div class="feedback" id="fb-q38"></div>
+            </div>
+
+            <!-- Q37 true/false -->
+            <div class="q-card" id="card-q39">
+                <div class="q-number">Question 39 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: Any square matrix with a non-zero determinant has an inverse.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf39-true"><input type="radio" name="q39" value="true" onchange="styleTF(39,'true')"> True</label>
+                    <label class="tf-btn" id="tf39-false"><input type="radio" name="q39" value="false" onchange="styleTF(39,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q39"></div>
+            </div>
+
+            <!-- Q38 MC -->
+            <div class="q-card" id="card-q40">
+                <div class="q-number">Question 40 <span class="q-type-badge">Scenario</span></div>
+                <div class="q-text">The linear regression weight formula is \(w = (X^TX)^{-1}X^Ty\). A data scientist includes two perfectly correlated features, making \(X^TX\) singular. What happens?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q40" value="a"> The weights grow very large but the formula still produces an answer</label>
+                    <label class="mc-opt"><input type="radio" name="q40" value="b"> The formula breaks down entirely — \((X^TX)^{-1}\) cannot be computed, so no unique weight vector exists</label>
+                    <label class="mc-opt"><input type="radio" name="q40" value="c"> NumPy silently picks one of the infinite valid solutions at random</label>
+                </div>
+                <div class="feedback" id="fb-q40"></div>
+            </div>
+        </div>
+
+
+        <!-- SUBMIT -->
+        <div class="submit-area">
+            <p style="color:#888; font-size:0.9em; margin-bottom:18px;">Answer all 40 questions, then submit to see your results and explanations.</p>
+            <button type="button" class="btn-submit" id="btn-submit">Submit Quiz</button>
+        </div>
+
+    </form>
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel" id="results-panel">
+        <div class="results-top">
+            <div class="score-circle">
+                <div class="score-big" id="res-score">0</div>
+                <div class="score-denom">/ 40</div>
+            </div>
+            <div class="grade-badge" id="res-grade">—</div>
+            <div class="grade-msg" id="res-msg"></div>
+        </div>
+        <div class="results-body">
+            <h3>Score by Section</h3>
+            <div class="section-scores" id="section-scores-grid"></div>
+            <div style="display:flex; gap:12px; margin-top:26px; flex-wrap:wrap;">
+                <button class="btn-retry" onclick="window.location.reload()">Retake Quiz</button>
+                <button class="btn-retry" style="background:#16a085;" onclick="exportQuizResults()">Export Results ↓</button>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- end quiz-body -->
+</div><!-- end quiz-shell -->
+
+
+<script>
+// ── Answer key ────────────────────────────────────────────────────────────────
+// type: 'text' | 'number' | 'radio' | 'tf'
+// For 'text': answer is a word/phrase the input must include (lowercase)
+// For 'number': exact numeric match
+// For 'radio' / 'tf': exact value match
+
+const QUESTIONS = [
+    // Section 1
+    { id:'q1',  type:'text',   answer:'scalar',       section:1 },
+    { id:'q2',  type:'radio',  answer:'b',            section:1 },
+    { id:'q3',  type:'number', answer:3,              section:1 },
+    { id:'q4',  type:'radio',  answer:'c',            section:1 },
+    { id:'q5',  type:'radio',  answer:'b',            section:1 },
+    // Section 2
+    { id:'q6',  type:'text',   answer:'bias',         section:2 },
+    { id:'q7',  type:'number', answer:3300,           section:2 },
+    { id:'q8',  type:'tf',     answer:'false',        section:2 },
+    { id:'q9',  type:'radio',  answer:'b',            section:2 },
+    { id:'q10', type:'text',   answer:'scal',         section:2 },  // "scaling"
+    // Section 3
+    { id:'q11', type:'radio',  answer:'b',            section:3 },
+    { id:'q12', type:'radio',  answer:'b',            section:3 },
+    { id:'q13', type:'text',   answer:'coef',         section:3 },  // "coefficients"
+    { id:'q14', type:'tf',     answer:'false',        section:3 },
+    { id:'q15', type:'radio',  answer:'b',            section:3 },
+    { id:'q16', type:'radio',  answer:'b',            section:3 },
+    { id:'q17', type:'radio',  answer:'c',            section:3 },
+    // Section 4
+    { id:'q18', type:'radio',  answer:'b',            section:4 },
+    { id:'q19', type:'number', answer:3,              section:4 },
+    { id:'q20', type:'radio',  answer:'b',            section:4 },
+    { id:'q21', type:'radio',  answer:'b',            section:4 },
+    { id:'q22', type:'text',   answer:'full',         section:4 },
+    { id:'q23', type:'radio',  answer:'b',            section:4 },
+    { id:'q24', type:'tf',     answer:'false',        section:4 },
+    { id:'q25', type:'radio',  answer:'b',            section:4 },
+    // Section 5
+    { id:'q26', type:'number', answer:10,             section:5 },
+    { id:'q27', type:'radio',  answer:'c',            section:5 },
+    { id:'q28', type:'radio',  answer:'b',            section:5 },
+    { id:'q29', type:'text',   answer:'0',            section:5 },
+    { id:'q30', type:'radio',  answer:'b',            section:5 },
+    // Section 6
+    { id:'q31', type:'radio',  answer:'b',            section:6 },
+    { id:'q32', type:'tf',     answer:'false',        section:6 },
+    { id:'q33', type:'number', answer:7,              section:6 },
+    { id:'q34', type:'radio',  answer:'b',            section:6 },
+    { id:'q35', type:'text',   answer:'pivot',        section:6 },
+    { id:'q36', type:'radio',  answer:'b',            section:6 },
+    // Section 7
+    { id:'q37', type:'radio',  answer:'b',            section:7 },
+    { id:'q38', type:'radio',  answer:'b',            section:7 },
+    { id:'q39', type:'tf',     answer:'true',         section:7 },
+    { id:'q40', type:'radio',  answer:'b',            section:7 },
+];
+
+// ── Explanations ─────────────────────────────────────────────────────────────
+const EXPLAIN = {
+    q1:  'A Scalar is a single number — one value on a 1D number line. It has magnitude but no direction.',
+    q2:  'A vector is an arrow from the origin to a specific coordinate. It encodes a data point with multiple properties at once.',
+    q3:  'The vector [1800, 4, 2] has 3 components — one for each feature (size, bedrooms, bathrooms).',
+    q4:  'A matrix stacks all feature vectors as rows — it is the full dataset. Each row is one observation; each column is one feature.',
+    q5:  'Convention: rows = observations, columns = features. 200 houses × 6 features = a 200 × 6 matrix.',
+    q6:  'The Bias term b is the y-intercept. It shifts the model\'s baseline away from the origin, which is unrealistic for most real data (a house with 0 sqft and 0 rooms is not worth 0).',
+    q7:  'Calculation: (200 × 15) + (−50 × 4) + 500 = 3000 − 200 + 500 = 3300.',
+    q8:  'False. Linear equations only use addition and scaling — no powers or curves. The relationship is always a straight line (2D) or flat plane (3D). Non-linear models are needed for curved relationships.',
+    q9:  'The weights w_i quantify the importance of each feature. Finding the best weights for a given dataset is precisely what machine learning training does.',
+    q10: 'We only use addition and scaling — no x², no exponents. This guarantees the result is always a straight line or flat plane. "Linear" comes directly from this constraint.',
+    q11: 'In ML, the unknowns are the model\'s weights (w₁, w₂, …, b). Each data point is one constraint. Solving the system finds the one weight vector consistent with all observations.',
+    q12: 'Two independent equations fully determine two unknowns — just enough constraints for a unique solution. More equations than unknowns (overdetermined) may have no solution; fewer may have infinite.',
+    q13: 'The vertical bar separates the coefficient matrix (left) from the right-hand side results (right). Every row encodes one equation; every column encodes one variable.',
+    q14: 'False. Infinite solutions means the model is underdetermined — infinitely many weight sets fit equally well. We cannot tell which rule the data follows and cannot make principled predictions.',
+    q16: 'Set y = x + 1 equal to y = −x + 5: x + 1 = −x + 5 → 2x = 4 → x = 2, then y = 2 + 1 = 3. The intersection (2, 3) is the unique point that lies on both lines simultaneously — the unique solution to this system.',
+    q17: 'Graph C shows two equations that are the same line — every point on that line is a solution, giving infinitely many solutions. Graph A (two lines crossing) gives one unique solution. Graph B (two parallel lines) gives no solution because they share the same slope but different intercepts and never meet.',
+    q15: 'No solution means the data is mathematically inconsistent — some observations contradict others. No linear set of weights can satisfy all constraints simultaneously; a linear model cannot exist for this data.',
+    q18: 'Linear dependence means one equation is a linear combination of others — it points in no new geometric direction and adds zero new information. It is the root cause of singularity.',
+    q19: '8 features − Rank 5 = 3 redundant features. Rank counts only the genuinely independent dimensions; the rest are combinations of those.',
+    q20: 'F = 1.8C + 32 — a perfect linear relationship. The two columns are linearly dependent, dropping the matrix\'s rank below full rank, making it singular. Matrix operations on singular matrices crash or produce numerical garbage.',
+    q21: 'Rank 1 means only one independent direction of information survives. In the shadow analogy, the 3D object casts a 1D shadow — a thin line. Two full dimensions of information have been lost.',
+    q22: 'A matrix where rank = number of rows (or columns) is called Full Rank. This is the healthy state: all equations are independent and a unique solution exists.',
+    q23: 'Rank 2 in a 3×3 system means one equation is redundant. The three planes do not all meet at a single point — they either overlap along a line (infinite solutions) or are inconsistent (no solution).',
+    q24: 'False. Dependence can cause either infinite solutions (equations overlap — same direction, same values) or no solution (equations are parallel — same direction, contradictory values). Only the contradictory case has no solution.',
+    q25: 'PCA finds the directions of maximum variance in the data, which correspond exactly to its independent (non-redundant) dimensions — its true rank. It then drops the redundant low-variance dimensions.',
+    q26: 'det([[4,2],[1,3]]) = (4 × 3) − (2 × 1) = 12 − 2 = 10. Main diagonal product minus off-diagonal product.',
+    q27: 'The determinant measures how much the transformation scales area (2D) or volume (3D). Area × 1 → area × 5 means det = 5.',
+    q28: 'A negative determinant means the transformation includes a flip — like a mirror reflection — in addition to the scaling. The magnitude (4) is the area scaling factor; the sign tells you orientation flipped.',
+    q29: 'det = 0 is numerically equivalent to rank deficiency and singularity. All three describe the same event: the transformation collapsed space into a lower dimension, destroying information permanently.',
+    q30: 'det([[2,6],[1,3]]) = (2 × 3) − (6 × 1) = 6 − 6 = 0. The second row is exactly 3 × the first row — linearly dependent — making it singular. The other two both have non-zero determinants.',
+    q31: 'You start with the Augmented Matrix, reduce it to Row Echelon Form (REF — staircase of zeros below pivots), then continue to RREF (pivots = 1, zeros above and below). Solution is then directly readable.',
+    q32: 'False. The Scale operation requires multiplying by a non-zero number. Multiplying by zero destroys the equation entirely — it is not a legal elementary row operation.',
+    q33: 'In RREF, the coefficient side is the Identity Matrix. The right-hand side directly gives the solution: x = 4 (row 1), y = 7 (row 2). No back-substitution needed.',
+    q34: 'When the coefficient side becomes the Identity Matrix (1s on the diagonal, 0s elsewhere), the augmented matrix reads [I | solution]. The right-hand side directly shows each variable\'s value.',
+    q35: 'The Pivot is the first non-zero element in a row. It anchors each step of the algorithm — we use it to zero out all other entries in its column, marching toward the Identity pattern.',
+    q36: 'Elementary row operations (Swap, Scale, Combine) change the representation of the equations but never change the underlying intersection point. The solution is invariant — this is why Gaussian Elimination is valid.',
+    q37: 'If Ax = b, multiply both sides on the left by A⁻¹: A⁻¹Ax = A⁻¹b → Ix = A⁻¹b → x = A⁻¹b. The inverse undoes the transformation.',
+    q38: 'A singular matrix has collapsed space — e.g., 3D → 2D. Once a dimension is gone, its information is gone forever. You cannot reconstruct the original 3D input from a flat 2D output, just as you cannot reconstruct a 3D object from its 2D shadow.',
+    q39: 'True. The existence of an inverse is equivalent to det ≠ 0, which is equivalent to full rank, which is equivalent to non-singularity. All four conditions are the same underlying fact.',
+    q40: 'Correlated features → linearly dependent columns → X^TX is singular (det = 0) → cannot compute (X^TX)⁻¹ → formula breaks down. This is why regularization (e.g., Ridge regression) is used to stabilize it.',
+};
+
+// ── Section metadata ──────────────────────────────────────────────────────────
+const SECTION_META = {
+    1: { label:'Data as Geometric Objects',          color:'#2980b9', total:5 },
+    2: { label:'The Linear Equation',                color:'#8e44ad', total:5 },
+    3: { label:'Systems of Equations',               color:'#16a085', total:7 },
+    4: { label:'Independence, Rank & Singularity',   color:'#c0392b', total:8 },
+    5: { label:'The Determinant',                    color:'#d35400', total:5 },
+    6: { label:'Gaussian Elimination',               color:'#27ae60', total:6 },
+    7: { label:'The Matrix Inverse',                 color:'#2c3e50', total:4 },
+};
+
+// ── Progress tracking ─────────────────────────────────────────────────────────
+const answered = new Set();
+
+function markAnswered(qid) {
+    answered.add(qid);
+    const pct = Math.round((answered.size / QUESTIONS.length) * 100);
+    document.getElementById('progress-label').textContent = answered.size + ' / ' + QUESTIONS.length + ' answered';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+// Attach listeners to all inputs
+QUESTIONS.forEach(q => {
+    if (q.type === 'text') {
+        document.getElementById(q.id).addEventListener('input', () => markAnswered(q.id));
+    } else if (q.type === 'number') {
+        document.getElementById(q.id).addEventListener('input', () => markAnswered(q.id));
+    } else if (q.type === 'radio') {
+        document.querySelectorAll(`input[name="${q.id}"]`).forEach(r => {
+            r.addEventListener('change', () => markAnswered(q.id));
+        });
+    } else if (q.type === 'tf') {
+        document.querySelectorAll(`input[name="${q.id}"]`).forEach(r => {
+            r.addEventListener('change', () => markAnswered(q.id));
+        });
+    }
+});
+
+// ── True/False button styling ──────────────────────────────────────────────────
+function styleTF(n, val) {
+    document.getElementById('tf' + n + '-true').className  = 'tf-btn' + (val === 'true'  ? ' selected-true'  : '');
+    document.getElementById('tf' + n + '-false').className = 'tf-btn' + (val === 'false' ? ' selected-false' : '');
+}
+
+// ── Menu navigation ───────────────────────────────────────────────────────────
+function confirmExit(e) {
+    e.preventDefault();
+    const submitted = document.getElementById('btn-submit').disabled;
+    if (submitted || confirm('Leave the quiz? Your current answers will be lost.')) {
+        window.location.href = 'index.html';
+    }
+}
+
+// ── Results persistence ───────────────────────────────────────────────────────
+function exportQuizResults() {
+    const data = localStorage.getItem('mathCourse_quizResults') || '[]';
+    const blob = new Blob([data], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'quiz_results.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ── Grading ───────────────────────────────────────────────────────────────────
+document.getElementById('btn-submit').addEventListener('click', function () {
+
+    let totalScore = 0;
+    const sectionScores = {1:0,2:0,3:0,4:0,5:0,6:0,7:0};
+    const questionResults = [];
+
+    QUESTIONS.forEach(q => {
+        let correct = false;
+        let userVal = '';
+
+        if (q.type === 'text') {
+            userVal = (document.getElementById(q.id).value || '').toLowerCase().trim();
+            correct = userVal.includes(q.answer.toLowerCase());
+        } else if (q.type === 'number') {
+            userVal = document.getElementById(q.id).value;
+            correct = parseFloat(userVal) === q.answer;
+        } else if (q.type === 'radio') {
+            const sel = document.querySelector(`input[name="${q.id}"]:checked`);
+            if (sel) { userVal = sel.value; correct = userVal === q.answer; }
+        } else if (q.type === 'tf') {
+            const sel = document.querySelector(`input[name="${q.id}"]:checked`);
+            if (sel) { userVal = sel.value; correct = userVal === q.answer; }
+        }
+
+        questionResults.push({ id: q.id, section: q.section, correct, userAnswer: userVal });
+
+        const card = document.getElementById('card-' + q.id);
+        const fb   = document.getElementById('fb-' + q.id);
+        fb.style.display = 'block';
+
+        if (correct) {
+            totalScore++;
+            sectionScores[q.section]++;
+            card.classList.add('is-correct');
+            fb.className = 'feedback correct';
+            fb.textContent = EXPLAIN[q.id];
+        } else {
+            card.classList.add('is-incorrect');
+            fb.className = 'feedback incorrect';
+            const correctLabel = q.type === 'text' ? '"' + q.answer + '"' :
+                                 q.type === 'number' ? q.answer :
+                                 q.type === 'tf' ? (q.answer === 'true' ? 'True' : 'False') : 'Option ' + q.answer.toUpperCase();
+            fb.textContent = 'Correct answer: ' + correctLabel + '. ' + EXPLAIN[q.id];
+        }
+    });
+
+    // Show results
+    const pct = Math.round((totalScore / QUESTIONS.length) * 100);
+    document.getElementById('res-score').textContent = totalScore;
+
+    let grade, msg;
+    if (pct >= 93)      { grade = 'A+'; msg = 'Outstanding — you have genuinely mastered Week 1.'; }
+    else if (pct >= 83) { grade = 'A';  msg = 'Excellent. Strong command of the material.'; }
+    else if (pct >= 73) { grade = 'B';  msg = 'Good grasp of the fundamentals. Review incorrect answers.'; }
+    else if (pct >= 60) { grade = 'C';  msg = 'Passing, but some key concepts need revisiting.'; }
+    else                { grade = 'F';  msg = 'Go back through the Mastery Guide and retake this quiz.'; }
+
+    document.getElementById('res-grade').textContent = grade + ' · ' + pct + '%';
+    document.getElementById('res-msg').textContent   = msg;
+
+    // Section breakdown
+    const grid = document.getElementById('section-scores-grid');
+    grid.innerHTML = '';
+    Object.entries(SECTION_META).forEach(([secNum, meta]) => {
+        const sec = parseInt(secNum);
+        const row = document.createElement('div');
+        row.className = 'sec-score-row';
+        row.innerHTML = `
+            <div class="sec-score-dot" style="background:${meta.color}"></div>
+            <div class="sec-score-label">${meta.label}</div>
+            <div class="sec-score-val">${sectionScores[sec]} / ${meta.total}</div>`;
+        grid.appendChild(row);
+    });
+
+    document.getElementById('results-panel').style.display = 'block';
+    this.disabled = true;
+    document.getElementById('results-panel').scrollIntoView({ behavior:'smooth' });
+
+    // Save to localStorage
+    const resultData = {
+        date: new Date().toISOString(),
+        quiz: 'Week 1 Linear Algebra',
+        score: totalScore,
+        total: QUESTIONS.length,
+        percentage: pct,
+        grade,
+        sectionScores: { ...sectionScores },
+        questions: questionResults
+    };
+    const stored = JSON.parse(localStorage.getItem('mathCourse_quizResults') || '[]');
+    stored.push(resultData);
+    localStorage.setItem('mathCourse_quizResults', JSON.stringify(stored));
+});
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Matrices as Transformations</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s1',
+    title: 'Matrices as Transformations',
+    subtitle: 'Column space · Null space · Rank–Nullity',
+    color: '#1abc9c',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'When you multiply a matrix A by a vector x, what is happening geometrically?',
+            options: [
+                'Scaling x by a fixed number',
+                'A is applying a linear transformation — moving every point in space simultaneously',
+                'Computing the dot product of A and x',
+                'Rotating x by 90 degrees'
+            ],
+            answer: 1,
+            explanation: 'Every matrix multiplication is a geometric transformation of space — stretching, rotating, shearing, or reflecting. The matrix encodes where each basis direction lands after the transformation.'
+        },
+        {
+            type: 'type',
+            prompt: 'The set of all possible output vectors of a transformation A — the space where vectors can land — is called the ___ space of A.',
+            answer: ['column', 'col'],
+            explanation: 'Column space Col(A) is the set of all vectors Ax can produce. Its dimension equals the rank of A. If b is not in the column space, Ax = b has no solution.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The null space of a matrix A is…',
+            options: [
+                'The set of all eigenvalues of A',
+                'All vectors that A maps to the zero vector (Ax = 0)',
+                'The set of all output vectors of A',
+                'The diagonal entries of A'
+            ],
+            answer: 1,
+            explanation: 'Null(A) = {x : Ax = 0}. These vectors are "swallowed" by the transformation — they get squashed to zero. A non-trivial null space (anything other than just x=0) is the signature of a singular matrix.'
+        },
+        {
+            type: 'fill',
+            before: 'Rank–Nullity Theorem: rank(A) + nullity(A) = ',
+            after: ' (number of columns)',
+            answer: 'n',
+            explanation: 'The rank (independent dimensions in the output) plus the nullity (dimensions collapsed to zero) always equals the total number of input dimensions. Information is either preserved or lost — there\'s no third option.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Which of the four fundamental 2D matrix transformations rotates the space without changing shape or size?',
+            options: ['Scaling', 'Rotation', 'Shear', 'Reflection'],
+            answer: 1,
+            explanation: 'Rotation preserves lengths and angles — it\'s an isometry. Scaling changes size. Shear tilts along an axis. Reflection flips orientation (det becomes negative).'
+        },
+        {
+            type: 'tf',
+            prompt: 'A matrix with a non-trivial null space (containing vectors other than x=0) is singular.',
+            answer: true,
+            explanation: 'If Ax = 0 for some x ≠ 0, then A collapses that direction to zero — it destroys information. That means det(A) = 0, rank < n, and the matrix is singular with no inverse.'
+        },
+        {
+            type: 'type',
+            prompt: 'In a neural network, each layer applies a matrix multiplication followed by a non-linear activation. The matrix multiplication part is a linear ___.',
+            answer: ['transformation', 'transform'],
+            explanation: 'Each neural network layer is a geometric transformation (matrix multiply) followed by a non-linear warp (activation). Stacking these creates the complex, curved decision boundaries that make deep learning powerful.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

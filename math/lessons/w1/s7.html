@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Matrix Inverse</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w1s7',
+    title: 'Matrix Inverse',
+    subtitle: 'A⁻¹ · When it exists · Why it matters',
+    color: '#2c3e50',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'If Ax = b, the solution for x is…',
+            options: ['x = Ab', 'x = A⁻¹b', 'x = b / A', 'x = b − A'],
+            answer: 1,
+            explanation: 'Multiply both sides on the left by A⁻¹: A⁻¹Ax = A⁻¹b → Ix = A⁻¹b → x = A⁻¹b. The inverse undoes whatever A did to x.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Under what condition does the matrix inverse A⁻¹ exist?',
+            options: [
+                'When the matrix is square',
+                'When det(A) ≠ 0',
+                'When all entries are positive',
+                'When the matrix is symmetric'
+            ],
+            answer: 1,
+            explanation: 'The inverse exists if and only if det(A) ≠ 0. This is equivalent to: non-singular, full rank, no linear dependence. Being square is necessary but not sufficient — a square matrix can still be singular.'
+        },
+        {
+            type: 'calc',
+            prompt: 'A = [[2, 0], [0, 3]]. Calculate det(A).',
+            answer: 6,
+            hint: 'det([[a,b],[c,d]]) = ad − bc',
+            explanation: 'det = (2)(3) − (0)(0) = 6. Since det ≠ 0, A is invertible. For diagonal matrices, the determinant is just the product of diagonal entries, confirming invertibility quickly.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Every square matrix has an inverse.',
+            answer: false,
+            explanation: 'A square matrix with det = 0 (singular) has no inverse. The transformation has destroyed a dimension — once that information is gone, you cannot reconstruct the original input from the output.'
+        },
+        {
+            type: 'visual',
+            visual: '<svg width="240" height="155" viewBox="0 0 240 155" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border-radius:10px;border:1.5px solid #e1e8ed"><text x="120" y="18" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">Gauss-Jordan: [A | I] → [I | A⁻¹]</text><text x="20" y="38" font-size="10" fill="#7f8c8d" font-family="sans-serif">Start [A | I]:</text><text x="20" y="58" font-size="12" fill="#2c3e50" font-family="monospace">[ 2  0 | 1  0 ]</text><text x="20" y="76" font-size="12" fill="#2c3e50" font-family="monospace">[ 0  4 | 0  1 ]</text><line x1="20" y1="90" x2="220" y2="90" stroke="#e1e8ed" stroke-width="1"/><text x="20" y="108" font-size="10" fill="#27ae60" font-family="sans-serif">Result [I | A⁻¹]:</text><text x="20" y="126" font-size="12" fill="#27ae60" font-family="monospace">[ 1  0 | ½  0 ]</text><text x="20" y="144" font-size="12" fill="#27ae60" font-family="monospace">[ 0  1 | 0  ¼ ]</text></svg>',
+            type: 'mc',
+            prompt: 'The Gauss-Jordan method computes A⁻¹ by augmenting A with the identity matrix [A | I] and reducing to [I | A⁻¹]. In the result above, what is A⁻¹[0][0]?',
+            options: ['2', '1', '½', '¼'],
+            answer: 2,
+            explanation: 'The top-left of A⁻¹ is ½. For A = diag(2, 4), A⁻¹ = diag(1/2, 1/4) — each diagonal entry inverts. Gauss-Jordan systematically row-reduces both sides simultaneously until A becomes I.'
+        },
+        {
+            type: 'calc',
+            prompt: 'For A = [[1, 0], [0, 2]], the entry A⁻¹[1][1] = ?',
+            answer: 0.5,
+            hint: 'For diagonal A = diag(a,b), A⁻¹ = diag(1/a, 1/b)',
+            explanation: 'A⁻¹ = [[1,0],[0,0.5]]. The [1][1] entry (second row, second column) = 1/2 = 0.5. Diagonal matrices invert entry-by-entry — the easiest case of matrix inversion.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Why is np.linalg.solve(A, b) preferred over np.linalg.inv(A) @ b in practice?',
+            options: [
+                'solve() is more numerically stable and faster — it uses Gaussian Elimination internally',
+                'inv() is deprecated in modern NumPy',
+                'solve() can handle singular matrices; inv() cannot',
+                'There is no meaningful difference'
+            ],
+            answer: 0,
+            explanation: 'Computing a full inverse accumulates floating-point errors and is computationally expensive. solve() uses a stable variant of Gaussian Elimination — it finds x directly without ever forming A⁻¹.'
+        },
+        {
+            type: 'fill',
+            before: 'A · A⁻¹ = ',
+            after: '  (the identity matrix)',
+            answer: ['I', 'I₃', 'I_n'],
+            explanation: 'A · A⁻¹ = I by definition. Multiplying a matrix by its inverse gives the identity — the transformation followed by its reverse leaves everything unchanged. This is the matrix equivalent of a × (1/a) = 1.'
+        },
+        {
+            type: 'type',
+            prompt: 'A transformation that permanently loses a dimension (like squashing 3D to a flat plane) cannot be ___ — the lost information is gone forever.',
+            answer: ['reversed', 'inverted', 'undone'],
+            explanation: 'This is why singular matrices have no inverse. It\'s like trying to reconstruct a 3D object from its 2D shadow — the depth information is gone and the inversion is impossible.'
+        },
+        {
+            type: 'tf',
+            prompt: '(AB)⁻¹ = B⁻¹A⁻¹  (note the reversed order).',
+            answer: true,
+            explanation: 'Like putting on shoes (A) then socks (B): to undo, take off socks first (B⁻¹), then shoes (A⁻¹). Order reverses because matrix multiplication is not commutative. Verify: (AB)(B⁻¹A⁻¹) = A(BB⁻¹)A⁻¹ = AIA⁻¹ = I.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Singularity, rank deficiency, det = 0, and having no inverse all describe the same underlying mathematical event.',
+            answer: true,
+            explanation: 'Yes — these are four perspectives on one event: the matrix transformation collapsed space into a lower dimension. Once you see that, these four facts stop feeling separate and become one unified idea.'
+        },
+        {
+            type: 'mc',
+            prompt: 'For a 2×2 matrix A = [[a,b],[c,d]], the inverse formula is A⁻¹ = (1/det(A)) × [[d,−b],[−c,a]]. What happens if you use this formula when det(A) = 0?',
+            options: [
+                'You get a valid inverse with very large entries',
+                'Division by zero — the formula breaks down, confirming no inverse exists',
+                'You get the zero matrix',
+                'You get the transpose of A'
+            ],
+            answer: 1,
+            explanation: 'Division by det(A) = 0 is undefined — the formula collapses. This algebraically confirms what the geometric argument says: a singular matrix cannot be inverted. The formula is only valid when det ≠ 0.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

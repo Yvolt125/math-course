@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Error Practice</title>
+</head>
+<body>
+<script>
+(function () {
+    const pool = JSON.parse(localStorage.getItem('srs_pool') || '[]');
+
+    // All questions ever answered wrong, sorted worst-first
+    const errors = pool
+        .filter(q => (q.timesWrong || 0) > 0)
+        .sort((a, b) => (b.timesWrong || 0) - (a.timesWrong || 0));
+
+    window.LESSON_DATA = {
+        id:        'errors',
+        title:     'Error Practice',
+        subtitle:  errors.length + ' questions to fix',
+        color:     '#e67e22',
+        isReview:  true,
+        questions: errors,
+        emptyIcon:  '✨',
+        emptyTitle: 'No errors yet!',
+        emptyMsg:   'You haven\'t answered any question wrong yet (or no lessons completed). Keep going!'
+    };
+})();
+</script>
+<script src="../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js');</script>
+</body>
+</html>

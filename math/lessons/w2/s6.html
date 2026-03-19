@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: The Covariance Matrix</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s6',
+    title: 'The Covariance Matrix',
+    subtitle: 'Variance · Covariance · Geometric fingerprint',
+    color: '#16a085',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'Variance measures…',
+            options: [
+                'The mean of a dataset',
+                'The average squared distance from the mean — how spread out values are',
+                'The correlation between two features',
+                'The total number of data points'
+            ],
+            answer: 1,
+            explanation: 'Var(x) = (1/n)Σ(xᵢ − x̄)². It measures spread: a small variance means values cluster tightly around the mean; a large variance means they are spread widely.'
+        },
+        {
+            type: 'type',
+            prompt: 'When two features tend to increase together (both above or both below their means), their ___ is positive.',
+            answer: 'covariance',
+            explanation: 'Cov(x,y) = (1/n)Σ(xᵢ−x̄)(yᵢ−ȳ). Positive: features move together. Zero: features are uncorrelated (orthogonal). Negative: one goes up when the other goes down.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The diagonal entries of the covariance matrix contain…',
+            options: [
+                'Covariances between pairs of features',
+                'The eigenvalues of the data',
+                'The variances of each individual feature',
+                'The means of each feature'
+            ],
+            answer: 2,
+            explanation: 'Diagonal entries = Var(xᵢ) — how much each feature varies on its own. Off-diagonal entries = Cov(xᵢ, xⱼ) — how much pairs of features co-vary. The matrix is always symmetric because Cov(x,y) = Cov(y,x).'
+        },
+        {
+            type: 'fill',
+            before: 'For centered data X, the covariance matrix is: Σ = (1/n) Xᵀ',
+            after: '',
+            answer: 'X',
+            explanation: 'Σ = (1/n)XᵀX for centered data (mean subtracted). This is a symmetric, positive semi-definite matrix. Its eigenvectors point along the principal axes of the data ellipsoid.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Two features with covariance = 0 are guaranteed to be statistically independent.',
+            answer: false,
+            explanation: 'Zero covariance (uncorrelated) does NOT imply independence. Independence is a stronger condition. Two features can have Cov = 0 but still have a non-linear relationship. Covariance only captures linear relationships.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Highly correlated features in a regression model cause X^TX to be nearly singular. This is called…',
+            options: ['Overfitting', 'Underfitting', 'Multicollinearity', 'Regularisation'],
+            answer: 2,
+            explanation: 'Multicollinearity: when features are highly linearly correlated, X^TX approaches singularity (det → 0), making (X^TX)⁻¹ numerically unstable. Small changes in data cause huge swings in estimated weights.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The eigenvectors of the covariance matrix point along…',
+            options: [
+                'The mean of the data',
+                'The principal axes of the data ellipsoid — the directions of maximum and minimum variance',
+                'The null space of the data',
+                'The diagonal of the matrix'
+            ],
+            answer: 1,
+            explanation: 'The covariance matrix\'s eigenvectors define the natural coordinate system of the data. The eigenvector with the largest eigenvalue points in the direction of maximum variance (first principal component). This is exactly what PCA exploits.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

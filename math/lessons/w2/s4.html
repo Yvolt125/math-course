@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Eigenvalues &amp; Eigenvectors</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s4',
+    title: 'Eigenvalues & Eigenvectors',
+    subtitle: 'Invariant directions · Characteristic equation',
+    color: '#9b59b6',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'An eigenvector of matrix A is a vector that…',
+            options: [
+                'Gets rotated by exactly 90° when multiplied by A',
+                'Only gets scaled (not rotated) when multiplied by A',
+                'Is always equal to the zero vector',
+                'Satisfies Av = 0'
+            ],
+            answer: 1,
+            explanation: 'Av = λv — the matrix only stretches or flips the eigenvector, never changes its direction. These are the "invariant axes" of the transformation — the directions that survive the transformation unchanged.'
+        },
+        {
+            type: 'fill',
+            before: 'The defining eigenvector equation is: Av = ',
+            after: 'v, where λ is the eigenvalue.',
+            answer: 'λ',
+            explanation: 'Av = λv says: applying A to v gives back v scaled by λ. If λ = 3, the eigenvector triples in length. If λ = −1, it flips direction. If λ = 0, v is in the null space — the matrix is singular.'
+        },
+        {
+            type: 'mc',
+            prompt: 'To find eigenvalues, you solve the characteristic equation…',
+            options: [
+                'det(A) = 0',
+                'det(A − λI) = 0',
+                'Av = 0',
+                'A + λI = 0'
+            ],
+            answer: 1,
+            explanation: 'Rearranging Av = λv gives (A − λI)v = 0. For a non-trivial solution (v ≠ 0), the matrix (A − λI) must be singular: det(A − λI) = 0. Solving this polynomial gives the eigenvalues.'
+        },
+        {
+            type: 'tf',
+            prompt: 'If a matrix has eigenvalue λ = 0, the matrix is singular.',
+            answer: true,
+            explanation: 'λ = 0 means Av = 0 for some v ≠ 0 — the matrix sends v to zero. This is exactly the definition of a singular matrix (non-trivial null space). Also: det(A) = product of all eigenvalues, so one zero eigenvalue makes det = 0.'
+        },
+        {
+            type: 'mc',
+            prompt: 'For a matrix A with eigenvalues λ₁ = 2 and λ₂ = 3, what is det(A)?',
+            options: ['5', '6', '1', '2.5'],
+            answer: 1,
+            explanation: 'det(A) = product of all eigenvalues = λ₁ × λ₂ = 2 × 3 = 6. Also, trace(A) = sum of eigenvalues = λ₁ + λ₂ = 5. These relationships connect the determinant/trace to the spectrum of the matrix.'
+        },
+        {
+            type: 'type',
+            prompt: 'Eigenvectors corresponding to distinct eigenvalues are always linearly ___.',
+            answer: 'independent',
+            explanation: 'Each eigenvalue has its own unique direction. If two eigenvectors had the same eigenvalue, they could be dependent — but distinct eigenvalues guarantee distinct, independent directions.'
+        },
+        {
+            type: 'mc',
+            prompt: 'An eigenvalue λ > 1 means the transformation…',
+            options: [
+                'Compresses the eigenvector toward zero',
+                'Flips the eigenvector\'s direction',
+                'Stretches the eigenvector — the output is longer than the input',
+                'Leaves the eigenvector unchanged'
+            ],
+            answer: 2,
+            explanation: 'λ scales the eigenvector: |λ| > 1 = stretch, 0 < |λ| < 1 = compress, λ < 0 = flip, λ = 1 = unchanged. The eigenvector direction is always preserved — only the magnitude (and possibly sign) changes.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

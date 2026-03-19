@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <title>Progress & Error Log — Math for ML</title>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #2980b9;
+            --success:   #27ae60;
+            --danger:    #e74c3c;
+            --warning:   #f39c12;
+            --muted:     #7f8c8d;
+            --bg:        #f0f2f5;
+            --card:      #ffffff;
+            --border:    #e1e8ed;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--primary); }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 20px 16px;
+            text-align: center;
+            position: relative;
+        }
+        header h1 { font-size: 1.1em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+        header p  { font-size: 0.78em; opacity: 0.6; }
+        .back-link {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,0.75); font-size: 0.82em; font-weight: 700;
+            text-decoration: none; letter-spacing: 0.5px; white-space: nowrap;
+        }
+
+        main { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Panel ── */
+        .panel { background: var(--card); border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); overflow: hidden; }
+        .panel-header {
+            background: var(--primary); color: white;
+            padding: 13px 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .panel-header h2 { font-size: 0.93em; font-weight: 700; letter-spacing: 0.5px; }
+        .panel-header .sub { font-size: 0.78em; opacity: 0.6; margin-left: auto; }
+        .panel-body { padding: 20px; }
+
+        /* ── Empty states ── */
+        .empty { color: var(--muted); font-size: 0.88em; text-align: center; padding: 24px 0; }
+        .empty.ok { color: var(--success); }
+
+        /* ── Score chart (quiz bars) ── */
+        .score-chart {
+            display: flex; align-items: flex-end; gap: 10px;
+            overflow-x: auto; padding-bottom: 4px; margin-bottom: 22px;
+        }
+        .chart-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+        .chart-grade { font-size: 0.72em; font-weight: 800; }
+        .chart-bar-bg { width: 38px; height: 120px; display: flex; align-items: flex-end; }
+        .chart-bar-fill { width: 100%; border-radius: 4px 4px 0 0; min-height: 6px; }
+        .chart-pct  { font-size: 0.7em; font-weight: 700; }
+        .chart-date { font-size: 0.67em; color: var(--muted); white-space: nowrap; }
+
+        /* ── Stacked bar chart (flashcards) ── */
+        .fc-chart {
+            display: flex; align-items: flex-end; gap: 10px;
+            overflow-x: auto; padding-bottom: 4px; margin-bottom: 22px;
+        }
+        .fc-bar-bg   { width: 38px; height: 100px; display: flex; flex-direction: column; justify-content: flex-end; }
+        .fc-bar-stack { display: flex; flex-direction: column; width: 100%; }
+        .fc-bar-wrong { background: var(--danger);  }
+        .fc-bar-right { background: var(--success); border-radius: 0 0 0 0; }
+        /* wrong on top, right on bottom; the stack container is pushed to bottom of bg */
+        .fc-bar-right:last-child { border-radius: 0; }
+        .fc-bar-wrong:first-child { border-radius: 4px 4px 0 0; }
+
+        /* legend */
+        .chart-legend { display: flex; gap: 14px; font-size: 0.75em; color: var(--muted); margin-bottom: 14px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+        /* ── Attempt table ── */
+        .attempt-table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+        .attempt-table th {
+            text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border);
+            color: var(--muted); font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .attempt-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .attempt-table tr:last-child td { border-bottom: none; }
+
+        .grade-pill { display: inline-block; padding: 2px 9px; border-radius: 10px; color: white; font-size: 0.82em; font-weight: 700; }
+        .sec-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; flex-shrink: 0; }
+
+        /* ── Section breakdown (quiz) ── */
+        .sec-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .sec-row { display: flex; align-items: center; gap: 10px; }
+        .sec-label-sm { font-size: 0.75em; color: var(--muted); width: 170px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sec-bar-bg { flex: 1; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden; }
+        .sec-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+        .sec-val-sm { font-size: 0.75em; font-weight: 700; min-width: 38px; text-align: right; }
+
+        /* ── Error log ── */
+        .error-list { display: flex; flex-direction: column; gap: 9px; }
+        .error-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; background: #fafcff;
+            border-radius: 8px; border: 1px solid var(--border);
+        }
+        .error-tag {
+            min-width: 40px; height: 40px; border: 2px solid; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.76em; font-weight: 800; flex-shrink: 0; text-align: center; line-height: 1.2;
+        }
+        .error-info { flex: 1; min-width: 0; }
+        .error-section  { font-size: 0.73em; font-weight: 700; margin-bottom: 2px; }
+        .error-topic    { font-size: 0.82em; color: var(--primary); margin-bottom: 5px; font-weight: 600; }
+        .error-bar-wrap { height: 5px; background: #e1e8ed; border-radius: 4px; overflow: hidden; }
+        .error-bar-fill { height: 100%; border-radius: 4px; }
+        .error-count { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; min-width: 46px; }
+        .wrong-count { color: var(--danger);  font-size: 0.85em; font-weight: 800; }
+        .right-count { color: var(--success); font-size: 0.82em; font-weight: 700; }
+        .misc-count  { color: var(--muted);   font-size: 0.78em; }
+
+        /* ── Clear button ── */
+        .clear-area { text-align: center; margin-top: 4px; }
+        .btn-clear {
+            background: none; border: 1.5px solid var(--danger); color: var(--danger);
+            padding: 9px 22px; border-radius: 8px; font-size: 0.82em; font-weight: 700;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-clear:hover { background: #fdecea; }
+
+        @media (max-width: 480px) {
+            .sec-label-sm { width: 120px; }
+            .attempt-table { font-size: 0.75em; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">← Menu</a>
+    <h1>Progress &amp; Error Log</h1>
+    <p>Quiz scores and flashcard review history</p>
+</header>
+
+<main>
+
+    <!-- ── Quiz Score History ─────────────────────────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>📊</span>
+            <h2>Quiz Score History</h2>
+        </div>
+        <div class="panel-body" id="quiz-progression"></div>
+    </div>
+
+    <!-- ── Quiz Error Log ────────────────────────────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>❌</span>
+            <h2>Quiz Error Log</h2>
+            <span class="sub">Questions missed most often</span>
+        </div>
+        <div class="panel-body" id="quiz-errors"></div>
+    </div>
+
+    <!-- ── Flashcard Sessions ────────────────────────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>📈</span>
+            <h2>Flashcard Sessions</h2>
+        </div>
+        <div class="panel-body" id="fc-progression"></div>
+    </div>
+
+    <!-- ── Flashcard Error Log ───────────────────────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>🃏</span>
+            <h2>Flashcard Error Log</h2>
+            <span class="sub">Cards gotten wrong most often</span>
+        </div>
+        <div class="panel-body" id="fc-errors"></div>
+    </div>
+
+    <div class="clear-area">
+        <button class="btn-clear" onclick="clearAllData()">Clear All Stored Data</button>
+    </div>
+
+</main>
+
+<script>
+const quizData = JSON.parse(localStorage.getItem('mathCourse_quizResults') || '[]');
+const fcData   = JSON.parse(localStorage.getItem('mathCourse_flashcardResults') || '[]');
+
+const SECTION_NAMES = {
+    1:'Data as Geometric Objects',
+    2:'The Linear Equation',
+    3:'Systems of Equations',
+    4:'Independence, Rank & Singularity',
+    5:'The Determinant',
+    6:'Gaussian Elimination',
+    7:'The Matrix Inverse',
+    8:'Python with NumPy'
+};
+const SEC_TOTALS = {1:5, 2:5, 3:7, 4:8, 5:5, 6:6, 7:4, 8:2};
+const SEC_COLOR  = {
+    1:'#2980b9', 2:'#8e44ad', 3:'#16a085', 4:'#c0392b',
+    5:'#d35400', 6:'#27ae60', 7:'#2c3e50', 8:'#16a085',
+    connect:'#e67e22'
+};
+const FC_SEC_LABELS = {
+    1:'§1 · Data & Geometry',    2:'§2 · Linear Equations',
+    3:'§3 · Systems',            4:'§4 · Independence & Rank',
+    5:'§5 · Determinant',        6:'§6 · Gaussian Elim.',
+    7:'§7 · Matrix Inverse',     8:'§8 · Python / NumPy',
+    connect:'★ Connections'
+};
+
+function gradeColor(pct) {
+    if (pct >= 93) return '#27ae60';
+    if (pct >= 83) return '#2980b9';
+    if (pct >= 73) return '#f39c12';
+    if (pct >= 60) return '#e67e22';
+    return '#e74c3c';
+}
+function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+}
+function fmtShort(iso) {
+    return new Date(iso).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUIZ SCORE HISTORY
+// ─────────────────────────────────────────────────────────────────────────────
+function renderQuizProgression() {
+    const el = document.getElementById('quiz-progression');
+    if (!quizData.length) {
+        el.innerHTML = '<p class="empty">No quiz attempts recorded yet.</p>';
+        return;
+    }
+
+    // Bar chart (last 12 attempts)
+    const recent = quizData.slice(-12);
+    let html = '<div class="score-chart">';
+    recent.forEach(a => {
+        const c  = gradeColor(a.percentage);
+        const bH = Math.max(6, Math.round((a.percentage / 100) * 110));
+        html += `<div class="chart-col">
+            <div class="chart-grade" style="color:${c}">${a.grade}</div>
+            <div class="chart-bar-bg">
+                <div class="chart-bar-fill" style="height:${bH}px;background:${c}" title="${a.score}/${a.total} · ${a.percentage}%"></div>
+            </div>
+            <div class="chart-pct" style="color:${c}">${a.percentage}%</div>
+            <div class="chart-date">${fmtShort(a.date)}</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // Cumulative section performance across all attempts
+    const secTotals = {};
+    const secRight  = {};
+    for (let s = 1; s <= 8; s++) { secTotals[s] = 0; secRight[s] = 0; }
+    quizData.forEach(a => {
+        Object.entries(a.sectionScores).forEach(([s, sc]) => {
+            const si = +s;
+            secRight[si]  += sc;
+            secTotals[si] += SEC_TOTALS[si];
+        });
+    });
+
+    html += '<h3 style="font-size:0.82em;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Average by Section (all attempts)</h3>';
+    html += '<div class="sec-breakdown">';
+    for (let s = 1; s <= 8; s++) {
+        if (!secTotals[s]) continue;
+        const pct = Math.round((secRight[s] / secTotals[s]) * 100);
+        const c   = gradeColor(pct);
+        html += `<div class="sec-row">
+            <div class="sec-label-sm" title="${SECTION_NAMES[s]}">${SECTION_NAMES[s]}</div>
+            <div class="sec-bar-bg"><div class="sec-bar-fill" style="width:${pct}%;background:${c}"></div></div>
+            <div class="sec-val-sm" style="color:${c}">${pct}%</div>
+        </div>`;
+    }
+    html += '</div>';
+
+    // Attempt log table
+    html += '<table class="attempt-table" style="margin-top:20px"><thead><tr><th>Date</th><th>Score</th><th>Grade</th><th>Best Section</th><th>Worst Section</th></tr></thead><tbody>';
+    [...quizData].reverse().forEach(a => {
+        const sp = Object.entries(a.sectionScores).map(([s,sc]) => ({s:+s, pct: sc / (SEC_TOTALS[+s]||1)}));
+        const best  = sp.reduce((x,y) => x.pct >= y.pct ? x : y);
+        const worst = sp.reduce((x,y) => x.pct <= y.pct ? x : y);
+        const c = gradeColor(a.percentage);
+        html += `<tr>
+            <td>${fmtDate(a.date)}</td>
+            <td><strong>${a.score} / ${a.total}</strong></td>
+            <td><span class="grade-pill" style="background:${c}">${a.grade} · ${a.percentage}%</span></td>
+            <td><span class="sec-dot" style="background:${SEC_COLOR[best.s]}"></span>${SECTION_NAMES[best.s]}</td>
+            <td><span class="sec-dot" style="background:${SEC_COLOR[worst.s]}"></span>${SECTION_NAMES[worst.s]}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUIZ ERROR LOG
+// ─────────────────────────────────────────────────────────────────────────────
+function renderQuizErrors() {
+    const el = document.getElementById('quiz-errors');
+    if (!quizData.length) {
+        el.innerHTML = '<p class="empty">No quiz attempts recorded yet.</p>';
+        return;
+    }
+
+    const counts = {};
+    quizData.forEach(a => {
+        a.questions.forEach(q => {
+            if (!counts[q.id]) counts[q.id] = {wrong:0, attempts:0, section:q.section};
+            counts[q.id].attempts++;
+            if (!q.correct) counts[q.id].wrong++;
+        });
+    });
+
+    const errors = Object.entries(counts)
+        .filter(([,v]) => v.wrong > 0)
+        .sort((a,b) => b[1].wrong - a[1].wrong);
+
+    if (!errors.length) {
+        el.innerHTML = '<p class="empty ok">No errors yet — perfect scores on all attempts!</p>';
+        return;
+    }
+
+    let html = '<div class="error-list">';
+    errors.forEach(([qid, d]) => {
+        const num   = qid.replace('q','');
+        const pctW  = Math.round((d.wrong / d.attempts) * 100);
+        const color = SEC_COLOR[d.section];
+        html += `<div class="error-row">
+            <div class="error-tag" style="border-color:${color};color:${color}">Q${num}</div>
+            <div class="error-info">
+                <div class="error-section" style="color:${color}">${SECTION_NAMES[d.section]}</div>
+                <div class="error-bar-wrap"><div class="error-bar-fill" style="width:${pctW}%;background:${color}"></div></div>
+            </div>
+            <div class="error-count">
+                <span class="wrong-count">${d.wrong} ✗</span>
+                <span class="misc-count">${d.attempts} seen</span>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLASHCARD SESSIONS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFcProgression() {
+    const el = document.getElementById('fc-progression');
+    if (!fcData.length) {
+        el.innerHTML = '<p class="empty">No flashcard sessions recorded yet.</p>';
+        return;
+    }
+
+    // Group by calendar day
+    const byDay = {};
+    fcData.forEach(e => {
+        const day = e.date.slice(0,10);
+        if (!byDay[day]) byDay[day] = {right:0, wrong:0};
+        byDay[day][e.result]++;
+    });
+
+    const days = Object.entries(byDay).sort(([a],[b]) => a.localeCompare(b));
+    const maxTotal = Math.max(...days.map(([,v]) => v.right + v.wrong));
+
+    let html = '<div class="chart-legend">'
+             + '<span><span class="legend-dot" style="background:#27ae60"></span>Right</span>'
+             + '<span><span class="legend-dot" style="background:#e74c3c"></span>Wrong</span>'
+             + '</div>';
+
+    html += '<div class="fc-chart">';
+    days.slice(-12).forEach(([day, v]) => {
+        const total = v.right + v.wrong;
+        const rPct  = Math.round((v.right / total) * 100);
+        const rH    = Math.round((v.right  / maxTotal) * 90);
+        const wH    = Math.round((v.wrong  / maxTotal) * 90);
+        const d     = new Date(day + 'T12:00:00');
+        const label = d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+        html += `<div class="chart-col">
+            <div class="fc-bar-bg">
+                <div class="fc-bar-stack">
+                    <div class="fc-bar-wrong" style="height:${wH}px" title="${v.wrong} wrong"></div>
+                    <div class="fc-bar-right" style="height:${rH}px" title="${v.right} right"></div>
+                </div>
+            </div>
+            <div class="chart-pct" style="color:#27ae60">${rPct}%</div>
+            <div class="chart-date">${label}</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    html += '<table class="attempt-table"><thead><tr><th>Date</th><th>✓ Right</th><th>✗ Wrong</th><th>Total Cards</th><th>Right %</th></tr></thead><tbody>';
+    [...days].reverse().forEach(([day, v]) => {
+        const total = v.right + v.wrong;
+        const pct   = Math.round((v.right / total) * 100);
+        const d     = new Date(day + 'T12:00:00');
+        html += `<tr>
+            <td>${d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})}</td>
+            <td style="color:#27ae60"><strong>${v.right}</strong></td>
+            <td style="color:#e74c3c"><strong>${v.wrong}</strong></td>
+            <td>${total}</td>
+            <td><span class="grade-pill" style="background:${gradeColor(pct)}">${pct}%</span></td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLASHCARD ERROR LOG
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFcErrors() {
+    const el = document.getElementById('fc-errors');
+    if (!fcData.length) {
+        el.innerHTML = '<p class="empty">No flashcard sessions recorded yet.</p>';
+        return;
+    }
+
+    const counts = {};
+    fcData.forEach(e => {
+        const key = `${e.section}||${e.topic}`;
+        if (!counts[key]) counts[key] = {right:0, wrong:0, section:e.section, topic:e.topic};
+        counts[key][e.result]++;
+    });
+
+    const errors = Object.values(counts)
+        .filter(v => v.wrong > 0)
+        .sort((a,b) => b.wrong - a.wrong);
+
+    if (!errors.length) {
+        el.innerHTML = '<p class="empty ok">No wrong cards yet — great work!</p>';
+        return;
+    }
+
+    let html = '<div class="error-list">';
+    errors.forEach(d => {
+        const total  = d.right + d.wrong;
+        const pctW   = Math.round((d.wrong / total) * 100);
+        const secN   = isNaN(d.section) ? d.section : +d.section;
+        const color  = SEC_COLOR[secN] || '#7f8c8d';
+        const secLbl = FC_SEC_LABELS[secN] || String(d.section);
+        const shortSec = secLbl.split(' ')[0]; // §1, §2, ★
+        html += `<div class="error-row">
+            <div class="error-tag" style="border-color:${color};color:${color}">${shortSec}</div>
+            <div class="error-info">
+                <div class="error-section" style="color:${color}">${secLbl}</div>
+                <div class="error-topic">${d.topic}</div>
+                <div class="error-bar-wrap"><div class="error-bar-fill" style="width:${pctW}%;background:${color}"></div></div>
+            </div>
+            <div class="error-count">
+                <span class="wrong-count">${d.wrong} ✗</span>
+                <span class="right-count">${d.right} ✓</span>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+function clearAllData() {
+    if (!confirm('Delete all stored quiz and flashcard data? This cannot be undone.')) return;
+    localStorage.removeItem('mathCourse_quizResults');
+    localStorage.removeItem('mathCourse_flashcardResults');
+    location.reload();
+}
+
+renderQuizProgression();
+renderQuizErrors();
+renderFcProgression();
+renderFcErrors();
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');</script>
+</body>
+</html>

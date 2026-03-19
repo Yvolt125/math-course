@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Python &amp; NumPy</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w1s8',
+    title: 'Python & NumPy',
+    subtitle: 'Arrays · Operations · linalg',
+    color: '#2ecc71',
+    questions: [
+        {
+            type: 'type',
+            prompt: 'The NumPy array object is called ___ (short for n-dimensional array).',
+            answer: 'ndarray',
+            explanation: 'ndarray is the core NumPy object. It stores data in contiguous memory, enabling fast C-level operations — far quicker than Python lists for any numerical work.'
+        },
+        {
+            type: 'mc',
+            prompt: 'np.arange(2, 10, 3) produces…',
+            options: ['[2, 5, 8]', '[2, 4, 6, 8]', '[2, 3, 4, 5, 6, 7, 8, 9]', '[3, 6, 9]'],
+            answer: 0,
+            explanation: 'arange(start=2, stop=10, step=3): start at 2, add 3 each time, stop before 10. → [2, 5, 8]. Like Python range() but returns a NumPy array.'
+        },
+        {
+            type: 'calc',
+            prompt: 'np.array([1, 2, 3, 4]).sum() = ?',
+            answer: 10,
+            hint: 'Sum all elements',
+            explanation: '1 + 2 + 3 + 4 = 10. .sum() adds all elements. For 2D arrays, use .sum(axis=0) for column sums or .sum(axis=1) for row sums.'
+        },
+        {
+            type: 'fill',
+            before: 'np.',
+            after: '(0, 1, 5) creates 5 evenly spaced float values between 0 and 1.',
+            answer: 'linspace',
+            explanation: 'linspace(start, stop, num) returns num evenly spaced values, both endpoints included. Default dtype is float. Unlike arange, linspace guarantees exactly the number of points you request.'
+        },
+        {
+            type: 'tf',
+            prompt: 'In NumPy, arr1 * arr2 computes the dot product of two 1D arrays.',
+            answer: false,
+            explanation: 'The * operator is element-wise multiplication: [2,4] * [3,5] = [6,20]. For the dot product use np.dot(a, b) or the @ operator. This is a very common mistake!'
+        },
+        {
+            type: 'visual',
+            visual: '<svg width="220" height="130" viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border-radius:10px;border:1.5px solid #e1e8ed"><text x="110" y="16" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">Broadcasting: arr × 3</text><rect x="88" y="25" width="28" height="28" rx="4" fill="#f8f9fa" stroke="#ccc" stroke-width="1.5"/><text x="102" y="44" font-size="13" fill="#2c3e50" font-family="sans-serif" text-anchor="middle">2</text><rect x="118" y="25" width="28" height="28" rx="4" fill="#f8f9fa" stroke="#ccc" stroke-width="1.5"/><text x="132" y="44" font-size="13" fill="#2c3e50" font-family="sans-serif" text-anchor="middle">5</text><rect x="148" y="25" width="28" height="28" rx="4" fill="#f8f9fa" stroke="#ccc" stroke-width="1.5"/><text x="162" y="44" font-size="13" fill="#2c3e50" font-family="sans-serif" text-anchor="middle">9</text><rect x="20" y="25" width="55" height="28" rx="6" fill="#eaf4fb" stroke="#2ecc71" stroke-width="1.5"/><text x="47" y="44" font-size="12" fill="#2ecc71" font-family="sans-serif" text-anchor="middle" font-weight="bold">× 3</text><text x="99" y="75" font-size="16" fill="#7f8c8d">↓</text><text x="129" y="75" font-size="16" fill="#7f8c8d">↓</text><text x="159" y="75" font-size="16" fill="#7f8c8d">↓</text><rect x="88" y="85" width="28" height="28" rx="4" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/><text x="102" y="104" font-size="13" fill="#27ae60" font-family="sans-serif" text-anchor="middle" font-weight="bold">6</text><rect x="118" y="85" width="28" height="28" rx="4" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/><text x="132" y="104" font-size="13" fill="#27ae60" font-family="sans-serif" text-anchor="middle" font-weight="bold">15</text><rect x="148" y="85" width="28" height="28" rx="4" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/><text x="162" y="104" font-size="13" fill="#27ae60" font-family="sans-serif" text-anchor="middle" font-weight="bold">27</text></svg>',
+            type: 'mc',
+            prompt: 'The diagram shows arr = [2, 5, 9] being multiplied by scalar 3. What NumPy feature makes this work without a loop?',
+            options: [
+                'Vectorization only — NumPy loops internally',
+                'Broadcasting — the scalar is automatically applied to every element',
+                'The * operator calls np.dot() on scalars',
+                'NumPy converts the scalar to a list first'
+            ],
+            answer: 1,
+            explanation: 'Broadcasting lets NumPy apply operations between arrays of different shapes by "stretching" the smaller one. Scalar × array broadcasts the scalar to match every element — no Python loop needed, all in fast C.'
+        },
+        {
+            type: 'mc',
+            prompt: 'np.array([[1,2,3],[4,5,6]]).shape returns…',
+            options: ['(2, 3)', '(3, 2)', '6', '(6,)'],
+            answer: 0,
+            explanation: 'shape returns a tuple: (rows, columns). 2 rows, 3 columns → (2, 3). Use .ndim for number of dimensions and .size for total element count.'
+        },
+        {
+            type: 'calc',
+            prompt: 'np.linalg.det(np.array([[1, 2], [3, 4]])) = ?',
+            answer: -2,
+            hint: 'det = (1)(4) − (2)(3)',
+            explanation: 'det = 1×4 − 2×3 = 4 − 6 = −2. The negative sign means the transformation flips orientation (like a mirror). The matrix is invertible since det ≠ 0.'
+        },
+        {
+            type: 'type',
+            prompt: 'Applying a scalar to every element of an array (e.g. km_arr * 0.621) is called ___.',
+            answer: 'broadcasting',
+            explanation: 'Broadcasting is NumPy\'s ability to apply a scalar (or smaller array) across all elements without a loop. It\'s one of the core reasons NumPy is so efficient for numerical computing.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Which NumPy function creates an array WITHOUT initialising values — fastest when you\'ll overwrite every element immediately?',
+            options: ['np.zeros()', 'np.ones()', 'np.empty()', 'np.random.rand()'],
+            answer: 2,
+            explanation: 'np.empty() allocates memory but skips zeroing it — the array contains leftover memory data. Faster than np.zeros() precisely because it skips that initialisation step. Only use it when you\'ll fill every cell.'
+        },
+        {
+            type: 'fill',
+            before: 'np.linalg.',
+            after: '(A, b) solves Ax = b using stable Gaussian Elimination internally.',
+            answer: 'solve',
+            explanation: 'np.linalg.solve() is preferred over inv(A) @ b. It\'s faster, more numerically stable, and raises LinAlgError if A is singular — telling you immediately that no unique solution exists.'
+        },
+        {
+            type: 'mc',
+            prompt: 'arr = np.array([[1,2,3],[4,5,6],[7,8,9]]). What does arr[1, 2] return?',
+            options: ['2', '5', '6', '8'],
+            answer: 2,
+            explanation: 'arr[row, col] — row 1 (second row: [4,5,6]), col 2 (third column: 6). NumPy uses 0-based indexing. For 2D arrays, the first index is always the row, second is the column.'
+        },
+        {
+            type: 'tf',
+            prompt: 'np.vstack([a, b]) stacks arrays horizontally (side by side).',
+            answer: false,
+            explanation: 'vstack = vertical stack = stacks arrays on top of each other (row-wise). For side-by-side stacking use np.hstack(). Think: v = vertical, h = horizontal.'
+        },
+        {
+            type: 'calc',
+            prompt: 'A = np.array([[2,0],[0,5]]). What is A[0, 0] × A[1, 1]?',
+            answer: 10,
+            hint: 'Read the [0,0] and [1,1] entries, then multiply',
+            explanation: 'A[0,0] = 2, A[1,1] = 5. Product = 10. For a diagonal matrix, this product also equals the determinant: det = 2×5 − 0×0 = 10.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

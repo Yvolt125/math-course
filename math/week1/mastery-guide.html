@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="../../icon.svg">
+    <title>Conceptual Foundations: Linear Algebra for ML (Week 1)</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #2980b9;
+            --accent:    #16a085;
+            --warning:   #f39c12;
+            --info:      #3498db;
+            --code-bg:   #2d3436;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            background: white;
+            padding: 60px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
+
+        /* ── Typography ───────────────────────────────── */
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 4px solid var(--secondary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            color: var(--secondary);
+            margin-top: 80px;
+            border-left: 8px solid var(--secondary);
+            padding: 15px 20px;
+            background: #f8fbff;
+            clear: both;
+            font-size: 1.25em;
+        }
+
+        h2 .section-sub {
+            display: block;
+            font-size: 0.72em;
+            font-weight: 400;
+            color: #5d9ec7;
+            margin-top: 3px;
+            letter-spacing: 0;
+        }
+
+        h3 {
+            color: var(--accent);
+            margin-top: 40px;
+            font-size: 1.25em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        p  { margin-bottom: 20px; text-align: justify; hyphens: auto; }
+        ul, ol { padding-left: 30px; margin-bottom: 20px; }
+        li { margin-bottom: 15px; }
+
+        /* ── Roadmap ──────────────────────────────────── */
+        .roadmap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0 50px;
+            padding: 25px 20px;
+            background: #f8fbff;
+            border: 1px solid #d6e8f7;
+            border-radius: 14px;
+        }
+
+        .roadmap-step {
+            background: var(--secondary);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.82em;
+            font-weight: 600;
+            text-align: center;
+            min-width: 95px;
+            line-height: 1.3;
+        }
+
+        .roadmap-step span {
+            display: block;
+            font-size: 0.75em;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        .roadmap-arrow {
+            color: var(--secondary);
+            font-size: 1.2em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* ── Transition bridge ────────────────────────── */
+        .transition {
+            margin: 35px 0 0;
+            padding: 18px 25px;
+            background: #f8f9fa;
+            border-left: 4px solid #bdc3c7;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+            font-style: italic;
+        }
+
+        .transition strong { color: var(--primary); font-style: normal; }
+
+        /* ── Content blocks ───────────────────────────── */
+        .concept-block {
+            border: 1px solid #e1e8ed;
+            padding: 35px;
+            margin: 30px 0;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .deep-dive {
+            background: #f4f7f9;
+            border-left: 5px solid var(--info);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .example {
+            background: #fff9e6;
+            border-left: 5px solid var(--warning);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .example-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 5px solid var(--warning);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .ml-bridge {
+            background: #e6fffa;
+            border-left: 5px solid var(--accent);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box {
+            background: #eaf4fb;
+            border-left: 5px solid var(--secondary);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .math-box {
+            background: #fafafa;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 30px 0;
+            overflow-x: auto;
+            min-height: 50px;
+        }
+
+        /* ── Inline helpers ───────────────────────────── */
+        .term        { font-weight: bold; color: var(--secondary); text-decoration: underline; text-underline-offset: 3px; }
+        .highlight   { color: var(--secondary); font-weight: bold; }
+        .inline-code { background: #f1f1f1; padding: 3px 6px; border-radius: 4px; color: #d63384; font-size: 0.9em; }
+
+        /* ── Graphs ───────────────────────────────────── */
+        .graph-wrapper {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            margin: 40px 0;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .graph-container { width: 100%; height: 450px; }
+
+        /* ── Code ─────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            color: #dfe6e9;
+            padding: 25px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 25px 0;
+            font-size: 0.95em;
+            border-left: 5px solid var(--secondary);
+            line-height: 1.5;
+        }
+
+        code { font-family: 'Consolas', 'Monaco', monospace; }
+
+        .step-circle {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+
+        /* ── Table ────────────────────────────────────── */
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 0.95em; }
+        table th { background: var(--secondary); color: white; padding: 12px 16px; text-align: left; }
+        table td { padding: 12px 16px; border-bottom: 1px solid #e1e8ed; vertical-align: top; }
+        table tr:nth-child(even) td { background: #f8fbff; }
+        table tr:hover td { background: #eaf4fb; }
+
+        /* ── Summary chain ────────────────────────────── */
+        .summary-chain {
+            background: #f8fff8;
+            border: 2px solid var(--accent);
+            border-radius: 14px;
+            padding: 35px 40px;
+            margin: 40px 0;
+        }
+
+        .summary-chain h3 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            margin-top: 0;
+            padding-bottom: 10px;
+        }
+
+        .chain-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 6px;
+            align-items: flex-start;
+        }
+
+        .chain-number {
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+
+        .chain-content {
+            flex: 1;
+            padding: 14px 18px;
+            background: white;
+            border: 1px solid #d4edda;
+            border-radius: 8px;
+        }
+
+        .chain-content .chain-title   { font-weight: bold; color: var(--primary); font-size: 1.05em; }
+        .chain-content .chain-question { color: #555; font-size: 0.92em; margin: 4px 0 6px; font-style: italic; }
+        .chain-content .chain-answer  { color: #333; font-size: 0.93em; }
+
+        .chain-connector {
+            text-align: left;
+            padding-left: 52px;
+            color: var(--accent);
+            font-size: 0.88em;
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+
+        .chain-connector::before { content: "↓  "; font-style: normal; font-weight: bold; }
+
+        /* ── Footer ───────────────────────────────────── */
+        .footer-note {
+            text-align: center;
+            color: #7f8c8d;
+            margin-top: 80px;
+            font-style: italic;
+            border-top: 1px solid #eee;
+            padding-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="../index.html" style="display:inline-block; margin-bottom:18px; color:#2980b9; font-size:0.85em; font-weight:700; text-decoration:none; letter-spacing:0.5px;">← Menu</a>
+
+    <h1>Conceptual Foundations: Linear Algebra for Machine Learning</h1>
+    <p style="font-size: 1.1em; color: #666; text-align: center; margin-bottom: 30px; font-style: italic;">
+        A rigorous, bottom-up exploration of why data is geometric, how equations form constraints, and how we solve for the hidden rules of the world.
+    </p>
+
+    <!-- ROADMAP -->
+    <div class="roadmap">
+        <div class="roadmap-step">1<span>Data &amp; Geometry</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">2<span>Linear Equations</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">3<span>Systems</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">4<span>Independence &amp; Rank</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">5<span>Determinant</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">6<span>Gaussian Elim.</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">7<span>Matrix Inverse</span></div>
+        <div class="roadmap-arrow">→</div>
+        <div class="roadmap-step">8<span>Python</span></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         1. DATA AS GEOMETRIC OBJECTS
+         ══════════════════════════════════════════════════════ -->
+    <h2>1. Data as Geometric Objects
+        <span class="section-sub">Scalars · Vectors · Matrices</span>
+    </h2>
+    <div class="concept-block">
+        <p>To understand Linear Algebra, we must first stop seeing numbers as just symbols and start seeing them as <strong>coordinates in space</strong>. Every piece of data has a physical position. This shift in perspective — from numbers to geometry — is the single most important idea in this guide.</p>
+
+        <h3>The Scalar — A Single Value</h3>
+        <p>A <span class="term">Scalar</span> is a single number. It represents magnitude (how much) but has no direction. It is a point on a 1D number line.</p>
+        <div class="example">
+            <strong>Example:</strong> The temperature in a room is 22°C. It's one value that tells you "how hot" it is, but it doesn't point anywhere.
+        </div>
+
+        <h3>The Vector — A Data Point in Space</h3>
+        <p>A <span class="term">Vector</span> is an ordered list of scalars. In ML, we call this a <strong>Feature Vector</strong>. Geometrically, a vector is an arrow pointing from the origin \((0,0)\) to a specific coordinate. Stacking multiple scalars into a vector is how we describe a data point with <em>more than one property at once</em>.</p>
+        <div class="example">
+            <strong>Example:</strong> A house described by <span class="inline-code">[2100 sqft, 3 bedrooms]</span> becomes:
+            \[\vec{v} = \begin{bmatrix} 2100 \\ 3 \end{bmatrix}\]
+            It lives in a 2D space where the horizontal axis is "Size" and the vertical axis is "Rooms." Every house in our dataset is a unique arrow pointing to its own location in this space.
+        </div>
+
+        <h3>The Matrix — A Complete Dataset</h3>
+        <p>A <span class="term">Matrix</span> is a collection of vectors arranged as rows. If one vector describes one house, a matrix describes an entire neighborhood — your whole dataset packed into a single rectangular grid.</p>
+        <div class="math-box">
+            \[ A = \begin{bmatrix} 2100 & 3 \\ 1500 & 2 \\ 3000 & 4 \end{bmatrix} \leftarrow \text{3 houses (rows) × 2 features (columns)} \]
+        </div>
+        <p>The hierarchy is simple: a <strong>scalar</strong> is a single value, a <strong>vector</strong> is a column of scalars, and a <strong>matrix</strong> is a grid of vectors. Each level adds one more dimension of structure.</p>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> We now know that data lives as points and arrows in geometric space. The natural next question is — what <em>rules</em> connect those points to outcomes? How does one feature (like house size) relate to a prediction (like price)? That relationship is a Linear Equation.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         2. THE LINEAR EQUATION
+         ══════════════════════════════════════════════════════ -->
+    <h2>2. The Linear Equation
+        <span class="section-sub">Modeling relationships between features and outcomes</span>
+    </h2>
+    <div class="concept-block">
+        <p>A linear equation is the mathematical way of saying: "these features combine, in a straight-line fashion, to produce this outcome." This is the core operation of nearly all Machine Learning models.</p>
+
+        <div class="ml-bridge">
+            <strong>From High School to ML:</strong>
+            <p>In school, we learn a line as \(y = mx + b\). In Machine Learning, the same equation scales to many features at once:</p>
+            <ul>
+                <li><strong>\(y\) — Label / Prediction:</strong> The output we want to estimate (e.g., price of a house).</li>
+                <li><strong>\(x_i\) — Features:</strong> The inputs we already know (e.g., size, number of rooms).</li>
+                <li><strong>\(w_i\) — Weights:</strong> The importance given to each feature — the "slopes." Does room count matter more than square footage? The weights quantify this. <em>Finding the right weights is literally what Machine Learning is doing.</em></li>
+                <li><strong>\(b\) — Bias:</strong> The "y-intercept." It shifts the model's starting point away from the origin, so it isn't forced to go through \((0,0)\) — which would be unrealistic for most real data.</li>
+            </ul>
+            \[ y = w_1 x_1 + w_2 x_2 + \cdots + b \]
+        </div>
+
+        <div class="deep-dive">
+            <strong>Why "Linear"?</strong>
+            <p>We only use addition and scaling — no squaring (\(x^2\)), no exponents. Geometrically, this means the relationship is always a <strong>straight line</strong> in 2D or a <strong>flat plane</strong> in 3D. There are no curves. This constraint makes the math tractable and, as we'll see, leads naturally to the language of matrices and systems of equations.</p>
+        </div>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> One linear equation is one rule — one line or plane. But in practice we have many data points, each imposing its own constraint. When we stack multiple equations together, we get a <strong>System of Equations</strong>, and our goal becomes finding the single point that satisfies all of them simultaneously.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         3. SYSTEMS OF EQUATIONS
+         ══════════════════════════════════════════════════════ -->
+    <h2>3. Systems of Equations
+        <span class="section-sub">Many rules, one answer — encoding constraints as a matrix</span>
+    </h2>
+    <div class="concept-block">
+        <p>In practice, we don't have one house — we have hundreds. Each house gives us one equation, one constraint. A <span class="term">System of Equations</span> is the full collection of these constraints working together. Solving the system means finding the <strong>single point in space</strong> that satisfies every constraint simultaneously. Geometrically, this is the point where all lines (or planes) intersect.</p>
+
+        <div class="graph-wrapper">
+            <div id="intersect-graph" class="graph-container"></div>
+        </div>
+
+        <div class="example">
+            <strong>Concrete Example (2D):</strong>
+            <br>Constraint A: \(x + y = 5\) &nbsp; (sum is 5)
+            <br>Constraint B: \(x - y = 1\) &nbsp; (difference is 1)
+            <br><strong>Solution:</strong> Only the point \((3, 2)\) satisfies both at once. Every other point satisfies at most one of them. This is what "solving the system" means.
+        </div>
+
+        <div class="ml-bridge">
+            <strong>Why the unique solution is the whole point — in ML terms:</strong>
+            <p>In a Machine Learning context, the variables we are solving for are the <strong>model's weights</strong> \((w_1, w_2, \ldots, b)\). Each data point we have observed is one equation — one constraint that says "given these feature values, the output must be this." Solving the system means finding the one set of weights that is consistent with every data point at once.</p>
+            <p>A <strong>unique solution</strong> is the ideal outcome: it means the data has fully determined the model. There is exactly one set of weights that fits all the evidence — a single, unambiguous answer. This is what we hand to the prediction step.</p>
+            <p>Without a unique solution, the system breaks down in one of two ways, and neither is usable:</p>
+            <ul>
+                <li>
+                    <strong>Infinite solutions (redundant data):</strong> Many different sets of weights fit the data equally well. The model is underdetermined — there is no principled reason to choose one over another. Any prediction we make is arbitrary, because we never actually identified which rule the data follows.
+                </li>
+                <li>
+                    <strong>No solution (contradictory data):</strong> No set of weights can satisfy all the constraints at once. The data is mathematically inconsistent — it is as if some of your observations contradict others. A linear model simply cannot exist for this data in this form.
+                </li>
+            </ul>
+            <p>In short: a unique solution means <em>"we found the rule."</em> Infinite solutions means <em>"we can't tell which rule it is."</em> No solution means <em>"no such rule exists."</em></p>
+        </div>
+
+        <h3>The Augmented Matrix — Encoding a System Compactly</h3>
+        <p>Writing out full equations becomes unwieldy with many variables. We encode the system into a rectangular grid: the <span class="term">Augmented Matrix</span>. The coefficients sit on the left of a dividing bar, the right-hand-side results sit on the right.</p>
+
+        <div class="example-box">
+            For the system \(2x + y = 5\) and \(x - y = 1\):
+            \[ \text{Coefficient Matrix: } A = \begin{bmatrix} 2 & 1 \\ 1 & -1 \end{bmatrix} \qquad \text{Augmented Matrix: } \left[ \begin{array}{cc|c} 2 & 1 & 5 \\ 1 & -1 & 1 \end{array} \right] \]
+            Every row is one equation. Every column is one variable. The bar separates "the rules" from "the targets." This compact form is what Gaussian Elimination (Section 6) will operate on.
+        </div>
+
+        <h3>Extending to 3D — Planes Instead of Lines</h3>
+        <p>In 3D, each equation defines a <em>plane</em>. The solution is still the single point where all planes meet.</p>
+
+        <div class="example-box">
+            Three planes, three constraints:
+            \[ \begin{cases} z = 3 & \text{(horizontal ground plane)} \\ y = 1 & \text{(vertical wall)} \\ x + y + z = 6 & \text{(diagonal sheet)} \end{cases} \]
+            Rotate the interactive plot below to see all three planes. They meet at exactly one point: <strong>(2, 1, 3)</strong>.
+        </div>
+
+        <div class="graph-wrapper">
+            <div id="graph3d-intersect" class="graph-container"></div>
+        </div>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> The examples above were "clean" — lines that crossed neatly, planes that converged. But what if our equations repeat the same information, or contradict each other? Before we can solve a system, we need to understand <em>when</em> and <em>why</em> it fails — which comes down to the concept of <strong>Linear Independence</strong>.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         4. LINEAR INDEPENDENCE, RANK AND SINGULARITY
+         ══════════════════════════════════════════════════════ -->
+    <h2>4. Linear Independence, Rank and Singularity
+        <span class="section-sub">Measuring real information — when systems fail and why</span>
+    </h2>
+    <div class="concept-block">
+        <p>For a system to have a unique solution, each equation must bring <em>genuinely new</em> information — it must cut through space in a direction no other equation already covers. The formal name for this property is <span class="term">Linear Independence</span>. When it breaks down, the system becomes <span class="term">Singular</span> and cannot be uniquely solved.</p>
+
+        <h3>Linear Independence vs. Dependence</h3>
+        <p>Think of each equation as pointing in a geometric direction. The question is whether your equations collectively point in enough <em>distinct</em> directions to pin down a unique answer.</p>
+        <ul>
+            <li><strong>Linearly Independent:</strong> Each equation cuts through space in a genuinely new direction, narrowing the solution further. Together they converge on one unique intersection point.</li>
+            <li><strong>Linearly Dependent:</strong> At least one equation can be produced by scaling or combining the others. It adds zero new geometric direction and zero new information — and the system collapses.</li>
+        </ul>
+
+        <h3>Rank — Counting the Real Information</h3>
+        <p><span class="term">Rank</span> is the formal measure of how many equations in a system are genuinely independent. It tells you the <em>true dimensionality</em> of your data — which may be lower than it appears on the surface.</p>
+        <ul>
+            <li><strong>Full Rank (e.g., Rank 3 in a 3×3 system):</strong> All equations are independent. You have genuine 3D data — enough constraints to pinpoint a unique solution.</li>
+            <li><strong>Rank 2 (one redundant equation):</strong> Your "3D" system is actually flat — the data lives on a 2D plane, and you cannot pinpoint a unique solution.</li>
+            <li><strong>Rank 1 (only one unique equation):</strong> Everything collapses to a single line. All your other equations were just scaled copies of the first.</li>
+        </ul>
+
+        <div class="deep-dive">
+            <strong>The Shadow Analogy:</strong>
+            <p>Think of Rank as the dimensionality of a shadow. A 3D object always casts a 3D presence in space — but depending on the light angle, its shadow on the wall might be 2D (Rank 2) or even 1D, a thin line (Rank 1). The shadow has lost depth. Rank tells you how much genuine "depth" — how many truly distinct directions — survives in your matrix, versus how much has collapsed into redundancy.</p>
+        </div>
+
+        <h3>How Singularity Manifests — Two Failure Modes</h3>
+        <p>Linear dependence causes systems to fail in two different ways, depending on <em>how</em> the equations relate to each other:</p>
+
+        <h3>Failure Mode 1 — Dependent Equations (Infinite Solutions)</h3>
+        <p>When one equation is just a scaled copy of another, the two geometric objects (lines or planes) are identical — they lie exactly on top of each other. There is no single intersection; instead, infinitely many points satisfy both constraints.</p>
+        <div class="example">
+            Rule 1: "House price is $200 per sqft." &nbsp; → &nbsp; \(p = 200s\)
+            <br>Rule 2: "House price is $400 per 2 sqft." &nbsp; → &nbsp; \(p = 200s\) &nbsp; (same rule, scaled ×2)
+            <br><strong>Result:</strong> Rule 2 is <strong>linearly dependent</strong> on Rule 1 — it contributes nothing new. Any house satisfying the first automatically satisfies the second. The system has infinitely many solutions because you effectively have only one constraint, not two.
+        </div>
+
+        <h3>Failure Mode 2 — Contradictory Equations (No Solution)</h3>
+        <p>When two equations share the same left-hand side (same direction in space) but demand different right-hand-side values, they are parallel — they never intersect.</p>
+        <div class="example">
+            Rule 1: \(x + y = 10\)
+            <br>Rule 2: \(x + y = 20\)
+            <br><strong>Result:</strong> The left-hand sides are identical (both equations point in exactly the same geometric direction), yet they contradict each other. No pair of numbers can sum to both 10 and 20. Geometrically, these are <strong>parallel lines</strong> — same slope, different intercepts — that never touch. There is no solution.
+        </div>
+
+        <div class="ml-bridge">
+            <strong>ML Warning — Redundant Features:</strong> If you include both "Temperature in Celsius" and "Temperature in Fahrenheit" as features in your model, you have created perfect linear dependence — one is always \(F = 1.8C + 32\). The data matrix loses rank, becomes singular, and matrix operations will either crash or produce wildly unstable results. Always check your features for hidden linear relationships before training. Techniques like PCA (Principal Component Analysis) are fundamentally about finding and discarding such redundant dimensions.
+        </div>
+
+        <h3>Summary — The Three Possible Outcomes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Outcome</th>
+                    <th>Root Cause</th>
+                    <th>Geometry</th>
+                    <th>Matrix Property</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>One Unique Solution</strong></td>
+                    <td>All equations independent</td>
+                    <td>Lines / planes intersect at one point</td>
+                    <td>Non-singular · Full Rank</td>
+                </tr>
+                <tr>
+                    <td><strong>Infinite Solutions</strong></td>
+                    <td>Dependent — one equation repeats another</td>
+                    <td>Lines / planes overlap entirely</td>
+                    <td>Singular · Rank-deficient</td>
+                </tr>
+                <tr>
+                    <td><strong>No Solution</strong></td>
+                    <td>Same direction, contradictory values</td>
+                    <td>Parallel lines / planes that never meet</td>
+                    <td>Singular · Inconsistent</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> Rank tells us <em>how many</em> independent dimensions a matrix has, but computing it requires examining the whole matrix row by row. We need a faster, single-number test that tells us immediately — without that inspection — whether a system is solvable. That number is the <strong>Determinant</strong>.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         5. THE DETERMINANT
+         ══════════════════════════════════════════════════════ -->
+    <h2>5. The Determinant
+        <span class="section-sub">A single number that tests whether a system is solvable</span>
+    </h2>
+    <div class="concept-block">
+        <p>The <span class="term">Determinant</span> (\(\det\)) is a single number computed from a matrix that summarises what the matrix transformation does to space — specifically, how much it <em>stretches or squashes</em> the volume of space. This makes it a powerful one-number diagnostic for singularity.</p>
+
+        <div class="example">
+            <strong>Visualizing the Determinant:</strong>
+            <br>Imagine a unit square at the origin, with area = 1. Apply a matrix transformation:
+            <ul>
+                <li>The square stretches into a parallelogram with area 6 → \(\det = 6\)</li>
+                <li>The square flips (mirror image) with area 6 → \(\det = -6\) (sign encodes orientation)</li>
+                <li>The square squashes flat into a line, area = 0 → \(\det = 0\) — the <strong>critical case</strong></li>
+            </ul>
+            When \(\det = 0\), the transformation has permanently destroyed a dimension. That lost information can never be recovered.
+        </div>
+
+        <h3>Calculation — 2×2 Matrix</h3>
+        <p>For \(A = \begin{bmatrix} a & b \\ c & d \end{bmatrix}\):</p>
+        <div class="math-box">
+            \[ \det(A) = ad - bc \]
+        </div>
+        <p>Multiply the main diagonal \((a \times d)\), subtract the off-diagonal \((b \times c)\). The result is the signed area of the parallelogram formed by the matrix's two column vectors.</p>
+
+        <h3>Calculation — 3×3 Matrix (Rule of Sarrus)</h3>
+        <p>For \(A = \begin{bmatrix} a & b & c \\ d & e & f \\ g & h & i \end{bmatrix}\):</p>
+        <div class="math-box">
+            \[ \det(A) = (aei + bfg + cdh) - (ceg + afh + bdi) \]
+        </div>
+        <p>Add the three "down-right" diagonal products, subtract the three "down-left" diagonal products. The result is the signed volume of the parallelepiped formed by the three column vectors.</p>
+
+        <div class="deep-dive">
+            <strong>Shortcut — Upper Triangular Matrices:</strong>
+            <p>When all entries <em>below</em> the main diagonal are zero, the matrix is called <span class="term">upper triangular</span>. In this special case, you do not need to apply the full Sarrus rule — the determinant is simply the <strong>product of the main diagonal entries</strong>:</p>
+            <div class="math-box" style="font-size:0.95em;">
+                \[ \det\!\begin{pmatrix} a & b & c \\ 0 & e & f \\ 0 & 0 & i \end{pmatrix} = a \times e \times i \]
+            </div>
+            <p>This shortcut is important because Gaussian Elimination reduces every matrix to an upper triangular form as an intermediate step — so the determinant is recoverable by simply multiplying the pivot values along the diagonal. This is exactly how <span class="inline-code">np.linalg.det</span> works internally.</p>
+        </div>
+
+        <div class="info-box">
+            <strong>The Critical Connection:</strong>
+            <p>A matrix is <strong>singular</strong> (no unique solution, non-invertible, rank-deficient) <em>if and only if</em> its determinant equals zero. Singularity, Rank, and the Determinant are three different ways of describing the same underlying collapse:</p>
+            <ul>
+                <li><strong>Geometrically:</strong> the transformation squashes space into a lower dimension</li>
+                <li><strong>In terms of information:</strong> at least one equation is linearly dependent (Rank drops)</li>
+                <li><strong>Numerically:</strong> the determinant hits zero</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> We now know <em>when</em> a system can be solved (det ≠ 0 → full rank → non-singular). The next question is: <em>how</em> do we actually find the solution? We need a step-by-step algorithm. That algorithm is <strong>Gaussian Elimination</strong>.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         6. GAUSSIAN ELIMINATION
+         ══════════════════════════════════════════════════════ -->
+    <h2>6. Gaussian Elimination
+        <span class="section-sub">A step-by-step algorithm for solving systems of equations</span>
+    </h2>
+    <div class="concept-block">
+        <p>Once we know a system is solvable (det ≠ 0, full rank), we need a procedure to actually find the answer. <span class="term">Gaussian Elimination</span> is that procedure — a systematic algorithm that simplifies the augmented matrix step by step until the solutions are immediately readable.</p>
+
+        <h3>The Target: Reduced Row Echelon Form (RREF)</h3>
+        <p>The goal is to transform the augmented matrix until the coefficient side looks like the <span class="term">Identity Matrix</span> — the "number 1 of the matrix world." Just as \(5 \times 1 = 5\), multiplying any matrix by the Identity leaves it unchanged (\(AI = A\)):</p>
+        <div class="math-box">
+            \[ I_{2\times2} = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}, \qquad I_{3\times3} = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} \]
+        </div>
+        <p>When the coefficient side reaches this "clean" identity pattern, the right-hand side of the augmented matrix directly reveals the solution values. This final form is called <span class="term">Reduced Row Echelon Form (RREF)</span>.</p>
+
+        <h3>The Three Legal Moves — Elementary Row Operations</h3>
+        <div class="deep-dive">
+            <ol>
+                <li><strong>Swap:</strong> Exchange any two rows — reordering equations doesn't change the solution.</li>
+                <li><strong>Scale:</strong> Multiply a row by any non-zero number — scaling an equation doesn't change its constraint.</li>
+                <li><strong>Combine:</strong> Add or subtract a multiple of one row from another — combining equations still describes the same intersection point.</li>
+            </ol>
+            <strong>Why these are safe:</strong> Each move changes the <em>appearance</em> of the rules but never changes the <em>underlying truth</em> — the intersection point remains exactly the same. It's like translating a legal contract into another language. The words change; the agreement does not.
+        </div>
+
+        <h3>The Pivot — The Anchor of Each Step</h3>
+        <p>A <span class="term">Pivot</span> is the first non-zero entry in a row. At each step of the algorithm, we use the current pivot to eliminate (zero out) all other entries in its column — above and below — marching the matrix progressively closer to the identity pattern.</p>
+
+        <div class="example-box">
+            <strong>Step-by-Step Walkthrough:</strong> Solve \(x + y = 3\) and \(2x + 4y = 10\)
+            <br><br>
+            <span class="step-circle">1</span>
+            <strong>Write the Augmented Matrix.</strong> The <strong>bold 1</strong> at position (1,1) is our first Pivot:
+            \[\left[ \begin{array}{cc|c} \mathbf{1} & 1 & 3 \\ 2 & 4 & 10 \end{array} \right]\]
+
+            <span class="step-circle">2</span>
+            <strong>Eliminate below the pivot</strong> using \(R_2 \leftarrow R_2 - 2R_1\). The 2 beneath the pivot becomes 0:
+            \[\left[ \begin{array}{cc|c} 1 & 1 & 3 \\ 0 & \mathbf{2} & 4 \end{array} \right]\]
+            This staircase shape — zeros below each pivot — is <strong>Row Echelon Form (REF)</strong>. We could back-substitute from here, but let's go further.
+
+            <br><br>
+            <span class="step-circle">3</span>
+            <strong>Reach RREF:</strong> Scale \(R_2 \leftarrow \frac{1}{2}R_2\) to make the pivot 1, then subtract from \(R_1\) to zero out above the pivot:
+            \[\left[ \begin{array}{cc|c} 1 & 0 & 1 \\ 0 & 1 & 2 \end{array} \right]\]
+            The coefficient side is now the Identity Matrix. The right-hand side reads directly: \(x = 1,\ y = 2\). Done.
+
+            <hr>
+            <strong>REF vs. RREF:</strong>
+            <ul>
+                <li><strong>REF:</strong> Staircase of zeros below each pivot. Good for back-substitution.</li>
+                <li><strong>RREF:</strong> Each pivot is 1, and zeros appear both below <em>and above</em> it. Solution is directly visible — no substitution needed.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> Gaussian Elimination solves one specific system for one specific right-hand side \(b\). But what if we want a general tool — one that can answer \(Ax = b\) for <em>any</em> \(b\), by effectively "undoing" whatever the matrix \(A\) does? That is the <strong>Matrix Inverse</strong>.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         7. THE MATRIX INVERSE
+         ══════════════════════════════════════════════════════ -->
+    <h2>7. The Matrix Inverse
+        <span class="section-sub">Undoing a transformation — and why it sometimes can't be done</span>
+    </h2>
+    <div class="concept-block">
+        <p>Every matrix \(A\) performs a transformation: it takes an input vector \(x\) and maps it to an output vector \(b\), i.e., \(Ax = b\). The <span class="term">Inverse Matrix</span> (\(A^{-1}\)) perfectly reverses that transformation — given the output \(b\), it recovers the original input \(x\).</p>
+
+        <div class="math-box">
+            \[ Ax = b \quad \Longrightarrow \quad x = A^{-1}b \]
+        </div>
+
+        <p>Think of \(A\) as a function that scrambles an egg. \(A^{-1}\) is the (imaginary) function that unscrambles it. The inverse only exists if the original transformation was <em>lossless</em> — if no information was destroyed in the process.</p>
+
+        <div class="deep-dive">
+            <strong>The Fundamental Constraint — everything converges here:</strong>
+            <p>The inverse of \(A\) exists <em>if and only if</em> \(\det(A) \neq 0\). Here is why all four ideas connect at this one point:</p>
+            <ul>
+                <li>If \(\det(A) = 0\), the transformation squashed 3D space into a flat 2D plane.</li>
+                <li>Once a dimension is gone, the information it carried is gone forever — you cannot reconstruct a unique 3D object from a 2D shadow.</li>
+                <li>This is the same event as rank dropping below full rank (linear dependence), which is the same event as the system being singular (no unique solution).</li>
+            </ul>
+            <p><strong>Singularity · Rank deficiency · det = 0 · No inverse</strong> — these are four descriptions of a single underlying collapse. Once you see that, they stop feeling like four separate facts and start feeling like one.</p>
+        </div>
+
+        <div class="ml-bridge">
+            <strong>In ML — Linear Regression:</strong> The closed-form solution for linear regression weights is:
+            \[ w = (X^T X)^{-1} X^T y \]
+            This formula literally requires inverting the matrix \(X^TX\). If your dataset contains redundant features (making \(X^TX\) singular, det = 0), this formula breaks down entirely. That is the mathematical root of why correlated features cause instability in linear models.
+        </div>
+    </div>
+
+    <div class="transition">
+        <strong>Where we're headed:</strong> We now have a complete theoretical toolkit. In practice, these operations scale to datasets with millions of rows — far beyond hand calculation. The final step is implementing all of this in code using <strong>NumPy</strong>.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════
+         8. PYTHON WITH NUMPY
+         ══════════════════════════════════════════════════════ -->
+    <h2>8. Python with NumPy
+        <span class="section-sub">Applying every concept at production scale</span>
+    </h2>
+    <div class="concept-block">
+        <p>NumPy provides battle-tested, numerically stable implementations of every concept covered in Sections 1–7. The code below walks through a complete system from representation to solution, with each step annotated back to the relevant concept.</p>
+
+        <div class="ml-bridge">
+            <strong>Theory vs. Practice — which solver to use?</strong>
+            <p>The theoretical formula is \(x = A^{-1}b\) (Section 7), but in professional code we prefer <span class="inline-code">np.linalg.solve</span>. Internally it uses a numerically stable variant of Gaussian Elimination (Section 6) — faster than computing a full inverse and far less susceptible to floating-point rounding errors on large systems.</p>
+        </div>
+
+        <pre><code class="language-python">import numpy as np
+
+# § 1 — Represent the system as a matrix
+# Solving: x + 2y = 5  and  3x + 4y = 11
+A = np.array([[1, 2],
+              [3, 4]])
+b = np.array([5, 11])
+
+# § 5 — Check the Determinant before solving
+det = np.linalg.det(A)
+print(f"Determinant: {det:.4f}")
+
+if np.isclose(det, 0):
+    # det = 0 → singular → rank-deficient → no unique solution (§ 4 & 5)
+    print("Cannot solve: matrix is singular.")
+else:
+    # § 7 — Method A: via Inverse (theoretical)
+    x_inv = np.linalg.inv(A) @ b
+    print(f"Via inverse:      x = {x_inv}")
+
+    # § 6 — Method B: via Gaussian Elimination (recommended)
+    x_solve = np.linalg.solve(A, b)
+    print(f"Via linalg.solve: x = {x_solve}")
+
+# § 4 — Confirm the true dimensionality (Rank)
+rank = np.linalg.matrix_rank(A)
+print(f"Rank: {rank} / {A.shape[0]}  ({'full rank' if rank == A.shape[0] else 'rank-deficient'})")</code></pre>
+
+        <!-- NUMPY FUNDAMENTALS -->
+        <h3>NumPy Fundamentals — Arrays, Operations &amp; Linear Algebra</h3>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Why NumPy Over Python Lists?</h4>
+        <p>NumPy arrays (<span class="term">ndarray</span> — n-dimensional array) are faster and more memory-efficient than Python lists. They support element-wise mathematical operations natively, whereas lists require slow Python loops. For numerical work, always prefer NumPy.</p>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Creating Arrays</h4>
+        <p>There are several ways to create a NumPy array:</p>
+        <pre><code class="language-python">import numpy as np
+
+# From a Python list — the standard way
+one_dimensional_arr = np.array([10, 12])
+
+# np.arange(start, stop, step) — like Python range() but returns an array
+c = np.arange(1, 20, 3)          # [1, 4, 7, 10, 13, 16, 19]
+
+# np.linspace(start, stop, num) — num evenly spaced values between start and stop
+# Default output is float; change with the dtype parameter
+lin_spaced_arr = np.linspace(0, 100, 5)           # [0., 25., 50., 75., 100.]
+lin_spaced_int = np.linspace(0, 100, 5, dtype=int) # [0, 25, 50, 75, 100]
+
+# Convenience constructors
+np.ones(4)          # [1. 1. 1. 1.]
+np.zeros(4)         # [0. 0. 0. 0.]
+np.empty(4)         # Uninitialized — contains whatever was in memory (faster than zeros)
+np.random.rand(4)   # Four random values between 0 and 1</code></pre>
+
+        <div class="info-box" style="margin-top:1em;">
+            <strong>np.zeros vs np.empty:</strong> Both create an array of a given size, but <span class="inline-code">np.empty</span> skips the initialisation step — the array contains random leftover memory data. This makes it marginally faster when you know you will overwrite every value immediately. Use <span class="inline-code">np.zeros</span> when you need a guaranteed clean slate.
+        </div>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">2D Arrays and Reshaping</h4>
+        <pre><code class="language-python"># Create a 2D array directly
+two_dim_arr = np.array([[1, 2, 3],
+                        [4, 5, 6]])   # shape: (2, 3)
+
+# Reshape a 1D array into a 2D array
+one_dim_arr = np.array([1, 2, 3, 4, 5, 6])
+multi_dim_arr = np.reshape(one_dim_arr, (2, 3))  # 2 rows, 3 columns
+print(multi_dim_arr)
+# [[1 2 3]
+#  [4 5 6]]</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Array Properties</h4>
+        <pre><code class="language-python">arr = np.array([[1, 2, 3], [4, 5, 6]])
+
+arr.ndim   # 2          — number of dimensions
+arr.shape  # (2, 3)     — length of each dimension
+arr.size   # 6          — total number of elements</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Arithmetic and Broadcasting</h4>
+        <p>NumPy performs <strong>element-wise</strong> arithmetic using standard operators. Multiplying an array by a scalar is called <span class="term">broadcasting</span> — the scalar is applied to every element automatically.</p>
+        <pre><code class="language-python">arr_1 = np.array([2, 4, 6])
+arr_2 = np.array([1, 3, 5])
+
+addition       = arr_1 + arr_2   # [3, 7, 11]
+subtraction    = arr_1 - arr_2   # [1, 1, 1]
+multiplication = arr_1 * arr_2   # [2, 12, 30]  (element-wise, NOT dot product)
+
+# Broadcasting example: convert km to miles
+km_distances = np.array([1, 5, 10, 42])
+miles = km_distances * 0.621371   # each element multiplied by the scalar</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Indexing and Slicing</h4>
+        <pre><code class="language-python"># 2D indexing: array[row][col]  (zero-based)
+two_dim = np.array([[1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9]])
+print(two_dim[2][1])   # 8  (row index 2, column index 1)
+
+# Slicing: array[start : end : step]
+# Omit start → 0,  omit end → length,  omit step → 1
+arr = np.array([10, 20, 30, 40, 50])
+print(arr[1:4])    # [20 30 40]
+print(arr[::2])    # [10 30 50] (every other element)</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Stacking and Splitting</h4>
+        <pre><code class="language-python">a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+np.vstack([a, b])   # Stack vertically → [[1,2,3],[4,5,6]]
+np.hstack([a, b])   # Stack horizontally → [1,2,3,4,5,6]
+
+m = np.array([[1,2,3,4], [5,6,7,8]])
+np.hsplit(m, 2)     # Split into 2 equal arrays along columns</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Solving Systems and Visualising</h4>
+        <pre><code class="language-python">import numpy as np
+
+A = np.array([[2, 1], [1, 3]])   # Coefficient matrix
+b = np.array([8, 13])            # Constant vector
+
+# Solve Ax = b (throws an error if A is singular)
+x = np.linalg.solve(A, b)
+
+# Compute the determinant
+d = np.linalg.det(A)
+
+# To visualise: build the augmented matrix [A | b]
+augmented_matrix = np.hstack([A, b.reshape(-1, 1)])
+# Then plot with the utility helper (if available):
+# from utils import plot_lines
+# plot_lines(augmented_matrix)</code></pre>
+
+        <div class="info-box" style="margin-top:1em;">
+            <strong>Singular Systems:</strong> <span class="inline-code">np.linalg.solve()</span> will raise a <span class="inline-code">LinAlgError</span> if the matrix is singular. Always check <span class="inline-code">np.linalg.det(A)</span> first — if it is zero (or very close to zero), the system has no unique solution and <span class="inline-code">solve</span> cannot be called safely.
+        </div>
+
+        <!-- SUMMARY CHAIN -->
+        <div class="summary-chain">
+            <h3>The Chain of Understanding — Week 1 in Flow</h3>
+            <p style="color:#555; font-size:0.93em; margin-bottom:25px;">Each concept answers a question raised by the one before it. Read top to bottom to feel the full logical arc.</p>
+
+            <div class="chain-item">
+                <div class="chain-number">1</div>
+                <div class="chain-content">
+                    <div class="chain-title">Data as Geometric Objects — Scalars, Vectors, Matrices</div>
+                    <div class="chain-question">"What is data, and how do we represent it mathematically?"</div>
+                    <div class="chain-answer">Numbers are coordinates in space. A scalar is a point on a line; a vector is an arrow in space describing one data point; a matrix is a grid of vectors — your entire dataset.</div>
+                </div>
+            </div>
+            <div class="chain-connector">Data lives in space. What rules connect features to outcomes?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">2</div>
+                <div class="chain-content">
+                    <div class="chain-title">The Linear Equation</div>
+                    <div class="chain-question">"How do features combine to produce a prediction?"</div>
+                    <div class="chain-answer">\(y = w_1x_1 + w_2x_2 + b\). Features are scaled by weights, shifted by a bias. A line in 2D; a flat plane in 3D. Finding the right weights is the goal of machine learning.</div>
+                </div>
+            </div>
+            <div class="chain-connector">One equation is one rule. Many data points give many rules. How do we satisfy all of them at once?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">3</div>
+                <div class="chain-content">
+                    <div class="chain-title">Systems of Equations &amp; the Augmented Matrix</div>
+                    <div class="chain-question">"How do we find the one point that satisfies every constraint?"</div>
+                    <div class="chain-answer">Each data point is one equation. Together they form a system. The solution is the geometric intersection — encoded compactly as an Augmented Matrix for efficient manipulation.</div>
+                </div>
+            </div>
+            <div class="chain-connector">Systems don't always have a clean intersection. When do they fail, and why?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">4</div>
+                <div class="chain-content">
+                    <div class="chain-title">Linear Independence, Rank and Singularity</div>
+                    <div class="chain-question">"How much real, non-redundant information does the system contain?"</div>
+                    <div class="chain-answer">Rank counts the linearly independent equations — the ones providing new information. Dependent equations cause singularity: either infinite solutions (redundant rules) or no solution (contradictory rules). Rank = true dimensionality of the data.</div>
+                </div>
+            </div>
+            <div class="chain-connector">Rank requires inspecting every row. Is there a faster, single-number solvability test?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">5</div>
+                <div class="chain-content">
+                    <div class="chain-title">The Determinant</div>
+                    <div class="chain-question">"Is this system solvable — in one number?"</div>
+                    <div class="chain-answer">det(A) measures how much the matrix stretches space. det = 0 means a dimension was destroyed → singular → rank-deficient → no inverse. det ≠ 0 means full rank → unique solution exists.</div>
+                </div>
+            </div>
+            <div class="chain-connector">We know <em>if</em> it's solvable. Now — <em>how</em> do we find the solution?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">6</div>
+                <div class="chain-content">
+                    <div class="chain-title">Gaussian Elimination</div>
+                    <div class="chain-question">"What is the step-by-step algorithm to solve a system?"</div>
+                    <div class="chain-answer">Three legal row operations (Swap, Scale, Combine) systematically reduce the augmented matrix to RREF — where the coefficient side becomes the Identity Matrix and the solution is directly visible on the right.</div>
+                </div>
+            </div>
+            <div class="chain-connector">Elimination solves for one specific \(b\). Can we build a general tool to answer \(Ax = b\) for any \(b\)?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">7</div>
+                <div class="chain-content">
+                    <div class="chain-title">The Matrix Inverse</div>
+                    <div class="chain-question">"How do we reverse a matrix transformation entirely?"</div>
+                    <div class="chain-answer">\(A^{-1}\) perfectly undoes whatever \(A\) did: \(x = A^{-1}b\). It exists only when det ≠ 0. Singular matrices cannot be inverted because the transformation permanently destroyed information — you cannot reconstruct a 3D object from its 2D shadow.</div>
+                </div>
+            </div>
+            <div class="chain-connector">Theory complete. How do we apply all of this at real-world scale?</div>
+
+            <div class="chain-item">
+                <div class="chain-number">8</div>
+                <div class="chain-content">
+                    <div class="chain-title">Python with NumPy</div>
+                    <div class="chain-question">"How do we run this on millions of equations in milliseconds?"</div>
+                    <div class="chain-answer"><span class="inline-code">np.linalg.solve</span> (stable Gaussian elimination) · <span class="inline-code">np.linalg.det</span> (singularity check) · <span class="inline-code">np.linalg.matrix_rank</span> (dimensionality) · <span class="inline-code">np.linalg.inv</span> (the inverse). Every concept, one library.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="footer-note">
+        Prepared for MIT-level Machine Learning Prep &bull; Building Rigorous Mental Models
+    </p>
+
+</div>
+
+<script>
+    // ── 2D Intersecting Lines ──────────────────────────────────────────────
+    const x_vals = [-2, 6];
+    const y_line1 = x_vals.map(x => 5 - x);
+    const y_line2 = x_vals.map(x => x - 1);
+
+    Plotly.newPlot('intersect-graph', [
+        {
+            x: x_vals, y: y_line1,
+            name: 'Rule 1: x + y = 5',
+            line: {color: '#3498db', width: 3}
+        },
+        {
+            x: x_vals, y: y_line2,
+            name: 'Rule 2: x − y = 1',
+            line: {color: '#e74c3c', width: 3}
+        },
+        {
+            x: [3], y: [2],
+            mode: 'markers+text',
+            name: 'Solution (3, 2)',
+            text: ['  Intersection (3, 2)'],
+            textposition: 'middle right',
+            marker: {size: 14, color: '#2c3e50', symbol: 'circle-open-dot'}
+        }
+    ], {
+        title: 'Two linear constraints — their intersection is the unique solution',
+        xaxis: {title: 'X', gridcolor: '#f0f0f0', zeroline: true},
+        yaxis: {title: 'Y', gridcolor: '#f0f0f0', zeroline: true},
+        plot_bgcolor: '#fff',
+        paper_bgcolor: '#fff',
+        legend: {orientation: 'h', y: -0.2},
+        margin: {t: 50, b: 80, l: 50, r: 50}
+    });
+
+    // ── 3D Intersecting Planes ─────────────────────────────────────────────
+    const size = 10;
+    const x3d = Array.from({length: size}, (_, i) => i);
+    const y3d = Array.from({length: size}, (_, i) => i);
+
+    const z_ground   = Array(size).fill(null).map(() => Array(size).fill(3));
+    const z_diagonal = x3d.map(x => y3d.map(y => 6 - x - y));
+    const y_wall     = Array(size).fill(null).map(() => Array(size).fill(1));
+    const z_wall     = Array(size).fill(null).map((_, i) => Array(size).fill(i));
+    const x_wall     = Array(size).fill(null).map((_, i) => Array(size).fill(i));
+
+    Plotly.newPlot('graph3d-intersect', [
+        {z: z_ground,   x: x3d, y: y3d,  type: 'surface', opacity: 0.45, colorscale: 'Blues',  showscale: false, name: 'z = 3'},
+        {z: z_diagonal, x: x3d, y: y3d,  type: 'surface', opacity: 0.45, colorscale: 'Greens', showscale: false, name: 'x+y+z = 6'},
+        {z: z_wall, y: y_wall, x: x_wall, type: 'surface', opacity: 0.45, colorscale: 'Reds',   showscale: false, name: 'y = 1'},
+        {
+            x: [2], y: [1], z: [3],
+            mode: 'markers+text',
+            text: ['(2, 1, 3)'],
+            textposition: 'top center',
+            marker: {size: 8, color: 'black'},
+            name: 'Solution (2, 1, 3)'
+        }
+    ], {
+        margin: {t: 30, b: 0, l: 0, r: 0},
+        scene: {
+            xaxis: {title: 'X'},
+            yaxis: {title: 'Y'},
+            zaxis: {title: 'Z'}
+        }
+    });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../sw.js');</script>
+</body>
+</html>

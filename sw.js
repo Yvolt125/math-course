@@ -2,14 +2,14 @@ const CACHE = 'math-ml-v3';
 
 const FILES = [
   './index.html',
-  './Luis_Serrano_Math_for_ML_Week_1_Quiz.html',
-  './Luis_Serrano_Math_for_ML_Week_1_Flashcards.html',
-  './Luis_Serrano_Math_for_ML_Week_1_Mastery_Guide.html',
-  './Luis_Serrano_Math_for_ML_Week_2_Mastery_Guide.html',
+  './math/week1/quiz.html',
+  './math/week1/flashcards.html',
+  './math/week1/mastery-guide.html',
+  './math/week2/mastery-guide.html',
   './manifest.json',
   './icon.svg',
-  './gmat_db.js',
-  './gmat_engine.js'
+  './js/gmat-db.js',
+  './js/gmat-engine.js'
 ];
 
 self.addEventListener('install', e => {

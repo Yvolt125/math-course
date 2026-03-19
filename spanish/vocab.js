@@ -1,0 +1,207 @@
+'use strict';
+(function(g) {
+  const VOCAB_KEY    = 'spanish_vocab';
+  const SETTINGS_KEY = 'spanish_settings';
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  const VS = {
+
+    /* ── Storage ──────────────────────────────────── */
+    getAll() {
+      try { return JSON.parse(localStorage.getItem(VOCAB_KEY) || '[]'); }
+      catch(e) { return []; }
+    },
+    save(words) {
+      localStorage.setItem(VOCAB_KEY, JSON.stringify(words));
+    },
+
+    /* ── CRUD ─────────────────────────────────────── */
+    add(data) {
+      const words = this.getAll();
+      const card = {
+        id:           uid(),
+        term:         (data.term         || '').trim(),
+        translation:  (data.translation  || '').trim(),
+        definition:   (data.definition   || '').trim(),
+        partOfSpeech: (data.partOfSpeech || '').trim(),
+        examples:      data.examples     || [],
+        tags:          data.tags         || [],
+        created:      Date.now(),
+        // SRS
+        interval:    0,
+        easeFactor:  2.5,
+        repetitions: 0,
+        nextReview:  Date.now(),
+        lastReview:  null,
+        // Error tracking
+        lessonWrong: 0,
+        lessonRight: 0
+      };
+      words.push(card);
+      this.save(words);
+      return card;
+    },
+
+    update(id, changes) {
+      const words = this.getAll();
+      const i = words.findIndex(w => w.id === id);
+      if (i === -1) return null;
+      words[i] = { ...words[i], ...changes };
+      this.save(words);
+      return words[i];
+    },
+
+    remove(id) {
+      this.save(this.getAll().filter(w => w.id !== id));
+    },
+
+    /* ── SRS (SM-2) ───────────────────────────────── */
+    getDue(limit) {
+      const now = Date.now();
+      const due = this.getAll()
+        .filter(w => (w.nextReview || 0) <= now)
+        .sort((a, b) => (a.nextReview || 0) - (b.nextReview || 0));
+      return limit ? due.slice(0, limit) : due;
+    },
+
+    getWeak(limit) {
+      const weak = this.getAll()
+        .filter(w => (w.lessonWrong || 0) > 0)
+        .sort((a, b) => (b.lessonWrong || 0) - (a.lessonWrong || 0));
+      return limit ? weak.slice(0, limit) : weak;
+    },
+
+    // Called by lessons when a word is answered
+    trackLessonResult(id, wasCorrect) {
+      const words = this.getAll();
+      const i = words.findIndex(w => w.id === id);
+      if (i === -1) return;
+      const w = words[i];
+      if (wasCorrect) {
+        words[i].lessonRight = (w.lessonRight || 0) + 1;
+      } else {
+        words[i].lessonWrong = (w.lessonWrong || 0) + 1;
+        // Mark as due NOW so it surfaces in flashcards
+        words[i].nextReview = Date.now();
+      }
+      this.save(words);
+    },
+
+    // grade: 0=Again  1=Hard  2=Good  3=Easy
+    applyGrade(card, grade) {
+      let { repetitions, easeFactor, interval } = card;
+
+      if (grade === 0) {
+        repetitions = 0;
+        interval    = 1;
+      } else {
+        if      (repetitions === 0) interval = 1;
+        else if (repetitions === 1) interval = 6;
+        else                        interval = Math.round(interval * easeFactor);
+
+        if (grade === 1) interval = Math.max(1, Math.round(interval * 0.6));
+        if (grade === 3) interval = Math.round(interval * 1.5);
+        repetitions++;
+      }
+
+      easeFactor = Math.max(1.3,
+        easeFactor + 0.1 - (3 - grade) * (0.08 + (3 - grade) * 0.02)
+      );
+
+      const now = Date.now();
+      return { ...card, repetitions, easeFactor, interval, lastReview: now,
+               nextReview: now + interval * 86400000 };
+    },
+
+    intervalLabel(card) {
+      if (!card.lastReview) return 'New';
+      const d = Math.round(card.interval || 1);
+      if (d < 7)  return d + 'd';
+      if (d < 30) return Math.round(d / 7) + 'w';
+      return Math.round(d / 30) + 'mo';
+    },
+
+    /* ── Stats ────────────────────────────────────── */
+    getStats() {
+      const words = this.getAll();
+      const now   = Date.now();
+      return {
+        total:  words.length,
+        due:    words.filter(w => (w.nextReview || 0) <= now).length,
+        isNew:  words.filter(w => !w.lastReview).length,
+        weak:   words.filter(w => (w.lessonWrong || 0) > 0).length
+      };
+    },
+
+    /* ── Settings ─────────────────────────────────── */
+    getSettings() {
+      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
+      catch(e) { return {}; }
+    },
+    saveSettings(patch) {
+      localStorage.setItem(SETTINGS_KEY,
+        JSON.stringify({ ...this.getSettings(), ...patch }));
+    },
+
+    /* ── TTS ──────────────────────────────────────── */
+    hasTTS() { return 'speechSynthesis' in window; },
+    speak(text, lang) {
+      if (!this.hasTTS()) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang || 'es-ES';
+      u.rate = 0.85;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    },
+
+    /* ── AI Generation (Claude Haiku) ─────────────── */
+    async generate(term) {
+      const key = this.getSettings().claudeApiKey;
+      if (!key) throw new Error('No API key set — add your Claude API key in Settings ⚙️');
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 600,
+          messages: [{
+            role: 'user',
+            content:
+`You are a Spanish language expert. For the Spanish word or phrase "${term}", return ONLY a JSON object — no other text:
+{
+  "translation": "English translation",
+  "definition": "One sentence English definition",
+  "partOfSpeech": "noun/verb/adjective/adverb/phrase/etc",
+  "examples": [
+    { "es": "Natural Spanish sentence using the exact word/phrase.", "en": "English translation." },
+    { "es": "Another natural example.", "en": "English translation." }
+  ]
+}`
+          }]
+        })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const text = (data.content?.[0]?.text || '').trim();
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Could not parse AI response');
+      return JSON.parse(match[0]);
+    }
+  };
+
+  g.VS = VS;
+})(window);

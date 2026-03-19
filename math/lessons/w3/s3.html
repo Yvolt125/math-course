@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Partial Derivatives &amp; The Gradient</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w3s3',
+    title: 'Partial Derivatives & The Gradient',
+    subtitle: '∂/∂w · ∇L · Steepest ascent',
+    color: '#2980b9',
+    questions: [
+        {
+            type: 'type',
+            prompt: 'The vector containing all partial derivatives of L is called the ___.',
+            answer: 'gradient',
+            explanation: 'The gradient ∇L = [∂L/∂w₁, ∂L/∂w₂, …, ∂L/∂wₙ] is a vector. Each component is the partial derivative with respect to one weight. The gradient generalises the 1D derivative to multiple dimensions.'
+        },
+        {
+            type: 'tf',
+            prompt: 'When computing a partial derivative ∂f/∂w₁, all other variables are treated as constants.',
+            answer: true,
+            explanation: 'Partial differentiation isolates the effect of one variable by freezing all others. ∂f/∂w₁ asks: "how does f change if only w₁ changes?" It\'s the 1D derivative sliced along the w₁ axis.'
+        },
+        {
+            type: 'mc',
+            prompt: '∂/∂w₁[w₁² + 3w₁w₂ + w₂²] = ?',
+            options: ['2w₁ + 3w₂', '2w₁ + 3', '3w₂', '2w₁'],
+            answer: 0,
+            explanation: 'Treat w₂ as a constant. ∂/∂w₁[w₁²] = 2w₁. ∂/∂w₁[3w₁w₂] = 3w₂ (w₂ is a constant factor). ∂/∂w₁[w₂²] = 0 (no w₁). Result: 2w₁ + 3w₂.'
+        },
+        {
+            type: 'calc',
+            prompt: 'f(w₁, w₂) = w₁² + w₂². Calculate ∂f/∂w₁ at (w₁=3, w₂=4).',
+            answer: 6,
+            hint: '∂/∂w₁[w₁²] = 2w₁, the w₂² term vanishes',
+            explanation: '∂f/∂w₁ = 2w₁. At (3, 4): 2×3 = 6. The w₂² term disappears because it has no w₁. This pattern ∇(‖w‖²) = 2w is fundamental to understanding L2 regularisation.'
+        },
+        {
+            type: 'fill',
+            before: 'The gradient ∇L points in the direction of steepest ',
+            after: ' — gradient descent subtracts it to go downhill.',
+            answer: 'ascent',
+            explanation: 'This is the key insight: ∇L points uphill (steepest ascent). To minimise L, we go in the OPPOSITE direction: w ← w − α∇L. The minus sign is what makes gradient descent work.'
+        },
+        {
+            type: 'calc',
+            prompt: 'f = 5w₁² + 2w₂. What is ∂f/∂w₂?',
+            answer: 2,
+            hint: '∂/∂w₂[5w₁²] = 0 (no w₂). ∂/∂w₂[2w₂] = 2.',
+            explanation: 'When differentiating w.r.t. w₂: the 5w₁² term has no w₂ so its partial is 0. The 2w₂ term gives 2. Result: ∂f/∂w₂ = 2, a constant regardless of w₁ or w₂.'
+        },
+        {
+            type: 'mc',
+            prompt: 'If ∇L = [0, 0] at point w*, what does this mean?',
+            options: [
+                'The loss is zero at w*',
+                'w* is a critical point — a candidate for a minimum, maximum, or saddle point',
+                'The learning rate must be zero',
+                'The matrix is singular at w*'
+            ],
+            answer: 1,
+            explanation: 'When the gradient is the zero vector, all partial derivatives are zero — the loss surface is flat in every direction at w*. This is a critical point: could be a minimum (what we want), maximum, or saddle point.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The multidimensional gradient descent update is: w ← ?',
+            options: ['w + α∇L', 'w − α∇L', 'w / α∇L', 'α∇L − w'],
+            answer: 1,
+            explanation: 'w ← w − α∇L. Each component updates independently: wᵢ ← wᵢ − α·∂L/∂wᵢ. The vector form is clean and efficient — one matrix operation updates all weights simultaneously.'
+        },
+        {
+            type: 'calc',
+            prompt: 'f(w₁, w₂) = w₁w₂. Calculate ∂f/∂w₁ at (w₁=2, w₂=5).',
+            answer: 5,
+            hint: 'Treat w₂ as a constant. ∂/∂w₁[w₁·w₂] = w₂',
+            explanation: '∂f/∂w₁ = w₂ (treating w₂ as a constant multiplier). At (2, 5): ∂f/∂w₁ = 5. Note: ∂f/∂w₂ = w₁ = 2. The gradient is ∇f = [w₂, w₁] = [5, 2] at this point.'
+        },
+        {
+            type: 'tf',
+            prompt: 'The gradient of a function is always a scalar number.',
+            answer: false,
+            explanation: 'The gradient is a VECTOR with one component per input variable. For L(w₁, w₂, …, wₙ), ∇L has n components. Only in 1D does the gradient reduce to a scalar (the ordinary derivative).'
+        },
+        {
+            type: 'mc',
+            prompt: 'For a neural network with 1 million parameters, the gradient ∇L has…',
+            options: [
+                '1 entry — the total derivative',
+                '1 million entries — one partial derivative per parameter',
+                '1000 entries — the square root of parameters',
+                '2 million entries — real and imaginary parts'
+            ],
+            answer: 1,
+            explanation: 'The gradient has exactly one entry per parameter. For 1M parameters, ∇L ∈ ℝ¹ᴹ. This is why backpropagation must be efficient — computing 1M partial derivatives naively would be catastrophically slow.'
+        },
+        {
+            type: 'fill',
+            before: 'The partial derivative ∂f/∂w₂ is computed by treating w₁ (and all other variables) as a ',
+            after: '.',
+            answer: 'constant',
+            explanation: 'Partial differentiation is just ordinary 1D differentiation — you freeze all variables except the one you\'re differentiating with respect to. This simplicity is what makes calculus scale to millions of parameters.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

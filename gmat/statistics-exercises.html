@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistics Exercises — GMAT Quant</title>
+  <meta name="theme-color" content="#1a252f" />
+  <link rel="manifest" href="../manifest.json" />
+  <style>
+    :root { --accent: #1a5276; --accent-bg: #eaf2f8; --exp-bg: #eaf2f8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    header { background: #1a252f; color: white; padding: 16px 20px; display: flex; align-items: center; position: relative; }
+    .back { position: absolute; left: 16px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88em; transition: color .2s; }
+    .back:hover { color: white; }
+    .header-center { flex: 1; text-align: center; }
+    .header-center h1 { font-size: 1em; letter-spacing: 2px; text-transform: uppercase; }
+    .header-center p  { font-size: 0.75em; opacity: 0.6; margin-top: 3px; }
+    .tab-bar { background: white; border-bottom: 2px solid #e1e8ed; display: flex; }
+    .tab { flex: 1; padding: 13px; text-align: center; font-size: 0.85em; font-weight: 600; text-decoration: none; color: #7f8c8d; transition: color .2s; }
+    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
+    .tab:not(.active):hover { color: #555; }
+    .page { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  </style>
+</head>
+<body>
+<header>
+  <a class="back" href="statistics.html">← Theory</a>
+  <div class="header-center">
+    <h1>Statistics Exercises</h1>
+    <p>Quantitative Reasoning · Statistics &amp; Averages</p>
+  </div>
+</header>
+<nav class="tab-bar">
+  <a class="tab" href="statistics.html">Theory</a>
+  <span class="tab active">Exercises</span>
+</nav>
+<div class="page">
+  <div id="engine-root"></div>
+</div>
+<script src="../js/gmat-db.js"></script>
+<script src="../js/gmat-engine.js"></script>
+<script>
+  GmatEngine.init({ topic: 'statistics', rootId: 'engine-root' });
+</script>
+</body>
+</html>

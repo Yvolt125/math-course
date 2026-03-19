@@ -6,7 +6,8 @@
       "Bash(grep -o '\\\\\\\\\\\\\\\\text{}' gmat_db_ttp.js)",
       "Bash(python3:*)",
       "Bash(node -e \":*)",
-      "Bash(node convert_ttp.js)"
+      "Bash(node convert_ttp.js)",
+      "Bash(python reorganise.py)"
     ]
   }
 }

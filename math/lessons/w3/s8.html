@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Python for Optimisation</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w3s8',
+    title: 'Python for Optimisation',
+    subtitle: 'NumPy GD · scipy · Autograd',
+    color: '#2ecc71',
+    questions: [
+        {
+            type: 'calc',
+            prompt: 'One GD step: L(w) = w², w = 5, lr = 0.1. gradient = 2w = 10. New w = ?',
+            answer: 4,
+            hint: 'w_new = w − lr × gradient',
+            explanation: 'w_new = 5 − 0.1 × 10 = 5 − 1 = 4. In NumPy: w = w - lr * grad. This is the core of every gradient descent implementation — one line of code executing the mathematical update rule.'
+        },
+        {
+            type: 'fill',
+            before: 'Central difference approximation: f\'(x) ≈ (f(x+h) − f(x−h)) / ',
+            after: '',
+            answer: '2h',
+            explanation: 'Central difference is more accurate than forward difference (f(x+h)−f(x))/h. Error is O(h²) vs O(h). Use h=1e-5 in practice. In Python: grad = (f(x+h) - f(x-h)) / (2*h).'
+        },
+        {
+            type: 'mc',
+            prompt: 'What does PyTorch\'s loss.backward() compute?',
+            options: [
+                'The forward pass predictions',
+                'All gradients ∂L/∂wᵢ via automatic differentiation (the chain rule)',
+                'The test accuracy',
+                'The second derivative of the loss'
+            ],
+            answer: 1,
+            explanation: 'loss.backward() runs backpropagation: it applies the chain rule through every operation in the computational graph to compute ∂L/∂wᵢ for every weight wᵢ. Gradients are stored in param.grad.'
+        },
+        {
+            type: 'tf',
+            prompt: 'np.gradient() computes exact symbolic derivatives.',
+            answer: false,
+            explanation: 'np.gradient() computes NUMERICAL gradients using finite differences on discrete array data. It\'s an approximation, not an exact symbolic derivative. For exact gradients, use autograd, JAX, or PyTorch autograd.'
+        },
+        {
+            type: 'calc',
+            prompt: 'Two GD steps: w = 10, lr = 0.1, gradient always = 4. w after step 2 = ?',
+            answer: 9.2,
+            hint: 'Step 1: w = 10 − 0.1×4 = 9.6. Step 2: w = 9.6 − 0.1×4',
+            explanation: 'Step 1: w = 10 − 0.4 = 9.6. Step 2: w = 9.6 − 0.4 = 9.2. If the gradient were w-dependent (like L=w²), w would also change the gradient each step. Here with constant gradient=4, each step reduces w by 0.4.'
+        },
+        {
+            type: 'mc',
+            prompt: 'In Python gradient descent code: `w = w - lr * grad`. What is `lr`?',
+            options: [
+                'Linear regression coefficient',
+                'The learning rate α — controls step size',
+                'Loss ratio',
+                'Log rate — the natural log of the gradient'
+            ],
+            answer: 1,
+            explanation: '`lr` stands for learning rate. It\'s the α in w ← w − α·∂L/∂w. In PyTorch, the optimizer (e.g. SGD, Adam) takes lr as a constructor argument: optim.SGD(params, lr=0.01).'
+        },
+        {
+            type: 'type',
+            prompt: 'The technique of computing exact derivatives by recording operations during the forward pass is called ___ differentiation.',
+            answer: ['automatic', 'auto'],
+            explanation: 'Automatic differentiation (autograd) records every operation during the forward pass in a computational graph. The backward pass applies the chain rule through this graph to compute exact gradients — not numerical approximations like finite differences.'
+        },
+        {
+            type: 'mc',
+            prompt: 'scipy.optimize.minimize(f, x0) requires…',
+            options: [
+                'Only the gradient — no function needed',
+                'An objective function f and an initial guess x0',
+                'Training data and labels',
+                'A pre-trained neural network'
+            ],
+            answer: 1,
+            explanation: 'The minimum required arguments are the objective function f(w) and initial guess x0. Optionally provide jac= (gradient function), method= (e.g. "BFGS", "Nelder-Mead"), and bounds=.'
+        },
+        {
+            type: 'calc',
+            prompt: 'L(w) = (w − 3)². At w = 5: dL/dw = 2(w−3) = 4. One GD step with lr=0.1: new w = ?',
+            answer: 4.6,
+            hint: 'w_new = 5 − 0.1 × 4',
+            explanation: 'w_new = 5 − 0.1 × 4 = 5 − 0.4 = 4.6. We are moving toward the minimum at w*=3. After many steps with a suitable lr, w converges to 3.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Analytical derivatives (symbolic or autodiff) are generally more accurate than numerical finite difference approximations.',
+            answer: true,
+            explanation: 'Numerical methods have floating-point truncation error: h too small → cancellation error; h too large → inaccurate approximation. Autodiff computes exact gradients (to machine precision) by applying chain rule symbolically. It\'s both exact and efficient.'
+        },
+        {
+            type: 'mc',
+            prompt: 'To minimise f(w) = (w−3)² starting from w=0 using scipy, which call is correct?',
+            options: [
+                'scipy.optimize.minimize(3, f)',
+                'scipy.optimize.minimize(f, x0=0)',
+                'scipy.optimize.minimize(f, target=3)',
+                'scipy.optimize.minimize(gradient=f, x0=0)'
+            ],
+            answer: 1,
+            explanation: 'scipy.optimize.minimize(fun, x0): first argument is the objective function, second is the initial guess x0=0. It will iteratively apply optimisation (default: BFGS) and return the minimiser at w≈3.'
+        },
+        {
+            type: 'fill',
+            before: 'In PyTorch, calling loss.',
+            after: '() computes all gradients via backpropagation.',
+            answer: 'backward',
+            explanation: 'loss.backward() is the entry point for automatic differentiation in PyTorch. After this call, every parameter with requires_grad=True has its gradient stored in param.grad. Then optimizer.step() applies the GD update.'
+        }
+    ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>
