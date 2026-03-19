@@ -234,12 +234,44 @@
     .btn-cancel { flex: 1; padding: 12px; background: #f0f2f5; color: #7f8c8d; border: none; border-radius: 12px; font-size: 0.9em; cursor: pointer; }
     .btn-ok     { flex: 2; padding: 12px; background: #c0392b; color: white; border: none; border-radius: 12px; font-size: 0.9em; font-weight: 700; cursor: pointer; }
     .key-hint   { font-size: 0.72em; color: #bdc3c7; margin-top: 4px; }
+
+    /* ── Import ── */
+    .btn-import {
+      padding: 6px 14px; background: #f0f2f5; border: 1.5px solid #e1e8ed;
+      border-radius: 10px; font-size: 0.78em; font-weight: 700; cursor: pointer;
+      color: #2c3e50; transition: background .15s; white-space: nowrap;
+    }
+    .btn-import:hover { background: #e1e8ed; }
+    .add-vocab-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 28px; margin-bottom: 10px;
+    }
+    .add-vocab-head .sec-label { margin: 0; }
+    .import-drop {
+      border: 2px dashed #e1e8ed; border-radius: 12px; padding: 28px 20px;
+      text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
+      color: #7f8c8d; font-size: 0.88em; line-height: 1.8;
+    }
+    .import-drop:hover, .import-drop.drag-over { border-color: #c0392b; background: rgba(192,57,43,0.04); }
+    .import-drop strong { display: block; font-size: 1em; color: #2c3e50; margin-bottom: 2px; }
+    .import-preview { overflow-x: auto; margin-top: 14px; border: 1px solid #e1e8ed; border-radius: 10px; }
+    .import-preview table { width: 100%; border-collapse: collapse; font-size: 0.8em; min-width: 280px; }
+    .import-preview th { padding: 7px 10px; color: #7f8c8d; font-weight: 700; text-transform: uppercase; font-size: 0.75em; border-bottom: 1px solid #e1e8ed; text-align: left; background: #f8f9fa; }
+    .import-preview td { padding: 6px 10px; color: #2c3e50; border-bottom: 1px solid #f0f2f5; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .import-preview tr:last-child td { border-bottom: none; }
+    .col-map-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .col-map-row label { font-size: 0.75em; font-weight: 700; color: #7f8c8d; text-transform: uppercase; letter-spacing: .5px; width: 110px; flex-shrink: 0; margin: 0; }
+    .col-map-row select { flex: 1; padding: 7px 10px; border: 1.5px solid #e1e8ed; border-radius: 8px; font-size: 0.85em; font-family: inherit; outline: none; background: white; }
+    .col-map-row select:focus { border-color: #c0392b; }
+    .modal.wide { width: min(500px, calc(100vw - 32px)); }
+    .import-has-header-row { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 0.85em; color: #2c3e50; cursor: pointer; font-weight: normal; text-transform: none; letter-spacing: 0; }
+    .import-has-header-row input { cursor: pointer; }
   </style>
 </head>
 <body>
 
 <header>
-  <a class="back" href="../index.html">← Home</a>
+  <a class="back" href="../languages/index.html">← Languages</a>
   <h1>Spanish</h1>
   <p>Vocabulary · Flashcards · Lessons</p>
   <button class="btn-settings" onclick="openSettings()" title="Settings">⚙️</button>
@@ -287,7 +319,10 @@
   </div>
 
   <!-- Add word -->
-  <div class="sec-label" style="margin-top:28px">Add Vocabulary</div>
+  <div class="add-vocab-head">
+    <div class="sec-label">Add Vocabulary</div>
+    <button class="btn-import" onclick="openImport()">⬆ Import file</button>
+  </div>
   <div class="add-panel">
     <button class="add-toggle" id="add-toggle" onclick="toggleAdd()">
       <span>＋ New word or phrase</span>
@@ -347,6 +382,59 @@
   </div>
   <div class="vocab-list" id="vocab-list"></div>
 
+</div>
+
+<!-- Import modal -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal wide">
+    <h2>Import Vocabulary</h2>
+    <p class="modal-sub">Import words from Excel (.xlsx · .xls), CSV, or TSV. Each row becomes one vocab card.</p>
+
+    <div id="import-drop-area" class="import-drop"
+         onclick="document.getElementById('import-file').click()"
+         ondragover="event.preventDefault();this.classList.add('drag-over')"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="event.preventDefault();this.classList.remove('drag-over');handleImportFile(event.dataTransfer.files[0])">
+      <strong>Click to choose a file, or drag &amp; drop</strong>
+      Excel (.xlsx · .xls) &nbsp;·&nbsp; CSV &nbsp;·&nbsp; TSV
+    </div>
+    <input type="file" id="import-file" accept=".xlsx,.xls,.csv,.tsv,.txt" style="display:none"
+           onchange="handleImportFile(this.files[0])">
+
+    <div id="import-preview-area" style="display:none">
+      <div class="import-preview" id="import-table"></div>
+      <div style="font-size:0.72em;color:#bdc3c7;margin-top:4px;margin-left:2px">Preview · first 5 rows</div>
+
+      <label class="import-has-header-row">
+        <input type="checkbox" id="import-has-header" checked onchange="updateImportCount()">
+        First row is a header — skip it when importing
+      </label>
+
+      <div style="margin-top:14px">
+        <div class="col-map-row">
+          <label>Spanish *</label>
+          <select id="col-spanish" onchange="updateImportCount()"></select>
+        </div>
+        <div class="col-map-row">
+          <label>English</label>
+          <select id="col-english" onchange="updateImportCount()"></select>
+        </div>
+        <div class="col-map-row">
+          <label>Part of Speech</label>
+          <select id="col-pos" onchange="updateImportCount()"></select>
+        </div>
+        <div class="col-map-row">
+          <label>Definition</label>
+          <select id="col-def" onchange="updateImportCount()"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeImport()">Cancel</button>
+      <button class="btn-ok" id="btn-do-import" style="display:none" onclick="doImport()">Import</button>
+    </div>
+  </div>
 </div>
 
 <!-- Settings modal -->
@@ -581,6 +669,153 @@
   }
   document.getElementById('settings-modal').addEventListener('click', function(e) {
     if (e.target === this) closeSettings();
+  });
+
+  /* ── Import ──────────────────────────── */
+  let _importData = [], _importHeaders = [];
+
+  function openImport() {
+    document.getElementById('import-modal').classList.add('open');
+    resetImport();
+  }
+  function closeImport() {
+    document.getElementById('import-modal').classList.remove('open');
+  }
+  function resetImport() {
+    _importData = []; _importHeaders = [];
+    document.getElementById('import-drop-area').style.display = '';
+    document.getElementById('import-preview-area').style.display = 'none';
+    document.getElementById('btn-do-import').style.display = 'none';
+    document.getElementById('import-file').value = '';
+  }
+
+  async function handleImportFile(file) {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'xlsx' || ext === 'xls') {
+      try {
+        if (!window.XLSX) {
+          const dropArea = document.getElementById('import-drop-area');
+          dropArea.innerHTML = '<strong>Loading Excel parser…</strong>';
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+        const buf = await file.arrayBuffer();
+        const wb  = XLSX.read(buf, { type: 'array' });
+        const ws  = wb.Sheets[wb.SheetNames[0]];
+        processImportData(XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }));
+      } catch(e) {
+        alert('Could not load Excel parser (requires internet). Try saving as CSV from Excel instead.\n\nError: ' + e.message);
+        resetImport();
+      }
+    } else {
+      const text = await file.text();
+      const sep  = ext === 'tsv' ? '\t' : detectSep(text);
+      processImportData(text.split(/\r?\n/).filter(l => l.trim()).map(l => splitCSV(l, sep)));
+    }
+  }
+
+  function detectSep(text) {
+    const first = (text.split(/\r?\n/)[0] || '');
+    return first.split('\t').length > first.split(',').length ? '\t' : ',';
+  }
+
+  function splitCSV(row, sep) {
+    if (sep !== ',') return row.split(sep).map(c => c.trim());
+    const cells = []; let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      const c = row[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cells.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    cells.push(cur);
+    return cells.map(c => c.trim());
+  }
+
+  function processImportData(data) {
+    data = data.filter(r => r.some(c => String(c).trim()));
+    if (!data.length) { alert('No data found in file.'); return; }
+    _importHeaders = data[0].map((h, i) => String(h || '').trim() || ('Col ' + (i + 1)));
+    _importData = data;
+    showImportPreview();
+  }
+
+  function showImportPreview() {
+    document.getElementById('import-drop-area').style.display = 'none';
+    document.getElementById('import-preview-area').style.display = '';
+    document.getElementById('btn-do-import').style.display = '';
+
+    const noneOpt = '<option value="-1">— skip —</option>';
+    const colOpts = _importHeaders.map((h, i) => `<option value="${i}">${esc(h)}</option>`).join('');
+    ['col-spanish','col-english','col-pos','col-def'].forEach((id, fi) => {
+      document.getElementById(id).innerHTML = (fi === 0 ? '' : noneOpt) + colOpts;
+    });
+
+    // Auto-detect column mapping from header names
+    const hl   = _importHeaders.map(h => h.toLowerCase());
+    const find = (...kws) => hl.findIndex(h => kws.some(k => h.includes(k)));
+    const si   = find('spanish','term','es','word','palabra');
+    const ei   = find('english','translation','en','meaning','translate');
+    const pi   = find('pos','part','speech','type','clase');
+    const di   = find('def','description','note','definición');
+
+    document.getElementById('col-spanish').value = si >= 0 ? si : 0;
+    document.getElementById('col-english').value = ei >= 0 ? ei : (si === 0 ? 1 : 0);
+    document.getElementById('col-pos').value     = pi >= 0 ? pi : -1;
+    document.getElementById('col-def').value     = di >= 0 ? di : -1;
+
+    // Render preview table (first 5 rows)
+    const rows = _importData.slice(0, 5);
+    document.getElementById('import-table').innerHTML =
+      `<table><thead><tr>${_importHeaders.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>` +
+      `<tbody>${rows.map(r =>
+        `<tr>${_importHeaders.map((_, i) =>
+          `<td title="${esc(String(r[i]||''))}">${esc(String(r[i]||'').slice(0,25))}</td>`
+        ).join('')}</tr>`
+      ).join('')}</tbody></table>`;
+
+    updateImportCount();
+  }
+
+  function updateImportCount() {
+    const skip = document.getElementById('import-has-header').checked ? 1 : 0;
+    const si   = parseInt(document.getElementById('col-spanish').value);
+    const n    = _importData.slice(skip).filter(r => si >= 0 && String(r[si]||'').trim()).length;
+    document.getElementById('btn-do-import').textContent = `Import ${n} word${n !== 1 ? 's' : ''}`;
+  }
+
+  function doImport() {
+    const skip = document.getElementById('import-has-header').checked ? 1 : 0;
+    const si   = parseInt(document.getElementById('col-spanish').value);
+    const ei   = parseInt(document.getElementById('col-english').value);
+    const pi   = parseInt(document.getElementById('col-pos').value);
+    const di   = parseInt(document.getElementById('col-def').value);
+    let added  = 0;
+    _importData.slice(skip).forEach(r => {
+      const term = si >= 0 ? String(r[si]||'').trim() : '';
+      if (!term) return;
+      VS.add({
+        term,
+        translation:  ei >= 0 ? String(r[ei]||'').trim() : '',
+        partOfSpeech: pi >= 0 ? String(r[pi]||'').trim() : '',
+        definition:   di >= 0 ? String(r[di]||'').trim() : '',
+        examples: []
+      });
+      added++;
+    });
+    closeImport();
+    refreshStats();
+    renderList();
+    if (added) alert(`Imported ${added} word${added !== 1 ? 's' : ''}.`);
+  }
+
+  document.getElementById('import-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeImport();
   });
 
   /* ── Util ────────────────────────────── */

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programming — Study Hub</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: #1a252f; color: white; padding: 28px 20px 24px; text-align: center; position: relative; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; }
+    header p  { font-size: 0.78em; opacity: 0.5; margin-top: 3px; letter-spacing: 1px; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+
+    .hub { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 28px 20px 60px; gap: 10px; max-width: 520px; margin: 0 auto; width: 100%; }
+
+    .sec-label { width: 100%; font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-top: 18px; margin-bottom: 4px; }
+    .sec-label:first-child { margin-top: 0; }
+
+    .hub-card { width: 100%; background: white; border-radius: 16px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit; box-shadow: 0 3px 16px rgba(0,0,0,0.07); border-left: 5px solid #8e44ad; transition: transform 0.15s, box-shadow 0.15s; }
+    .hub-card:active { transform: scale(0.97); }
+    .hub-card:hover  { box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
+    .hub-card.disabled { opacity: 0.4; pointer-events: none; }
+    .hub-card.practice { border-left-color: #16a085; }
+
+    .hub-icon { width: 50px; height: 50px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.6em; flex-shrink: 0; background: #f5eef8; }
+    .hub-card.practice .hub-icon { background: #e8f8f5; }
+
+    .hub-text { flex: 1; }
+    .hub-text h2 { font-size: 1em; font-weight: 700; color: #2c3e50; margin-bottom: 3px; }
+    .hub-text p  { font-size: 0.78em; color: #7f8c8d; }
+
+    .hub-arrow { margin-left: auto; color: #bdc3c7; font-size: 1.3em; flex-shrink: 0; }
+    .soon-badge { font-size: 0.68em; font-weight: 700; padding: 3px 9px; border-radius: 10px; background: #f0f2f5; color: #95a5a6; white-space: nowrap; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="../index.html">← Home</a>
+  <h1>Programming</h1>
+  <p>Courses · Practice challenges</p>
+</header>
+
+<div class="hub">
+
+  <div class="sec-label">Courses</div>
+
+  <a class="hub-card" href="os/index.html">
+    <div class="hub-icon">🖥️</div>
+    <div class="hub-text">
+      <h2>OS &amp; File Systems</h2>
+      <p>Files · paths · processes · environment</p>
+    </div>
+    <div class="hub-arrow">›</div>
+  </a>
+
+  <div class="hub-card disabled">
+    <div class="hub-icon">🐍</div>
+    <div class="hub-text">
+      <h2>Python for Data</h2>
+      <p>Pandas · NumPy · data wrangling</p>
+    </div>
+    <span class="soon-badge">Soon</span>
+  </div>
+
+  <div class="hub-card disabled">
+    <div class="hub-icon">🗄️</div>
+    <div class="hub-text">
+      <h2>SQL</h2>
+      <p>Queries · joins · aggregations</p>
+    </div>
+    <span class="soon-badge">Soon</span>
+  </div>
+
+  <div class="sec-label">Practice</div>
+
+  <a class="hub-card practice" href="practice/index.html">
+    <div class="hub-icon">⌨️</div>
+    <div class="hub-text">
+      <h2>Coding Challenges</h2>
+      <p>Write real Python · auto-checked · spaced repetition</p>
+    </div>
+    <div class="hub-arrow">›</div>
+  </a>
+
+</div>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');</script>
+</body>
+</html>

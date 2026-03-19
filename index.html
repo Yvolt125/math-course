@@ -64,9 +64,9 @@
         .hub-card:active { transform: scale(0.97); }
         .hub-card:hover  { box-shadow: 0 6px 28px rgba(0,0,0,0.13); }
 
-        .hub-card.math    { border-left-color: #2980b9; }
-        .hub-card.gmat    { border-left-color: #e67e22; }
-        .hub-card.spanish { border-left-color: #c0392b; }
+        .hub-card.math { border-left-color: #2980b9; }
+        .hub-card.lang { border-left-color: #27ae60; }
+        .hub-card.code { border-left-color: #8e44ad; }
 
         .hub-icon {
             width: 58px; height: 58px;
@@ -75,9 +75,9 @@
             font-size: 1.8em;
             flex-shrink: 0;
         }
-        .math    .hub-icon { background: #eaf4fb; }
-        .gmat    .hub-icon { background: #fef5e7; }
-        .spanish .hub-icon { background: #fdedec; }
+        .math .hub-icon { background: #eaf4fb; }
+        .lang .hub-icon { background: #eafaf1; }
+        .code .hub-icon { background: #f5eef8; }
 
         .hub-text h2 { font-size: 1.15em; font-weight: 700; color: #2c3e50; margin-bottom: 4px; }
         .hub-text p  { font-size: 0.82em; color: #7f8c8d; }
@@ -101,29 +101,30 @@
 
 <div class="hub">
 
-    <a class="hub-card math" href="math/index.html">
+    <a class="hub-card math" href="maths/index.html">
         <div class="hub-icon">📐</div>
         <div class="hub-text">
-            <h2>Math for ML</h2>
-            <p>Luis Serrano · Linear Algebra · PCA</p>
+            <h2>Math</h2>
+            <p>Math for ML · GMAT</p>
         </div>
         <div class="hub-arrow">›</div>
     </a>
 
-    <a class="hub-card gmat" href="gmat/index.html">
-        <div class="hub-icon">📝</div>
+    <a class="hub-card lang" href="languages/index.html">
+        <div class="hub-icon">🌍</div>
         <div class="hub-text">
-            <h2>GMAT</h2>
-            <p>Quant · Verbal · Data Insights · Practice</p>
+            <h2>Languages</h2>
+            <p>Spanish · Dutch · more to come</p>
         </div>
         <div class="hub-arrow">›</div>
     </a>
 
-    <a class="hub-card spanish" href="spanish/index.html">
-        <div class="hub-icon">🇪🇸</div>
+
+    <a class="hub-card code" href="programming/index.html">
+        <div class="hub-icon">💻</div>
         <div class="hub-text">
-            <h2>Spanish</h2>
-            <p>Coming soon</p>
+            <h2>Programming</h2>
+            <p>Package overviews · references</p>
         </div>
         <div class="hub-arrow">›</div>
     </a>

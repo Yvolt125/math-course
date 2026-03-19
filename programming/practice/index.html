@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Challenges — Programming</title>
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; padding-bottom: 50px; }
+
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+
+    /* XP bar */
+    .xp-bar-wrap { background: #0f1c26; padding: 10px 20px; display: flex; align-items: center; gap: 12px; justify-content: center; }
+    .xp-label { color: rgba(255,255,255,0.5); font-size: 0.75em; font-weight: 700; letter-spacing: 1px; }
+    .xp-track { flex: 1; max-width: 300px; height: 8px; background: rgba(255,255,255,0.12); border-radius: 6px; overflow: hidden; }
+    .xp-fill  { height: 100%; background: #8e44ad; border-radius: 6px; transition: width 0.4s; }
+    .xp-count { color: white; font-size: 0.82em; font-weight: 700; min-width: 60px; }
+
+    /* Review strip */
+    .action-strip { max-width: 480px; margin: 20px auto 0; padding: 0 16px; display: flex; gap: 12px; }
+    .action-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px; border-radius: 16px; text-decoration: none; color: white; font-weight: 700; transition: opacity 0.15s, transform 0.15s; text-align: center; background: #8e44ad; cursor: pointer; border: none; }
+    .action-card.review { background: #8e44ad; }
+    .action-card.disabled { background: #bdc3c7; pointer-events: none; }
+    .action-card:hover { opacity: 0.88; transform: translateY(-2px); }
+    .ac-icon  { font-size: 1.5em; }
+    .ac-label { font-size: 0.78em; font-weight: 800; letter-spacing: 0.5px; }
+    .ac-count { font-size: 0.72em; opacity: 0.85; }
+
+    /* Skill tree */
+    .tree { max-width: 480px; margin: 0 auto; padding: 28px 16px 0; }
+
+    .section-heading { text-align: center; font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; color: #7f8c8d; margin-bottom: 20px; }
+
+    .path-segment { width: 3px; height: 24px; background: repeating-linear-gradient(to bottom, #bdc3c7 0px, #bdc3c7 5px, transparent 5px, transparent 10px); margin: 0 auto; }
+
+    .skill-node { display: flex; align-items: center; gap: 16px; background: white; border-radius: 16px; padding: 16px 18px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); border: 2px solid #e1e8ed; cursor: pointer; text-decoration: none; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+    .skill-node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+    .skill-node:active { transform: scale(0.98); }
+    .skill-node.locked { opacity: 0.4; cursor: not-allowed; pointer-events: none; border-style: dashed; }
+    .skill-node.left  { margin-right: 56px; }
+    .skill-node.right { margin-left:  56px; }
+
+    .skill-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4em; flex-shrink: 0; border: 3px solid #c39bd3; background: #f5eef8; }
+    .skill-icon.done-1 { border-color: #f39c12; background: #fef5e7; }
+    .skill-icon.done-2 { border-color: #2980b9; background: #eaf4fb; }
+    .skill-icon.done-3 { border-color: #16a085; background: #e8f8f5; }
+    .skill-node.locked .skill-icon { border-color: #bdc3c7; background: #f0f2f5; }
+
+    .skill-body { flex: 1; }
+    .skill-name { font-size: 0.93em; font-weight: 700; color: #2c3e50; margin-bottom: 3px; }
+    .skill-meta { font-size: 0.74em; color: #7f8c8d; margin-bottom: 5px; }
+    .progress-row { display: flex; align-items: center; gap: 8px; }
+    .prog-bar { flex: 1; height: 5px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; background: #8e44ad; border-radius: 4px; transition: width 0.4s; }
+    .prog-text { font-size: 0.7em; color: #95a5a6; white-space: nowrap; }
+
+    .start-btn { background: #8e44ad; color: white; border: none; border-radius: 10px; padding: 8px 14px; font-size: 0.8em; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    .start-btn.review { background: #f39c12; }
+    .skill-node.locked .start-btn { background: #bdc3c7; }
+
+    .unit-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 24px; }
+    .unit-divider::before, .unit-divider::after { content: ''; flex: 1; height: 1px; background: #dce3ea; }
+    .unit-divider span { font-size: 0.7em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #aab4bc; white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="../index.html">← Programming</a>
+  <h1>Coding Challenges</h1>
+  <p>Write real Python · auto-checked · spaced repetition</p>
+</header>
+
+<div class="xp-bar-wrap">
+  <span class="xp-label">XP</span>
+  <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  <span class="xp-count" id="xp-count">0 XP</span>
+</div>
+
+<div class="action-strip">
+  <button class="action-card review disabled" id="review-btn" onclick="startReview()">
+    <span class="ac-icon">🔁</span>
+    <span class="ac-label">Due for Review</span>
+    <span class="ac-count" id="due-count">0 due</span>
+  </button>
+</div>
+
+<div class="tree">
+  <div class="section-heading">OS · File Systems</div>
+
+  <!-- Unit 1 -->
+  <div class="skill-node left" id="node-unit1" onclick="startUnit('unit1')">
+    <div class="skill-icon" id="icon-unit1">🗂️</div>
+    <div class="skill-body">
+      <div class="skill-name">File System Basics</div>
+      <div class="skill-meta">cwd · listing · exists · size · os.walk</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-unit1" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-unit1">0 / 6</span>
+      </div>
+    </div>
+    <button class="start-btn" id="btn-unit1">Start</button>
+  </div>
+
+  <div class="path-segment"></div>
+
+  <!-- Unit 2 -->
+  <div class="skill-node right" id="node-unit2" onclick="startUnit('unit2')">
+    <div class="skill-icon" id="icon-unit2">🔗</div>
+    <div class="skill-body">
+      <div class="skill-name">Working with Paths</div>
+      <div class="skill-meta">join · basename · dirname · splitext · pathlib</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-unit2" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-unit2">0 / 6</span>
+      </div>
+    </div>
+    <button class="start-btn" id="btn-unit2">Start</button>
+  </div>
+
+  <div class="path-segment"></div>
+
+  <!-- Unit 3 -->
+  <div class="skill-node left" id="node-unit3" onclick="startUnit('unit3')">
+    <div class="skill-icon" id="icon-unit3">📖</div>
+    <div class="skill-body">
+      <div class="skill-name">Reading &amp; Writing Files</div>
+      <div class="skill-meta">open · csv · json · write · append</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-unit3" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-unit3">0 / 6</span>
+      </div>
+    </div>
+    <button class="start-btn" id="btn-unit3">Start</button>
+  </div>
+
+  <div class="unit-divider"><span>More units coming soon</span></div>
+
+  <div class="skill-node right locked">
+    <div class="skill-icon">🌍</div>
+    <div class="skill-body">
+      <div class="skill-name">Environment &amp; Processes</div>
+      <div class="skill-meta">os.environ · subprocess · system info</div>
+    </div>
+    <button class="start-btn">Soon</button>
+  </div>
+
+  <div class="path-segment"></div>
+
+  <div class="skill-node left locked">
+    <div class="skill-icon">🤖</div>
+    <div class="skill-body">
+      <div class="skill-name">Automation Scripts</div>
+      <div class="skill-meta">shutil · batch processing · pipelines</div>
+    </div>
+    <button class="start-btn">Soon</button>
+  </div>
+
+</div>
+
+<script src="challenges.js"></script>
+<script>
+  const UNITS = ['unit1', 'unit2', 'unit3'];
+
+  function init() {
+    // XP
+    const xp = parseInt(localStorage.getItem('prog_xp') || '0');
+    const XP_LEVEL = 500;
+    document.getElementById('xp-count').textContent = xp + ' XP';
+    document.getElementById('xp-fill').style.width = Math.min((xp % XP_LEVEL) / XP_LEVEL * 100, 100) + '%';
+
+    // Due count
+    let totalDue = 0;
+    UNITS.forEach(uid => {
+      const stats = getUnitStats(uid);
+      totalDue += stats.due;
+
+      const pct = stats.total ? (stats.done / stats.total) * 100 : 0;
+      document.getElementById('prog-unit' + uid.replace('unit','')).style.width = pct + '%';
+      document.getElementById('prog-text-unit' + uid.replace('unit','')).textContent = stats.done + ' / ' + stats.total;
+
+      // Crown level
+      const crowns = stats.done === stats.total ? 3
+                   : stats.done >= Math.ceil(stats.total * 0.5) ? 2
+                   : stats.done > 0 ? 1 : 0;
+      if (crowns > 0) {
+        document.getElementById('icon-unit' + uid.replace('unit','')).className = 'skill-icon done-' + crowns;
+        const btn = document.getElementById('btn-unit' + uid.replace('unit',''));
+        if (btn) btn.textContent = stats.due > 0 ? 'Review' : 'Practice';
+        if (stats.due > 0 && btn) btn.className = 'start-btn review';
+      }
+    });
+
+    if (totalDue > 0) {
+      const btn = document.getElementById('review-btn');
+      btn.classList.remove('disabled');
+      document.getElementById('due-count').textContent = totalDue + ' due';
+    }
+  }
+
+  function startUnit(unitId) {
+    const challenges = getChallengesByUnit(unitId);
+    const now = Date.now();
+    // Find first due or incomplete challenge
+    let target = challenges.find(c => {
+      const s = getSRS(c.id);
+      return !s.done || s.nextDue <= now;
+    });
+    if (!target) target = challenges[0]; // fallback
+    window.location.href = 'challenge.html?id=' + target.id;
+  }
+
+  function startReview() {
+    const now = Date.now();
+    for (const uid of UNITS) {
+      const chs = getChallengesByUnit(uid);
+      const due = chs.find(c => getSRS(c.id).done && getSRS(c.id).nextDue <= now);
+      if (due) { window.location.href = 'challenge.html?id=' + due.id; return; }
+    }
+  }
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../sw.js');
+  init();
+</script>
+</body>
+</html>

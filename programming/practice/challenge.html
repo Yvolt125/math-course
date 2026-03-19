@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challenge — Programming</title>
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: #1a252f; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+    .back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; white-space: nowrap; }
+    .back:hover { color: white; }
+    .header-meta { flex: 1; text-align: center; }
+    .header-unit { font-size: 0.68em; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.45); }
+    .header-title { font-size: 1em; font-weight: 700; color: white; margin-top: 1px; }
+    .header-xp { font-size: 0.75em; color: #c39bd3; font-weight: 700; white-space: nowrap; }
+
+    /* Progress bar */
+    .prog-strip { background: #8e44ad; height: 4px; transition: width 0.4s; }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(15,25,35,0.92);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100; gap: 16px; color: white;
+    }
+    .loading-overlay.hidden { display: none; }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.15); border-top-color: #8e44ad; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 0.9em; opacity: 0.75; }
+    .loading-sub  { font-size: 0.75em; opacity: 0.4; }
+
+    /* Main layout */
+    .main { flex: 1; display: flex; flex-direction: column; max-width: 720px; width: 100%; margin: 0 auto; padding: 20px 16px 40px; gap: 16px; }
+
+    /* Challenge card */
+    .challenge-card { background: white; border-radius: 16px; padding: 20px 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .challenge-emoji { font-size: 2em; margin-bottom: 8px; }
+    .challenge-title { font-size: 1.15em; font-weight: 800; color: #2c3e50; margin-bottom: 10px; }
+    .challenge-desc { font-size: 0.88em; color: #34495e; line-height: 1.7; }
+    .challenge-desc code { background: #f0f2f5; border-radius: 4px; padding: 1px 5px; font-family: Consolas, monospace; font-size: 0.93em; color: #8e44ad; }
+    .challenge-desc strong { color: #2c3e50; }
+    .challenge-context { margin-top: 10px; background: #f8f9fa; border-left: 3px solid #8e44ad; border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 0.8em; color: #7f8c8d; }
+
+    /* Editor */
+    .editor-wrap { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); overflow: hidden; }
+    .editor-toolbar { background: #2c3e50; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; }
+    .editor-lang { font-size: 0.72em; color: rgba(255,255,255,0.45); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .toolbar-btns { display: flex; gap: 8px; align-items: center; }
+    .btn-hint { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 7px; padding: 4px 10px; font-size: 0.75em; cursor: pointer; }
+    .btn-hint:hover { border-color: rgba(255,255,255,0.5); color: white; }
+    .btn-reset { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 0.72em; cursor: pointer; padding: 4px 8px; }
+    .btn-reset:hover { color: rgba(255,255,255,0.7); }
+
+    #code-editor {
+      width: 100%; min-height: 180px; max-height: 400px;
+      background: #1e1e2e; color: #cdd6f4;
+      font-family: Consolas, 'Courier New', monospace; font-size: 0.9em; line-height: 1.6;
+      border: none; outline: none; padding: 16px; resize: vertical;
+      tab-size: 4;
+    }
+
+    .run-bar { background: #1e1e2e; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .btn-run { background: #8e44ad; color: white; border: none; border-radius: 10px; padding: 10px 22px; font-size: 0.88em; font-weight: 700; cursor: pointer; transition: opacity 0.15s; display: flex; align-items: center; gap: 6px; }
+    .btn-run:hover { opacity: 0.88; }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+    .run-hint { font-size: 0.72em; color: rgba(255,255,255,0.3); }
+
+    /* Output */
+    .output-wrap { background: #0d0d14; border-radius: 12px; overflow: hidden; }
+    .output-label { background: #1a1a28; padding: 6px 14px; font-size: 0.68em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); }
+    #output { padding: 12px 14px; font-family: Consolas, monospace; font-size: 0.85em; color: #a6e3a1; min-height: 40px; max-height: 260px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+    #output.empty { color: rgba(255,255,255,0.2); }
+    #output.has-error { color: #f38ba8; }
+
+    /* Result */
+    .result-box { border-radius: 14px; padding: 18px 20px; display: none; }
+    .result-box.success { background: #eafaf1; border: 2px solid #27ae60; }
+    .result-box.failure { background: #fdedec; border: 2px solid #e74c3c; }
+    .result-box.error   { background: #fef5e7; border: 2px solid #e67e22; }
+
+    .result-icon { font-size: 1.8em; margin-bottom: 6px; }
+    .result-title { font-size: 1em; font-weight: 800; margin-bottom: 4px; }
+    .result-box.success .result-title { color: #1e8449; }
+    .result-box.failure .result-title { color: #c0392b; }
+    .result-box.error   .result-title { color: #d35400; }
+    .result-msg { font-size: 0.83em; color: #555; line-height: 1.5; margin-bottom: 14px; }
+    .result-msg code { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
+
+    /* SRS grading */
+    .srs-row { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .srs-row.visible { display: flex; }
+    .srs-label { width: 100%; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 2px; }
+    .srs-btn { flex: 1; min-width: 70px; padding: 9px 10px; border: none; border-radius: 10px; font-size: 0.8em; font-weight: 700; cursor: pointer; text-align: center; transition: opacity 0.15s; }
+    .srs-btn:hover { opacity: 0.85; }
+    .srs-btn.tricky { background: #fef5e7; color: #e67e22; }
+    .srs-btn.gotit  { background: #eaf4fb; color: #2980b9; }
+    .srs-btn.easy   { background: #eafaf1; color: #27ae60; }
+    .srs-sub { font-size: 0.68em; opacity: 0.75; margin-top: 2px; display: block; }
+
+    /* Nav buttons */
+    .nav-row { display: none; gap: 10px; }
+    .nav-row.visible { display: flex; }
+    .btn-next { flex: 1; padding: 12px; background: #8e44ad; color: white; border: none; border-radius: 12px; font-size: 0.9em; font-weight: 700; cursor: pointer; }
+    .btn-next:hover { opacity: 0.88; }
+    .btn-hub  { padding: 12px 18px; background: #f0f2f5; color: #7f8c8d; border: none; border-radius: 12px; font-size: 0.9em; cursor: pointer; }
+    .btn-hub:hover { background: #e1e8ed; }
+
+    /* Hint box */
+    .hint-box { background: #fef5e7; border: 1.5px solid #f39c12; border-radius: 12px; padding: 12px 16px; font-size: 0.83em; color: #8b5e0a; line-height: 1.6; display: none; }
+    .hint-box.visible { display: block; }
+    .hint-box code { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Setting up Python environment…</div>
+  <div class="loading-sub">First load takes ~10 seconds · runs offline after that</div>
+</div>
+
+<header>
+  <a class="back" href="index.html">← Challenges</a>
+  <div class="header-meta">
+    <div class="header-unit" id="h-unit">—</div>
+    <div class="header-title" id="h-title">Loading…</div>
+  </div>
+  <div class="header-xp" id="h-xp">+0 XP</div>
+</header>
+<div class="prog-strip" id="prog-strip" style="width:0%"></div>
+
+<div class="main">
+
+  <!-- Challenge description -->
+  <div class="challenge-card" id="challenge-card">
+    <div class="challenge-emoji" id="c-emoji"></div>
+    <div class="challenge-title" id="c-title"></div>
+    <div class="challenge-desc" id="c-desc"></div>
+    <div class="challenge-context" id="c-context"></div>
+  </div>
+
+  <!-- Code editor -->
+  <div class="editor-wrap">
+    <div class="editor-toolbar">
+      <span class="editor-lang">Python 3</span>
+      <div class="toolbar-btns">
+        <button class="btn-hint" onclick="toggleHint()">💡 Hint</button>
+        <button class="btn-reset" onclick="resetCode()" title="Reset to starter code">↺ Reset</button>
+      </div>
+    </div>
+    <textarea id="code-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+    <div class="run-bar">
+      <button class="btn-run" id="btn-run" onclick="runCode()" disabled>
+        ▶ Run
+      </button>
+      <span class="run-hint">Ctrl + Enter</span>
+    </div>
+  </div>
+
+  <!-- Hint -->
+  <div class="hint-box" id="hint-box"></div>
+
+  <!-- Output -->
+  <div class="output-wrap">
+    <div class="output-label">Output</div>
+    <div id="output" class="empty">— run your code to see output —</div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="result-box">
+    <div class="result-icon" id="r-icon"></div>
+    <div class="result-title" id="r-title"></div>
+    <div class="result-msg"  id="r-msg"></div>
+
+    <!-- SRS grading (shown after success) -->
+    <div class="srs-row" id="srs-row">
+      <div class="srs-label">How did that feel?</div>
+      <button class="srs-btn tricky" onclick="grade(1)">🤔 Tricky<span class="srs-sub">review tomorrow</span></button>
+      <button class="srs-btn gotit"  onclick="grade(2)">✓ Got it<span class="srs-sub" id="srs-interval-2"></span></button>
+      <button class="srs-btn easy"   onclick="grade(3)">⚡ Easy<span class="srs-sub" id="srs-interval-3"></span></button>
+    </div>
+
+    <!-- Next / hub nav -->
+    <div class="nav-row" id="nav-row">
+      <button class="btn-hub" onclick="window.location.href='index.html'">← Hub</button>
+      <button class="btn-next" id="btn-next" onclick="goNext()">Next challenge →</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="challenges.js"></script>
+<script>
+  // ── State ─────────────────────────────────────────────────────────────────
+  let pyodide = null;
+  let challenge = null;
+  let starterCode = '';
+  let graded = false;
+
+  // ── Load challenge from URL ───────────────────────────────────────────────
+  function loadChallenge() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    challenge = getChallengeById(id);
+    if (!challenge) {
+      document.getElementById('h-title').textContent = 'Challenge not found';
+      return;
+    }
+
+    // Header
+    document.getElementById('h-unit').textContent = challenge.unit;
+    document.getElementById('h-title').textContent = challenge.emoji + ' ' + challenge.title;
+    document.getElementById('h-xp').textContent = '+' + challenge.xp + ' XP';
+    document.title = challenge.title + ' — Challenges';
+
+    // Progress strip
+    const unit = getChallengesByUnit(challenge.unitId);
+    const idx  = unit.findIndex(c => c.id === challenge.id);
+    document.getElementById('prog-strip').style.width = ((idx + 1) / unit.length * 100) + '%';
+
+    // Challenge card — render markdown-lite (bold + code)
+    document.getElementById('c-emoji').textContent = challenge.emoji;
+    document.getElementById('c-title').textContent = challenge.title;
+    document.getElementById('c-desc').innerHTML  = renderDesc(challenge.description);
+    document.getElementById('c-context').innerHTML = '📌 ' + renderDesc(challenge.context);
+
+    // Editor
+    starterCode = challenge.starterCode;
+    document.getElementById('code-editor').value = starterCode;
+
+    // Hint
+    document.getElementById('hint-box').innerHTML = '💡 ' + renderDesc(challenge.hint);
+
+    // SRS interval previews
+    const s = getSRS(challenge.id);
+    const fakeS2 = Object.assign({}, s);
+    fakeS2.interval = s.reps < 2 ? 3 : Math.round((s.interval || 1) * (s.ease || 2.5));
+    const fakeS3 = Object.assign({}, s);
+    fakeS3.interval = Math.round(fakeS2.interval * 1.3);
+    document.getElementById('srs-interval-2').textContent = 'review in ' + fakeS2.interval + 'd';
+    document.getElementById('srs-interval-3').textContent = 'review in ' + fakeS3.interval + 'd';
+
+    // Next challenge button label
+    const next = getNextChallenge(challenge.id);
+    const nextBtn = document.getElementById('btn-next');
+    if (next) {
+      nextBtn.textContent = 'Next: ' + next.emoji + ' ' + next.title + ' →';
+    } else {
+      nextBtn.textContent = 'Unit complete! Back to hub →';
+      nextBtn.onclick = () => window.location.href = 'index.html';
+    }
+  }
+
+  function renderDesc(text) {
+    return String(text || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/```python\n([\s\S]+?)```/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── Pyodide setup ─────────────────────────────────────────────────────────
+  async function initPyodide() {
+    try {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+      await new Promise((res, rej) => { script.onload = res; script.onerror = rej; document.head.appendChild(script); });
+
+      pyodide = await loadPyodide();
+
+      // Set up global FS setup as a Python variable
+      pyodide.globals.set('_GLOBAL_SETUP', GLOBAL_FS_SETUP);
+
+      // Test run to ensure fs setup works
+      await pyodide.runPythonAsync(`exec(_GLOBAL_SETUP, {})`);
+
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('btn-run').disabled = false;
+    } catch(e) {
+      document.querySelector('.loading-text').textContent = 'Failed to load Python runtime.';
+      document.querySelector('.loading-sub').textContent = 'Check your internet connection and refresh.';
+    }
+  }
+
+  // ── Run code ──────────────────────────────────────────────────────────────
+  async function runCode() {
+    if (!pyodide) return;
+
+    const userCode = document.getElementById('code-editor').value;
+    const btn = document.getElementById('btn-run');
+    btn.disabled = true;
+    btn.textContent = '⏳ Running…';
+    graded = false;
+
+    // Reset UI
+    const outputEl = document.getElementById('output');
+    outputEl.textContent = '';
+    outputEl.classList.remove('empty');
+    hideResult();
+
+    // Pass code and test to Python as variables (avoids any escaping issues)
+    pyodide.globals.set('_user_code', userCode);
+    pyodide.globals.set('_challenge_setup', challenge.setup || '');
+    pyodide.globals.set('_test_code', challenge.test);
+
+    try {
+      await pyodide.runPythonAsync(`
+import sys, io as _io_mod, traceback as _tb_mod
+
+_ns = {'__builtins__': __builtins__}
+_out_buf = _io_mod.StringIO()
+_old_stdout = sys.stdout
+_old_stderr = sys.stderr
+sys.stdout = _out_buf
+sys.stderr = _out_buf
+
+_result_type = None
+_result_msg  = ''
+_has_traceback = False
+
+try:
+    exec(_GLOBAL_SETUP, _ns)
+    if _challenge_setup.strip():
+        exec(_challenge_setup, _ns)
+    exec(_user_code, _ns)
+except Exception as _e:
+    _result_type = 'code_error'
+    _result_msg  = type(_e).__name__ + ': ' + str(_e)
+    _has_traceback = True
+    _tb_mod.print_exc()   # writes full traceback to sys.stderr = _out_buf
+
+if _result_type is None:
+    try:
+        exec(_test_code, _ns)
+        _result_type = 'success'
+    except AssertionError as _e:
+        _result_type = 'assert_error'
+        _result_msg  = str(_e)
+    except Exception as _e:
+        _result_type = 'test_error'
+        _result_msg  = type(_e).__name__ + ': ' + str(_e)
+
+sys.stdout = _old_stdout
+sys.stderr = _old_stderr
+_captured_out = _out_buf.getvalue()
+`);
+
+      const resultType = pyodide.globals.get('_result_type');
+      const resultMsg  = pyodide.globals.get('_result_msg');
+      const captured   = pyodide.globals.get('_captured_out');
+
+      const hasTraceback = pyodide.globals.get('_has_traceback');
+      outputEl.textContent = captured || '';
+      outputEl.classList.toggle('has-error', !!hasTraceback);
+      if (!captured) { outputEl.textContent = '(no output)'; outputEl.classList.add('empty'); }
+
+      if (resultType === 'success') {
+        showSuccess();
+      } else if (resultType === 'code_error') {
+        showError(resultMsg);
+      } else if (resultType === 'assert_error') {
+        showFailure(resultMsg);
+      } else {
+        showError('Internal test error: ' + resultMsg);
+      }
+
+    } catch(e) {
+      showError('Runtime error: ' + e.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '▶ Run';
+  }
+
+  // ── Results ───────────────────────────────────────────────────────────────
+  function showResult(type, icon, title, msg) {
+    const box = document.getElementById('result-box');
+    box.className = 'result-box ' + type;
+    box.style.display = 'block';
+    document.getElementById('r-icon').textContent  = icon;
+    document.getElementById('r-title').textContent = title;
+    document.getElementById('r-msg').innerHTML     = renderDesc(msg);
+  }
+
+  function hideResult() {
+    document.getElementById('result-box').style.display = 'none';
+    document.getElementById('srs-row').classList.remove('visible');
+    document.getElementById('nav-row').classList.remove('visible');
+  }
+
+  function showSuccess() {
+    showResult('success', '✅', 'Correct!', 'Your code passed all checks.');
+    document.getElementById('srs-row').classList.add('visible');
+  }
+
+  function showFailure(msg) {
+    showResult('failure', '✗', 'Not quite', msg || 'Your code ran but gave the wrong result. Check your logic and try again.');
+  }
+
+  function showError(msg) {
+    showResult('error', '⚠️', 'Error in your code', 'See the traceback in the output above. Fix the error and run again.');
+  }
+
+  // ── SRS grading ───────────────────────────────────────────────────────────
+  function grade(g) {
+    if (graded) return;
+    graded = true;
+
+    applySRS(challenge.id, g);
+
+    // Award XP (only on first completion of this challenge)
+    const s = getSRS(challenge.id);
+    if (s.reps === 1) {
+      const xp = parseInt(localStorage.getItem('prog_xp') || '0') + challenge.xp;
+      localStorage.setItem('prog_xp', xp);
+    }
+
+    document.getElementById('srs-row').classList.remove('visible');
+    document.getElementById('nav-row').classList.add('visible');
+    document.getElementById('r-msg').innerHTML = renderDesc(
+      g === 1 ? 'Scheduled for review tomorrow.' :
+      g === 3 ? 'Great! Scheduled further out.' :
+      'Scheduled for review in a few days.'
+    );
+  }
+
+  function goNext() {
+    const next = getNextChallenge(challenge.id);
+    if (next) window.location.href = 'challenge.html?id=' + next.id;
+    else window.location.href = 'index.html';
+  }
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
+  function toggleHint() {
+    document.getElementById('hint-box').classList.toggle('visible');
+  }
+
+  function resetCode() {
+    document.getElementById('code-editor').value = starterCode;
+    hideResult();
+  }
+
+  // Tab key → 4 spaces; Ctrl+Enter → run
+  document.getElementById('code-editor').addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = this.selectionStart, end = this.selectionEnd;
+      this.value = this.value.slice(0, s) + '    ' + this.value.slice(end);
+      this.selectionStart = this.selectionEnd = s + 4;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runCode();
+    }
+  });
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../sw.js');
+
+  loadChallenge();
+  initPyodide();
+</script>
+</body>
+</html>
