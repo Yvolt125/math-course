@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>Lessons — Math for ML</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 28px 20px 22px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.88em;
+        }
+        .back:hover { color: white; }
+
+        header h1 {
+            font-size: 1.4em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        header p { font-size: 0.85em; opacity: 0.6; }
+
+        /* ── XP bar ───────────────────────── */
+        .xp-bar-wrap {
+            background: #1a252f;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+        .xp-label { color: rgba(255,255,255,0.55); font-size: 0.78em; font-weight: 700; letter-spacing: 1px; }
+        .xp-track { flex: 1; max-width: 300px; height: 8px; background: rgba(255,255,255,0.15); border-radius: 6px; overflow: hidden; }
+        .xp-fill  { height: 100%; background: #e74c3c; border-radius: 6px; transition: width 0.4s; }
+        .xp-count { color: white; font-size: 0.82em; font-weight: 700; min-width: 60px; }
+
+        /* ── Skill tree ───────────────────── */
+        .tree {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 30px 16px 0;
+        }
+
+        .week-heading {
+            text-align: center;
+            font-size: 0.7em;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #7f8c8d;
+            margin-bottom: 24px;
+        }
+
+        /* Path connector */
+        .path-segment {
+            width: 3px;
+            height: 28px;
+            background: repeating-linear-gradient(to bottom, #bdc3c7 0px, #bdc3c7 6px, transparent 6px, transparent 12px);
+            margin: 0 auto;
+        }
+
+        /* Skill node */
+        .skill-node {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: white;
+            border-radius: 18px;
+            padding: 16px 18px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+            border: 2px solid #e1e8ed;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+        .skill-node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .skill-node:active { transform: scale(0.98); }
+
+        .skill-node.locked {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .skill-node.coming-soon {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+            border-style: dashed;
+        }
+
+        /* Offset alternating nodes left/right for path feel */
+        .skill-node.left  { margin-right: 60px; }
+        .skill-node.right { margin-left:  60px; }
+
+        .skill-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6em;
+            flex-shrink: 0;
+            border: 3px solid transparent;
+        }
+
+        /* Crown levels — 0 crowns = grey ring, 1-3 = colour ring */
+        .skill-icon.crown-0 { background: #f0f2f5; border-color: #bdc3c7; }
+        .skill-icon.crown-1 { background: #fef5e7; border-color: #f39c12; }
+        .skill-icon.crown-2 { background: #eaf4fb; border-color: #2980b9; }
+        .skill-icon.crown-3 { background: #e8f8f5; border-color: #16a085; }
+
+        .skill-body { flex: 1; }
+        .skill-name { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin-bottom: 5px; }
+        .skill-meta { font-size: 0.75em; color: #7f8c8d; }
+
+        .crowns { display: flex; gap: 3px; margin-top: 5px; }
+        .crown  { font-size: 0.9em; opacity: 0.25; }
+        .crown.earned { opacity: 1; }
+
+        .start-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 0.82em;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .skill-node.coming-soon .start-btn { background: #bdc3c7; }
+
+        .week-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 32px 0 28px;
+        }
+        .week-divider::before,
+        .week-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #dce3ea;
+        }
+        .week-divider span {
+            font-size: 0.7em;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #aab4bc;
+            white-space: nowrap;
+        }
+
+        /* ── Daily review / error practice buttons ── */
+        .action-strip {
+            max-width: 480px;
+            margin: 20px auto 8px;
+            padding: 0 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 14px 10px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85em;
+            transition: opacity 0.15s, transform 0.15s;
+            text-align: center;
+        }
+        .action-card:hover  { opacity: 0.88; transform: translateY(-2px); }
+        .action-card:active { transform: scale(0.97); }
+        .action-card.review { background: #e74c3c; }
+        .action-card.errors { background: #e67e22; }
+        .action-card .ac-icon  { font-size: 1.6em; }
+        .action-card .ac-label { font-size: 0.78em; font-weight: 800; letter-spacing: 0.5px; }
+        .action-card .ac-count { font-size: 0.72em; opacity: 0.85; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a class="back" href="index.html">← Back</a>
+    <h1>Lessons</h1>
+    <p>Active recall · Spaced repetition</p>
+</header>
+
+<!-- XP bar -->
+<div class="xp-bar-wrap">
+    <span class="xp-label">XP</span>
+    <div class="xp-track">
+        <div class="xp-fill" id="xp-fill" style="width:0%"></div>
+    </div>
+    <span class="xp-count" id="xp-count">0 XP</span>
+</div>
+
+<!-- Action strip -->
+<div class="action-strip">
+    <a class="action-card review" href="review.html" id="action-review">
+        <span class="ac-icon">🔁</span>
+        <span class="ac-label">Daily Review</span>
+        <span class="ac-count" id="review-count">0 due</span>
+    </a>
+    <a class="action-card errors" href="errors.html" id="action-errors">
+        <span class="ac-icon">⚠️</span>
+        <span class="ac-label">Error Practice</span>
+        <span class="ac-count" id="errors-count">0 errors</span>
+    </a>
+</div>
+
+<div class="tree">
+
+    <!-- ── WEEK 1 ───────────────────────── -->
+    <div class="week-heading">Week 1 — Linear Algebra Foundations</div>
+
+    <a class="skill-node left" href="lesson_w1_s1.html" id="node-w1s1">
+        <div class="skill-icon crown-0" id="icon-w1s1">📐</div>
+        <div class="skill-body">
+            <div class="skill-name">Data &amp; Geometry</div>
+            <div class="skill-meta">Scalars · Vectors · Matrices</div>
+            <div class="crowns" id="crowns-w1s1">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w1_s2.html" id="node-w1s2">
+        <div class="skill-icon crown-0" id="icon-w1s2">📏</div>
+        <div class="skill-body">
+            <div class="skill-name">Linear Equations</div>
+            <div class="skill-meta">Weights · Bias · Geometry</div>
+            <div class="crowns" id="crowns-w1s2">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w1_s3.html" id="node-w1s3">
+        <div class="skill-icon crown-0" id="icon-w1s3">⚖️</div>
+        <div class="skill-body">
+            <div class="skill-name">Systems of Equations</div>
+            <div class="skill-meta">Augmented matrix · 3 outcomes</div>
+            <div class="crowns" id="crowns-w1s3">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w1_s4.html" id="node-w1s4">
+        <div class="skill-icon crown-0" id="icon-w1s4">🔗</div>
+        <div class="skill-body">
+            <div class="skill-name">Independence &amp; Rank</div>
+            <div class="skill-meta">Linear dependence · Singularity</div>
+            <div class="crowns" id="crowns-w1s4">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w1_s5.html" id="node-w1s5">
+        <div class="skill-icon crown-0" id="icon-w1s5">🔢</div>
+        <div class="skill-body">
+            <div class="skill-name">The Determinant</div>
+            <div class="skill-meta">det formula · Geometric meaning</div>
+            <div class="crowns" id="crowns-w1s5">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w1_s6.html" id="node-w1s6">
+        <div class="skill-icon crown-0" id="icon-w1s6">🪜</div>
+        <div class="skill-body">
+            <div class="skill-name">Gaussian Elimination</div>
+            <div class="skill-meta">Row ops · REF · RREF</div>
+            <div class="crowns" id="crowns-w1s6">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w1_s7.html" id="node-w1s7">
+        <div class="skill-icon crown-0" id="icon-w1s7">↩️</div>
+        <div class="skill-body">
+            <div class="skill-name">Matrix Inverse</div>
+            <div class="skill-meta">A⁻¹ · When it exists</div>
+            <div class="crowns" id="crowns-w1s7">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w1_s8.html" id="node-w1s8">
+        <div class="skill-icon crown-0" id="icon-w1s8">🐍</div>
+        <div class="skill-body">
+            <div class="skill-name">Python &amp; NumPy</div>
+            <div class="skill-meta">Arrays · Operations · linalg</div>
+            <div class="crowns" id="crowns-w1s8">
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+                <span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <!-- ── WEEK 2 ───────────────────────── -->
+    <div class="week-divider"><span>Week 2 — Eigenvalues, Projections &amp; PCA</span></div>
+
+    <a class="skill-node left" href="lesson_w2_s1.html" id="node-w2s1">
+        <div class="skill-icon crown-0" id="icon-w2s1">🔄</div>
+        <div class="skill-body">
+            <div class="skill-name">Matrices as Transformations</div>
+            <div class="skill-meta">Column space · Null space · Rank–Nullity</div>
+            <div class="crowns" id="crowns-w2s1">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w2_s2.html" id="node-w2s2">
+        <div class="skill-icon crown-0" id="icon-w2s2">·</div>
+        <div class="skill-body">
+            <div class="skill-name">The Dot Product</div>
+            <div class="skill-meta">Alignment · Orthogonality · Cosine similarity</div>
+            <div class="crowns" id="crowns-w2s2">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w2_s3.html" id="node-w2s3">
+        <div class="skill-icon crown-0" id="icon-w2s3">📐</div>
+        <div class="skill-body">
+            <div class="skill-name">Projections &amp; Least Squares</div>
+            <div class="skill-meta">Normal equations · Linear regression geometry</div>
+            <div class="crowns" id="crowns-w2s3">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w2_s4.html" id="node-w2s4">
+        <div class="skill-icon crown-0" id="icon-w2s4">λ</div>
+        <div class="skill-body">
+            <div class="skill-name">Eigenvalues &amp; Eigenvectors</div>
+            <div class="skill-meta">Invariant directions · Characteristic equation</div>
+            <div class="crowns" id="crowns-w2s4">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w2_s5.html" id="node-w2s5">
+        <div class="skill-icon crown-0" id="icon-w2s5">🔷</div>
+        <div class="skill-body">
+            <div class="skill-name">Symmetric Matrices &amp; Diagonalization</div>
+            <div class="skill-meta">Spectral theorem · PD/PSD · Eigendecomposition</div>
+            <div class="crowns" id="crowns-w2s5">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w2_s6.html" id="node-w2s6">
+        <div class="skill-icon crown-0" id="icon-w2s6">📊</div>
+        <div class="skill-body">
+            <div class="skill-name">The Covariance Matrix</div>
+            <div class="skill-meta">Variance · Covariance · Ellipsoid</div>
+            <div class="crowns" id="crowns-w2s6">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w2_s7.html" id="node-w2s7">
+        <div class="skill-icon crown-0" id="icon-w2s7">📉</div>
+        <div class="skill-body">
+            <div class="skill-name">PCA</div>
+            <div class="skill-meta">Dimensionality reduction · Explained variance</div>
+            <div class="crowns" id="crowns-w2s7">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w2_s8.html" id="node-w2s8">
+        <div class="skill-icon crown-0" id="icon-w2s8">🐍</div>
+        <div class="skill-body">
+            <div class="skill-name">NumPy &amp; scikit-learn</div>
+            <div class="skill-meta">eig · svd · cov · PCA in code</div>
+            <div class="crowns" id="crowns-w2s8">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <!-- ── WEEK 3 ───────────────────────── -->
+    <div class="week-divider"><span>Week 3 — Calculus &amp; Optimisation</span></div>
+
+    <a class="skill-node left" href="lesson_w3_s1.html" id="node-w3s1">
+        <div class="skill-icon crown-0" id="icon-w3s1">∂</div>
+        <div class="skill-body">
+            <div class="skill-name">Derivatives</div>
+            <div class="skill-meta">Power rule · Tangent · Rate of change</div>
+            <div class="crowns" id="crowns-w3s1">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w3_s2.html" id="node-w3s2">
+        <div class="skill-icon crown-0" id="icon-w3s2">↓</div>
+        <div class="skill-body">
+            <div class="skill-name">Gradient Descent</div>
+            <div class="skill-meta">Learning rate · Convergence · SGD</div>
+            <div class="crowns" id="crowns-w3s2">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w3_s3.html" id="node-w3s3">
+        <div class="skill-icon crown-0" id="icon-w3s3">∇</div>
+        <div class="skill-body">
+            <div class="skill-name">Partial Derivatives &amp; Gradient</div>
+            <div class="skill-meta">∂f/∂w · Gradient vector · Steepest ascent</div>
+            <div class="crowns" id="crowns-w3s3">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w3_s4.html" id="node-w3s4">
+        <div class="skill-icon crown-0" id="icon-w3s4">⛓</div>
+        <div class="skill-body">
+            <div class="skill-name">The Chain Rule</div>
+            <div class="skill-meta">Composite functions · Backpropagation</div>
+            <div class="crowns" id="crowns-w3s4">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w3_s5.html" id="node-w3s5">
+        <div class="skill-icon crown-0" id="icon-w3s5">📉</div>
+        <div class="skill-body">
+            <div class="skill-name">Loss Functions</div>
+            <div class="skill-meta">MSE · Cross-entropy · MAE</div>
+            <div class="crowns" id="crowns-w3s5">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w3_s6.html" id="node-w3s6">
+        <div class="skill-icon crown-0" id="icon-w3s6">📐</div>
+        <div class="skill-body">
+            <div class="skill-name">Regression as Optimisation</div>
+            <div class="skill-meta">Normal equations · Ridge · Gradient of MSE</div>
+            <div class="crowns" id="crowns-w3s6">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node left" href="lesson_w3_s7.html" id="node-w3s7">
+        <div class="skill-icon crown-0" id="icon-w3s7">🧠</div>
+        <div class="skill-body">
+            <div class="skill-name">Neural Network Basics</div>
+            <div class="skill-meta">Neurons · Sigmoid · ReLU · Forward pass</div>
+            <div class="crowns" id="crowns-w3s7">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+    <div class="path-segment"></div>
+
+    <a class="skill-node right" href="lesson_w3_s8.html" id="node-w3s8">
+        <div class="skill-icon crown-0" id="icon-w3s8">🐍</div>
+        <div class="skill-body">
+            <div class="skill-name">Python for Optimisation</div>
+            <div class="skill-meta">NumPy GD · scipy · Autograd</div>
+            <div class="crowns" id="crowns-w3s8">
+                <span class="crown">♛</span><span class="crown">♛</span><span class="crown">♛</span>
+            </div>
+        </div>
+        <button class="start-btn">Start</button>
+    </a>
+
+</div><!-- end .tree -->
+
+<script>
+// ── Load progress from localStorage ───────────────────────────────────────────
+// Each skill stores: { crowns: 0-3, xp: 0 }
+// Key format: lessons_w1s1, lessons_w1s2, etc.
+
+const SKILLS = ['w1s1','w1s2','w1s3','w1s4','w1s5','w1s6','w1s7','w1s8',
+                'w2s1','w2s2','w2s3','w2s4','w2s5','w2s6','w2s7','w2s8',
+                'w3s1','w3s2','w3s3','w3s4','w3s5','w3s6','w3s7','w3s8'];
+
+const CROWN_COLORS = ['crown-0','crown-1','crown-2','crown-3'];
+
+let totalXP = 0;
+
+SKILLS.forEach(id => {
+    const raw = localStorage.getItem('lesson_' + id);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const crowns = data.crowns || 0;
+    totalXP += data.xp || 0;
+
+    // Update icon ring
+    const icon = document.getElementById('icon-' + id);
+    if (icon) {
+        icon.className = 'skill-icon ' + CROWN_COLORS[crowns];
+    }
+
+    // Update crown pips
+    const crownEl = document.getElementById('crowns-' + id);
+    if (crownEl) {
+        const pips = crownEl.querySelectorAll('.crown');
+        pips.forEach((pip, i) => {
+            if (i < crowns) pip.classList.add('earned');
+        });
+    }
+
+    // Update button text
+    const node = document.getElementById('node-' + id);
+    if (node) {
+        const btn = node.querySelector('.start-btn');
+        if (btn) btn.textContent = crowns > 0 ? 'Practice' : 'Start';
+    }
+});
+
+// XP bar — use persisted total from localStorage
+const XP_LEVEL = 500;
+const persistedXP = parseInt(localStorage.getItem('totalXP') || '0');
+document.getElementById('xp-count').textContent = persistedXP + ' XP';
+document.getElementById('xp-fill').style.width = Math.min((persistedXP % XP_LEVEL) / XP_LEVEL * 100, 100) + '%';
+
+// SRS counts for action strip
+(function () {
+    const pool = JSON.parse(localStorage.getItem('srs_pool') || '[]');
+    const now  = Date.now();
+    const dueCount   = pool.filter(q => q.nextDue <= now).length;
+    const errorCount = pool.filter(q => (q.timesWrong || 0) > 0).length;
+    document.getElementById('review-count').textContent = dueCount + ' due';
+    document.getElementById('errors-count').textContent = errorCount + ' error' + (errorCount !== 1 ? 's' : '');
+})();
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

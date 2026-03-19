@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(grep -o '\\\\\\\\\\\\\\\\text{}' gmat_db_ttp.js)",
+      "Bash(python3:*)",
+      "Bash(node -e \":*)",
+      "Bash(node convert_ttp.js)"
     ]
   }
 }

@@ -1024,40 +1024,9 @@
         </div>
 
 
-        <!-- ════════════════════════════════════════
-             SECTION 8: PYTHON WITH NUMPY
-             ════════════════════════════════════════ -->
-        <div class="section-block">
-            <div class="section-label sec-color-8">
-                <div class="sec-num">8</div>
-                <div>Python with NumPy — From Theory to Practice</div>
-            </div>
-
-            <!-- Q39 MC -->
-            <div class="q-card" id="card-q41">
-                <div class="q-number">Question 41 <span class="q-type-badge">Multiple choice — code</span></div>
-                <div class="q-text">Which NumPy function should you call <em>before</em> attempting to solve \(Ax = b\), to check whether the matrix is singular?</div>
-                <div class="mc-options">
-                    <label class="mc-opt"><input type="radio" name="q41" value="a"> <code>np.linalg.solve(A, b)</code></label>
-                    <label class="mc-opt"><input type="radio" name="q41" value="b"> <code>np.linalg.det(A)</code></label>
-                    <label class="mc-opt"><input type="radio" name="q41" value="c"> <code>np.linalg.inv(A)</code></label>
-                </div>
-                <div class="feedback" id="fb-q41"></div>
-            </div>
-
-            <!-- Q40 fill -->
-            <div class="q-card" id="card-q42">
-                <div class="q-number">Question 42 <span class="q-type-badge">Fill in the blank — code</span></div>
-                <div class="q-text">Complete the NumPy call that returns the true dimensionality (rank) of matrix <code>A</code>:<br><br>
-                <code>np.linalg.matrix_<input type="text" class="fill-blank" id="q42" placeholder="___">(A)</code></div>
-                <div class="feedback" id="fb-q42"></div>
-            </div>
-        </div>
-
-
         <!-- SUBMIT -->
         <div class="submit-area">
-            <p style="color:#888; font-size:0.9em; margin-bottom:18px;">Answer all 42 questions, then submit to see your results and explanations.</p>
+            <p style="color:#888; font-size:0.9em; margin-bottom:18px;">Answer all 40 questions, then submit to see your results and explanations.</p>
             <button type="button" class="btn-submit" id="btn-submit">Submit Quiz</button>
         </div>
 
@@ -1068,7 +1037,7 @@
         <div class="results-top">
             <div class="score-circle">
                 <div class="score-big" id="res-score">0</div>
-                <div class="score-denom">/ 42</div>
+                <div class="score-denom">/ 40</div>
             </div>
             <div class="grade-badge" id="res-grade">—</div>
             <div class="grade-msg" id="res-msg"></div>
@@ -1142,9 +1111,6 @@ const QUESTIONS = [
     { id:'q38', type:'radio',  answer:'b',            section:7 },
     { id:'q39', type:'tf',     answer:'true',         section:7 },
     { id:'q40', type:'radio',  answer:'b',            section:7 },
-    // Section 8
-    { id:'q41', type:'radio',  answer:'b',            section:8 },
-    { id:'q42', type:'text',   answer:'rank',         section:8 },
 ];
 
 // ── Explanations ─────────────────────────────────────────────────────────────
@@ -1189,8 +1155,6 @@ const EXPLAIN = {
     q38: 'A singular matrix has collapsed space — e.g., 3D → 2D. Once a dimension is gone, its information is gone forever. You cannot reconstruct the original 3D input from a flat 2D output, just as you cannot reconstruct a 3D object from its 2D shadow.',
     q39: 'True. The existence of an inverse is equivalent to det ≠ 0, which is equivalent to full rank, which is equivalent to non-singularity. All four conditions are the same underlying fact.',
     q40: 'Correlated features → linearly dependent columns → X^TX is singular (det = 0) → cannot compute (X^TX)⁻¹ → formula breaks down. This is why regularization (e.g., Ridge regression) is used to stabilize it.',
-    q41: 'np.linalg.det(A) returns the determinant. If it is zero (or very close to zero), the matrix is singular and you should not attempt to solve the system. Calling solve or inv directly on a singular matrix will crash or give wrong results.',
-    q42: 'np.linalg.matrix_rank(A) returns the rank — the number of linearly independent rows. This tells you the true dimensionality of the data and whether the system is full rank.',
 };
 
 // ── Section metadata ──────────────────────────────────────────────────────────
@@ -1202,7 +1166,6 @@ const SECTION_META = {
     5: { label:'The Determinant',                    color:'#d35400', total:5 },
     6: { label:'Gaussian Elimination',               color:'#27ae60', total:6 },
     7: { label:'The Matrix Inverse',                 color:'#2c3e50', total:4 },
-    8: { label:'Python with NumPy',                  color:'#16a085', total:2 },
 };
 
 // ── Progress tracking ─────────────────────────────────────────────────────────
@@ -1264,7 +1227,7 @@ function exportQuizResults() {
 document.getElementById('btn-submit').addEventListener('click', function () {
 
     let totalScore = 0;
-    const sectionScores = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0};
+    const sectionScores = {1:0,2:0,3:0,4:0,5:0,6:0,7:0};
     const questionResults = [];
 
     QUESTIONS.forEach(q => {

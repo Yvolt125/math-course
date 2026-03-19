@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: PCA</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s7',
+    title: 'Principal Component Analysis',
+    subtitle: 'Dimensionality reduction · Explained variance',
+    color: '#e74c3c',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'What is the core goal of PCA?',
+            options: [
+                'To increase the number of features in a dataset',
+                'To find the directions of maximum variance and project data to a lower-dimensional space',
+                'To classify data into categories',
+                'To compute the determinant of the covariance matrix'
+            ],
+            answer: 1,
+            explanation: 'PCA finds the k directions that capture the most variance in the data, then projects the data onto those directions — reducing dimensions while retaining as much information as possible.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The first principal component (PC1) is…',
+            options: [
+                'The direction with the least variance',
+                'The mean of the dataset',
+                'The direction of maximum variance in the data',
+                'The eigenvector with the smallest eigenvalue'
+            ],
+            answer: 2,
+            explanation: 'PC1 is the eigenvector of the covariance matrix corresponding to the largest eigenvalue — the direction along which the data spreads the most. PC2 is the next direction of maximum variance, orthogonal to PC1.'
+        },
+        {
+            type: 'type',
+            prompt: 'Before computing the covariance matrix for PCA, you must ___ the data by subtracting the mean of each feature.',
+            answer: ['center', 'centre', 'mean-center'],
+            explanation: 'Centering (X̃ = X − X̄) removes the mean so the covariance matrix captures variance around zero, not around the mean. Without centering, the first PC would simply point toward the mean.'
+        },
+        {
+            type: 'fill',
+            before: 'The explained variance ratio for component i = λᵢ / (λ₁ + λ₂ + … + λ',
+            after: ')',
+            answer: 'p',
+            explanation: 'Each eigenvalue λᵢ tells you how much variance that component captures. Divide by the total variance (sum of all eigenvalues) to get the proportion. You keep enough components to explain ≥ 95% of total variance.'
+        },
+        {
+            type: 'mc',
+            prompt: 'What is the correct order of the PCA algorithm steps?',
+            options: [
+                'Find eigenvectors → center data → compute covariance → project',
+                'Center data → compute covariance → find eigenvectors → sort by eigenvalue → project',
+                'Project data → sort eigenvectors → compute covariance → center',
+                'Compute covariance → center data → find eigenvalues → project'
+            ],
+            answer: 1,
+            explanation: '6 steps: (1) Center data, (2) Compute covariance Σ, (3) Find eigenvectors/values of Σ, (4) Sort by eigenvalue descending, (5) Choose top k, (6) Project: Z = X̃ Qₖ.'
+        },
+        {
+            type: 'tf',
+            prompt: 'In practice, PCA via SVD is numerically more stable than PCA via eigendecomposition of the covariance matrix.',
+            answer: true,
+            explanation: 'The covariance matrix XᵀX can amplify numerical errors. SVD directly decomposes X = UΣVᵀ — the V columns give the principal component directions without forming XᵀX. This is why sklearn\'s PCA uses SVD internally.'
+        },
+        {
+            type: 'mc',
+            prompt: 'A dataset with 1000 features but rank 20 means…',
+            options: [
+                'PCA cannot be applied',
+                'The data actually lives in a 20-dimensional subspace — 980 dimensions are redundant',
+                'All 1000 eigenvalues are positive',
+                'The covariance matrix is 20×20'
+            ],
+            answer: 1,
+            explanation: 'Rank 20 means only 20 eigenvalues are non-zero — the data only spans 20 independent directions despite having 1000 features. PCA reveals this by finding those 20 components; the remaining 980 contribute zero explained variance.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

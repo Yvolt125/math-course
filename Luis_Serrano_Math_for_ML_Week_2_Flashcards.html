@@ -358,6 +358,11 @@
         <span class="b">A system \(A\vec{x}=\vec{b}\) with <b>more equations than unknowns</b> — more data points than parameters. No exact solution exists because \(\vec{b}\) is unlikely to lie in the column space of \(A\). Least squares projection finds the best approximation.</span>
     </div>
 
+    <div data-section="3" data-topic="Worked calculation — vector projection">
+        <span class="f">Project a = [4, 3] onto b = [1, 0].<br>Formula: \(\text{proj}_{\mathbf{b}}(\mathbf{a}) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{b}\|^2} \mathbf{b}\)</span>
+        <span class="b">a·b = 4(1) + 3(0) = 4<br>‖b‖² = 1² + 0² = 1<br>proj = (4/1) × [1, 0] = <strong>[4, 0]</strong><br>Projection onto the x-axis always gives just the x-component.</span>
+    </div>
+
     <!-- §4 Eigenvalues and Eigenvectors -->
     <div data-section="4" data-topic="Definition">
         <span class="f">State the definition of an <b>eigenvector</b> and <b>eigenvalue</b>.</span>
@@ -406,6 +411,16 @@
         <span class="b">Yes. Eigenvectors for <b>distinct</b> eigenvalues are always <b>linearly independent</b> — they point in genuinely different invariant directions. Eigenvectors for the <i>same</i> eigenvalue can be combined freely (any linear combination is also an eigenvector for that λ).</span>
     </div>
 
+    <div data-section="4" data-topic="Worked calculation — find eigenvalues">
+        <span class="f">Find the eigenvalues of:<br>\[ A = \begin{bmatrix} 3 & 1 \\ 0 & 2 \end{bmatrix} \]<br>Hint: solve det(A − λI) = 0.</span>
+        <span class="b">det\(\begin{bmatrix}3-λ&1\\0&2-λ\end{bmatrix}\) = (3−λ)(2−λ) − 0 = 0<br>(3−λ)(2−λ) = 0<br><strong>λ₁ = 3, λ₂ = 2</strong><br>Shortcut: upper/lower triangular → eigenvalues are the diagonal entries.</span>
+    </div>
+
+    <div data-section="4" data-topic="Worked calculation — trace and det from eigenvalues">
+        <span class="f">A 3×3 matrix has eigenvalues λ₁ = 1, λ₂ = 2, λ₃ = 4.<br>Find: (a) trace(A) and (b) det(A).</span>
+        <span class="b">(a) trace(A) = λ₁ + λ₂ + λ₃ = 1 + 2 + 4 = <strong>7</strong><br>(b) det(A) = λ₁ × λ₂ × λ₃ = 1 × 2 × 4 = <strong>8</strong><br>These identities hold for any square matrix.</span>
+    </div>
+
     <!-- §5 Symmetric Matrices and Diagonalization -->
     <div data-section="5" data-topic="Symmetric matrix">
         <span class="f">What is a <b>symmetric matrix</b>?</span>
@@ -451,6 +466,16 @@
             <li><b>PSD:</b> \(\vec{v}^TS\vec{v} \geq 0\) → all λ ≥ 0 → may be singular</li>
         </ul>
         <div class="ml-note">Covariance matrices are always PSD. A PD loss surface guarantees a unique minimum.</div></span>
+    </div>
+
+    <div data-section="5" data-topic="Orthogonal matrix — definition">
+        <span class="f">What is an orthogonal matrix Q, and what equation defines it?</span>
+        <span class="b">A square matrix whose columns are unit-length and mutually orthogonal.<br>Key property: <strong>QᵀQ = QQᵀ = I</strong><br>This means Q⁻¹ = Qᵀ — the inverse is free (just transpose).<br><em>Examples:</em> rotation matrices, reflection matrices.</span>
+    </div>
+
+    <div data-section="5" data-topic="Orthogonal matrix — what it preserves">
+        <span class="f">What geometric property does multiplying by an orthogonal matrix Q preserve?</span>
+        <span class="b">Q preserves <strong>lengths and angles</strong>.<br>For any vector v: ‖Qv‖ = ‖v‖ (norm unchanged).<br>For any pair: (Qu)·(Qv) = u·v (dot product unchanged).<br>Q performs a <em>rigid-body transformation</em>: rotation or reflection — no stretching or shearing.</span>
     </div>
 
     <!-- §6 The Covariance Matrix -->
@@ -556,6 +581,11 @@
         <span class="f">Why is PCA computed via <b>SVD</b> in practice, not the covariance matrix?</span>
         <span class="b">SVD of centered data \(\tilde{X} = U\Sigma V^T\) gives principal component directions as columns of V directly — without forming \(\tilde{X}^T\tilde{X}\). More numerically stable — forming \(X^TX\) explicitly can amplify rounding errors.
             <div class="ml-note"><code>sklearn.decomposition.PCA</code> uses SVD internally.</div></span>
+    </div>
+
+    <div data-section="7" data-topic="Worked calculation — explained variance ratio">
+        <span class="f">A dataset has 4 features. After PCA, the covariance matrix eigenvalues are [6, 3, 1, 0]. What percentage of variance does PC1 explain?</span>
+        <span class="b">Total variance = 6 + 3 + 1 + 0 = 10<br>PC1 explained variance ratio = 6/10 = <strong>60%</strong><br>PC1 + PC2 = (6+3)/10 = 90%<br>PC1+PC2+PC3 = 10/10 = 100% (λ₄=0 adds nothing)</span>
     </div>
 
     <!-- §8 Python (NumPy / scikit-learn) -->

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Daily Review</title>
+</head>
+<body>
+<script>
+(function () {
+    const pool = JSON.parse(localStorage.getItem('srs_pool') || '[]');
+    const now  = Date.now();
+    const due  = pool.filter(q => q.nextDue <= now);
+
+    // Shuffle due questions, cap at 25
+    due.sort(() => Math.random() - 0.5);
+    const questions = due.slice(0, 25);
+
+    window.LESSON_DATA = {
+        id:        'review',
+        title:     'Daily Review',
+        subtitle:  questions.length + ' questions due',
+        color:     '#e74c3c',
+        isReview:  true,
+        questions: questions,
+        emptyIcon:  '🎉',
+        emptyTitle: "All caught up!",
+        emptyMsg:   'No questions are due right now. Complete a lesson to add questions to your review queue.'
+    };
+})();
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

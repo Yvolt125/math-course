@@ -1,4 +1,4 @@
-const CACHE = 'math-ml-v1';
+const CACHE = 'math-ml-v3';
 
 const FILES = [
   './index.html',
@@ -7,7 +7,9 @@ const FILES = [
   './Luis_Serrano_Math_for_ML_Week_1_Mastery_Guide.html',
   './Luis_Serrano_Math_for_ML_Week_2_Mastery_Guide.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './gmat_db.js',
+  './gmat_engine.js'
 ];
 
 self.addEventListener('install', e => {

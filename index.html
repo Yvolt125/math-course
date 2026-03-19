@@ -23,7 +23,19 @@
             color: white;
             padding: 28px 20px 22px;
             text-align: center;
+            position: relative;
         }
+        .back {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.88em;
+            letter-spacing: 0.5px;
+        }
+        .back:hover { color: white; }
         header h1 {
             font-size: 1.4em;
             letter-spacing: 2px;
@@ -66,6 +78,8 @@
         .resource-card.purple { border-left-color: #8e44ad; }
         .resource-card.orange { border-left-color: #e67e22; }
         .resource-card.navy   { border-left-color: #2c3e50; }
+        .resource-card.red    { border-left-color: #e74c3c; }
+        .red  .card-icon { background: #fdf0ef; }
 
         .card-icon {
             width: 46px; height: 46px;
@@ -105,6 +119,7 @@
 <body>
 
 <header>
+    <a class="back" href="home.html">← Home</a>
     <h1>Math for Machine Learning</h1>
     <p>Luis Serrano Course · Study Hub</p>
 </header>
@@ -126,7 +141,7 @@
             <div class="card-icon">🃏</div>
             <div class="card-text">
                 <h3>Flashcards</h3>
-                <p>72 cards · Tap to flip · Shuffle · Right / Wrong tracking</p>
+                <p>80 cards · Tap to flip · Shuffle · Right / Wrong tracking</p>
             </div>
             <div class="card-arrow">›</div>
         </a>
@@ -135,7 +150,7 @@
             <div class="card-icon">✏️</div>
             <div class="card-text">
                 <h3>Practice Quiz</h3>
-                <p>42 questions · 8 sections · Auto-graded</p>
+                <p>40 questions · 7 sections · Auto-graded</p>
             </div>
             <div class="card-arrow">›</div>
         </a>
@@ -162,7 +177,52 @@
             <div class="card-icon">🃏</div>
             <div class="card-text">
                 <h3>Flashcards</h3>
-                <p>46 cards · Tap to flip · Shuffle · Right / Wrong tracking</p>
+                <p>60 cards · Tap to flip · Shuffle · Right / Wrong tracking</p>
+            </div>
+            <div class="card-arrow">›</div>
+        </a>
+
+        <a class="resource-card orange" href="Luis_Serrano_Math_for_ML_Week_2_Quiz.html">
+            <div class="card-icon">✏️</div>
+            <div class="card-text">
+                <h3>Practice Quiz</h3>
+                <p>45 questions · 8 sections · Auto-graded</p>
+            </div>
+            <div class="card-arrow">›</div>
+        </a>
+
+    </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="week-block">
+    <div class="week-label">Week 3 — Calculus &amp; Optimisation</div>
+    <div class="card-grid">
+
+        <a class="resource-card red" href="Luis_Serrano_Math_for_ML_Week_3_Mastery_Guide.html">
+            <div class="card-icon">📖</div>
+            <div class="card-text">
+                <h3>Mastery Guide</h3>
+                <p>Derivatives → Gradient Descent → Chain Rule → Neural Nets</p>
+            </div>
+            <div class="card-arrow">›</div>
+        </a>
+
+        <a class="resource-card green" href="Luis_Serrano_Math_for_ML_Week_3_Flashcards.html">
+            <div class="card-icon">🃏</div>
+            <div class="card-text">
+                <h3>Flashcards</h3>
+                <p>60 cards · Tap to flip · Shuffle · Right / Wrong tracking</p>
+            </div>
+            <div class="card-arrow">›</div>
+        </a>
+
+        <a class="resource-card orange" href="Luis_Serrano_Math_for_ML_Week_3_Quiz.html">
+            <div class="card-icon">✏️</div>
+            <div class="card-text">
+                <h3>Practice Quiz</h3>
+                <p>40 questions · 8 sections · Auto-graded</p>
             </div>
             <div class="card-arrow">›</div>
         </a>
@@ -185,6 +245,19 @@
             <div class="card-arrow">›</div>
         </a>
 
+    </div>
+</div>
+
+<div class="week-block" style="padding-bottom:24px;">
+    <div class="card-grid">
+        <a class="resource-card red" href="lessons.html">
+            <div class="card-icon">🎯</div>
+            <div class="card-text">
+                <h3>Lessons</h3>
+                <p>Duolingo-style · Active recall · Spaced repetition</p>
+            </div>
+            <div class="card-arrow">›</div>
+        </a>
     </div>
 </div>
 

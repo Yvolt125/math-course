@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Systems of Equations</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w1s3',
+    title: 'Systems of Equations',
+    subtitle: 'Augmented matrix · 3 outcomes · Row ops',
+    color: '#16a085',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'A system of linear equations has exactly three possible outcomes. Which list is correct?',
+            options: [
+                'One solution or no solution',
+                'One solution, infinite solutions, or no solution',
+                'Two solutions or infinite solutions',
+                'One solution or infinite solutions'
+            ],
+            answer: 1,
+            explanation: 'Always exactly three possibilities: (1) lines/planes cross at one unique point, (2) they overlap completely giving infinite solutions, or (3) they are parallel — no intersection, no solution.'
+        },
+        {
+            type: 'type',
+            prompt: 'In the augmented matrix [A | b], the left-hand matrix A is called the ___ matrix.',
+            answer: 'coefficient',
+            explanation: 'A is the coefficient matrix — it holds the multipliers (weights) of each unknown. The bar separates it from b, the vector of right-hand-side constants.'
+        },
+        {
+            type: 'visual',
+            visual: '<svg width="230" height="130" viewBox="0 0 230 130" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border-radius:10px;border:1.5px solid #e1e8ed"><text x="50" y="16" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">No solution</text><line x1="10" y1="38" x2="95" y2="38" stroke="#e74c3c" stroke-width="2"/><line x1="10" y1="62" x2="95" y2="62" stroke="#2980b9" stroke-width="2"/><text x="50" y="90" font-size="9" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">(parallel lines)</text><line x1="115" y1="10" x2="115" y2="125" stroke="#e1e8ed" stroke-width="1" stroke-dasharray="4"/><text x="172" y="16" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">One solution</text><line x1="125" y1="25" x2="220" y2="115" stroke="#e74c3c" stroke-width="2"/><line x1="125" y1="115" x2="220" y2="25" stroke="#2980b9" stroke-width="2"/><circle cx="172" cy="70" r="4" fill="#27ae60"/><text x="172" y="90" font-size="9" fill="#27ae60" font-family="sans-serif" text-anchor="middle">(intersection)</text></svg>',
+            type: 'mc',
+            prompt: 'The left diagram shows parallel lines (red and blue). What type of solution does this system have?',
+            options: [
+                'One unique solution at the midpoint between the lines',
+                'No solution — parallel lines never intersect',
+                'Infinite solutions — every point satisfies both',
+                'Two solutions — one on each line'
+            ],
+            answer: 1,
+            explanation: 'Parallel lines share the same direction (slope) but different y-intercepts, so they never meet. No meeting point means no solution. The system is inconsistent.'
+        },
+        {
+            type: 'calc',
+            prompt: 'System: 2x + y = 8 and x − y = 1. Solve for x.',
+            answer: 3,
+            hint: 'Add the two equations to eliminate y',
+            explanation: 'Adding: (2x + y) + (x − y) = 8 + 1 → 3x = 9 → x = 3. Then y = x − 1 = 2. Adding equations is a row operation that eliminates one variable.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Two parallel lines in a system of equations always produce exactly one solution.',
+            answer: false,
+            explanation: 'Parallel lines never intersect — they have no solution. They share the same slope (direction) but different intercepts, so no point satisfies both equations simultaneously.'
+        },
+        {
+            type: 'fill',
+            before: 'In the augmented matrix [A | b], the right-hand side b is the ',
+            after: ' vector.',
+            answer: 'constant',
+            explanation: 'b holds the result values of each equation (the right-hand side). The augmented matrix encodes the full system compactly for algorithmic manipulation.'
+        },
+        {
+            type: 'calc',
+            prompt: 'System: 3x + 2y = 12, and x = 2. Calculate y.',
+            answer: 3,
+            hint: 'Substitute x = 2 into the first equation',
+            explanation: '3(2) + 2y = 12 → 6 + 2y = 12 → 2y = 6 → y = 3. This is back-substitution: once you know one variable, substitute it to find the other.'
+        },
+        {
+            type: 'mc',
+            prompt: 'In ML, each training data point (one observation) corresponds to…',
+            options: [
+                'One column in the augmented matrix',
+                'One weight in the model',
+                'One equation / constraint in the system',
+                'One row in the coefficient matrix only'
+            ],
+            answer: 2,
+            explanation: 'Each data point gives one equation: "given these feature values, the output should be this." Training = solving the system of all those equations simultaneously.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Two equations that describe the same line (e.g. x + y = 5 and 2x + 2y = 10) produce…',
+            options: [
+                'No solution — they contradict each other',
+                'Exactly one solution at their midpoint',
+                'Infinite solutions — every point on the line satisfies both',
+                'Two solutions'
+            ],
+            answer: 2,
+            explanation: 'The second equation is just 2× the first — they are linearly dependent and geometrically identical. Every point on that single line satisfies both → infinite solutions.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Swapping two rows of an augmented matrix changes the solution of the system.',
+            answer: false,
+            explanation: 'Row swapping just reorders the equations. The solution set doesn\'t change — we\'re solving the same equations, just in a different order. Row operations never change the solution.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Which of these is a valid elementary row operation?',
+            options: [
+                'Multiply a row by 0',
+                'Replace row i with (row i) + 3 × (row j)',
+                'Square all entries in a row',
+                'Add a constant to every entry in a row'
+            ],
+            answer: 1,
+            explanation: 'R_i ← R_i + c·R_j is the "combine" operation — the most powerful row operation. It zeros out entries and is the heart of Gaussian Elimination. Multiplying by 0 destroys information; squaring or adding constants break linearity.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Having more equations than unknowns always guarantees a unique solution.',
+            answer: false,
+            explanation: 'Not at all. More equations means more constraints, but they could be contradictory (no solution) or redundant (infinite solutions). The number of genuinely independent equations — rank — is what matters.'
+        },
+        {
+            type: 'fill',
+            before: 'The augmented matrix encodes a system by placing the coefficient matrix A and constant vector b side by side, separated by a ',
+            after: '.',
+            answer: ['bar', 'vertical bar', '|'],
+            explanation: 'The notation [A | b] combines A and b into one matrix. The vertical bar is a visual separator only — it doesn\'t change the math. Row operations apply to the entire augmented matrix.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

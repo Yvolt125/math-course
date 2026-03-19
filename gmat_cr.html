@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Critical Reasoning — GMAT</title>
+  <meta name="theme-color" content="#1a252f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    :root { --accent: #2980b9; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    header { background: #1a252f; color: white; padding: 16px 20px; display: flex; align-items: center; position: relative; }
+    .back { position: absolute; left: 16px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88em; transition: color 0.2s; }
+    .back:hover { color: white; }
+    .header-center { flex: 1; text-align: center; }
+    .header-center h1 { font-size: 1em; letter-spacing: 2px; text-transform: uppercase; }
+    .header-center p  { font-size: 0.75em; opacity: 0.6; margin-top: 3px; }
+    .tab-bar { background: white; border-bottom: 2px solid #e1e8ed; display: flex; }
+    .tab { flex: 1; padding: 13px; text-align: center; font-size: 0.85em; font-weight: 600; text-decoration: none; color: #7f8c8d; transition: color 0.2s; }
+    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
+    .tab:not(.active):hover { color: #555; }
+
+    /* Layout */
+    .layout { display: flex; min-height: calc(100vh - 110px); }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: white;
+      border-right: 1px solid #e1e8ed;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      height: calc(100vh - 110px);
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 0.7em;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #aab;
+      padding: 0 18px 12px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 18px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+      color: #555;
+      font-size: 0.875em;
+      font-weight: 500;
+      user-select: none;
+    }
+    .sidebar-item:hover { background: #f6f8fa; }
+    .sidebar-item.active {
+      border-left-color: var(--accent);
+      color: var(--accent);
+      background: #eef5fb;
+    }
+    .ch-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78em;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .sidebar-item.active .ch-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 32px 36px;
+      max-width: 820px;
+    }
+
+    /* Chapter panel */
+    .chapter-panel { display: none; }
+    .chapter-panel.active { display: block; }
+
+    .ch-tag {
+      display: inline-block;
+      background: #eef5fb;
+      color: var(--accent);
+      font-size: 0.72em;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .ch-title {
+      font-size: 1.65em;
+      font-weight: 700;
+      color: #1a252f;
+      margin-bottom: 28px;
+      line-height: 1.2;
+    }
+
+    /* Core Concept box */
+    .concept-box {
+      border-left: 4px solid var(--accent);
+      background: #eef5fb;
+      border-radius: 0 8px 8px 0;
+      padding: 18px 20px;
+      margin-bottom: 28px;
+    }
+    .concept-box .box-label {
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .concept-box p {
+      font-size: 0.93em;
+      color: #2c3e50;
+      line-height: 1.65;
+    }
+
+    /* How to Approach */
+    .section-heading {
+      font-size: 1em;
+      font-weight: 700;
+      color: #1a252f;
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+    .steps-list {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+    .steps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+      font-size: 0.92em;
+      color: #34495e;
+      line-height: 1.6;
+    }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 0.78em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Example question card */
+    .example-card {
+      background: white;
+      border-radius: 10px;
+      padding: 22px 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .example-card .section-heading { margin-bottom: 16px; }
+    .example-placeholder {
+      border: 2px dashed #c8d6e5;
+      border-radius: 8px;
+      padding: 22px;
+      text-align: center;
+      color: #95a5a6;
+      font-size: 0.88em;
+      line-height: 1.6;
+    }
+
+    /* Quick Tip box */
+    .tip-box {
+      border-left: 4px solid #f39c12;
+      background: #fef9ee;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin-bottom: 36px;
+    }
+    .tip-box .box-label {
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #e67e22;
+      margin-bottom: 7px;
+    }
+    .tip-box p {
+      font-size: 0.92em;
+      color: #5d4037;
+      line-height: 1.6;
+    }
+
+    /* Chapter nav */
+    .ch-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid #e1e8ed;
+    }
+    .ch-nav-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      background: white;
+      color: var(--accent);
+      font-size: 0.87em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .ch-nav-btn:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+    }
+    .ch-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .ch-time { font-size: 0.68em; color: #aab7c4; margin-left: auto; }
+    .ch-check { font-size: 0.9em; cursor: pointer; color: #bdc3c7; flex-shrink: 0; transition: color 0.15s; }
+    .ch-check.done { color: #27ae60; }
+    .sidebar-item { display: flex; align-items: center; gap: 8px; }
+
+    .obj-box { background: #f0f7fd; border-left: 4px solid #2980b9; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .obj-list { list-style: none; padding: 0; margin-top: 8px; }
+    .obj-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 16px; position: relative; line-height: 1.5; }
+    .obj-list li::before { content: '✓'; position: absolute; left: 0; color: #2980b9; font-weight: 700; }
+
+    .trap-box { background: #fdf2f2; border-left: 4px solid #e74c3c; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .trap-list { list-style: none; padding: 0; margin-top: 8px; }
+    .trap-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 18px; position: relative; line-height: 1.5; }
+    .trap-list li::before { content: '✕'; position: absolute; left: 0; color: #e74c3c; font-weight: 700; }
+
+    .summary-box { background: #f9f9f9; border: 1px solid #e1e8ed; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .summary-list { list-style: none; padding: 0; margin-top: 8px; }
+    .summary-list li { font-size: 0.87em; color: #2c3e50; padding: 4px 0 4px 18px; position: relative; line-height: 1.5; border-bottom: 1px solid #f0f0f0; }
+    .summary-list li:last-child { border-bottom: none; }
+    .summary-list li::before { content: '→'; position: absolute; left: 0; color: #7f8c8d; }
+
+    .mark-btn { padding: 10px 16px; border-radius: 8px; border: 1.5px solid #27ae60; background: white; color: #27ae60; font-size: 0.84em; font-weight: 600; cursor: pointer; }
+    .mark-btn.done { background: #27ae60; color: white; }
+
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .main { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="gmat.html">← GMAT</a>
+  <div class="header-center">
+    <h1>Critical Reasoning</h1>
+    <p>Verbal Reasoning · 5 chapters</p>
+  </div>
+</header>
+
+<nav class="tab-bar">
+  <a class="tab active" href="gmat_cr.html">Lessons</a>
+  <a class="tab" href="gmat_cr_ex.html">Practice</a>
+</nav>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Lessons</div>
+
+    <div class="sidebar-item active" data-ch="0">
+      <span class="ch-check" data-ch="0" onclick="markComplete(event,0)">○</span>
+      <span class="ch-num">1</span>
+      Argument Structure
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="sidebar-item" data-ch="1">
+      <span class="ch-check" data-ch="1" onclick="markComplete(event,1)">○</span>
+      <span class="ch-num">2</span>
+      Strengthen &amp; Weaken
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="sidebar-item" data-ch="2">
+      <span class="ch-check" data-ch="2" onclick="markComplete(event,2)">○</span>
+      <span class="ch-num">3</span>
+      Assumptions
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="sidebar-item" data-ch="3">
+      <span class="ch-check" data-ch="3" onclick="markComplete(event,3)">○</span>
+      <span class="ch-num">4</span>
+      Evaluate the Argument
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="sidebar-item" data-ch="4">
+      <span class="ch-check" data-ch="4" onclick="markComplete(event,4)">○</span>
+      <span class="ch-num">5</span>
+      Inference &amp; Conclusion
+      <span class="ch-time">~5 min</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Chapter 1 -->
+    <div class="chapter-panel active" id="ch-0">
+      <div class="ch-tag">Lesson 1</div>
+      <h2 class="ch-title">Argument Structure</h2>
+
+      <div class="obj-box">
+        <div class="box-label">🎯 LEARNING OBJECTIVES</div>
+        <ul class="obj-list">
+          <li>Identify the conclusion and premises of any GMAT Critical Reasoning argument</li>
+          <li>Recognise signal words that indicate conclusions vs. evidence</li>
+          <li>Articulate the logical gap between premise and conclusion</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 CORE CONCEPT</div>
+        <p>Every CR argument has a conclusion — what the author is trying to prove — and premises — the evidence or facts offered in support. The gap between the premises and the conclusion is where the unstated assumption lives, and that gap is the target of most CR question types.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Find the conclusion — it is often signaled by words like "therefore," "thus," "so," or "hence."</span></li>
+        <li><span class="step-num">2</span><span>Identify the premises — the stated facts or evidence the author uses to support the conclusion.</span></li>
+        <li><span class="step-num">3</span><span>Note the gap between premises and conclusion — that unstated bridge is the assumption the argument relies on.</span></li>
+      </ul>
+
+      <div class="example-card">
+        <div class="section-heading" style="margin-bottom:10px;">Example Question</div>
+        <p style="font-size:0.87em;color:#2c3e50;background:#f7f9fa;border-left:3px solid #bdc3c7;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.65;"><em>A new study shows that employees who work from home report higher job satisfaction than those who work in offices. The study's authors therefore conclude that companies should allow all employees to work from home.</em></p>
+        <p style="font-size:0.9em;color:#2c3e50;margin-bottom:12px;line-height:1.6;font-weight:600;">Which of the following best identifies the conclusion of the argument?</p>
+        <div style="font-size:0.87em;color:#444;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;">
+          <span>(A) Employees who work from home are more productive than office workers</span>
+          <span>(B) A new study examined job satisfaction among different types of workers</span>
+          <span>(C) Companies should allow all employees to work from home</span>
+          <span>(D) High job satisfaction leads to better business outcomes</span>
+          <span>(E) Working from home causes higher job satisfaction</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (C).</strong> "Therefore conclude that companies should allow..." signals the conclusion. (B) is background context. (A) and (D) introduce claims not in the argument. (E) overstates — the study shows correlation, not causation.</p>
+        </details>
+      </div>
+
+      <div class="trap-box">
+        <div class="box-label">⚠️ COMMON TRAPS</div>
+        <ul class="trap-list">
+          <li>Confusing a premise (a stated fact) with the conclusion (what the author is trying to prove) — the conclusion follows FROM the premises, not the other way around</li>
+          <li>Treating background context as a premise — not everything stated in the argument is evidence for the conclusion</li>
+        </ul>
+      </div>
+
+      <div class="summary-box">
+        <div class="box-label">📋 LESSON SUMMARY</div>
+        <ul class="summary-list">
+          <li>Conclusion signal words: therefore, thus, so, hence, consequently, this shows</li>
+          <li>Premise signal words: because, since, given that, as evidenced by</li>
+          <li>The gap between premises and conclusion is where the assumption lives — finding it is the key to most CR question types</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 QUICK TIP</div>
+        <p>The conclusion is what the author is trying to prove, not a fact stated in the passage. If a statement could stand on its own as established evidence, it is a premise — not the conclusion.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="ch-nav-btn" onclick="goToChapter(0 - 1)" disabled>← Previous</button>
+        <button class="mark-btn" id="mark-0" onclick="markComplete(event,0)">Mark Complete</button>
+        <button class="ch-nav-btn" onclick="goToChapter(0 + 1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div class="chapter-panel" id="ch-1">
+      <div class="ch-tag">Lesson 2</div>
+      <h2 class="ch-title">Strengthen &amp; Weaken</h2>
+
+      <div class="obj-box">
+        <div class="box-label">🎯 LEARNING OBJECTIVES</div>
+        <ul class="obj-list">
+          <li>Identify the core assumption of an argument</li>
+          <li>Select a strengthener that supports the assumption or eliminates an alternative explanation</li>
+          <li>Select a weakener that attacks the assumption or introduces an alternative explanation</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 CORE CONCEPT</div>
+        <p>Strengthen questions ask for a choice that makes the conclusion more likely to be true — typically by supporting the argument's core assumption. Weaken questions ask for a choice that makes the conclusion less likely — typically by attacking the assumption or introducing counter-evidence. The conclusion itself does not change; only its probability does.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Identify the conclusion and the central assumption before evaluating any answer choice.</span></li>
+        <li><span class="step-num">2</span><span>For Strengthen: find a choice that supports the assumption, closes the gap, or adds new evidence pointing toward the conclusion.</span></li>
+        <li><span class="step-num">3</span><span>For Weaken: find a choice that attacks the assumption, introduces a confounding factor, or provides counter-evidence against the conclusion.</span></li>
+      </ul>
+
+      <div class="example-card">
+        <div class="section-heading" style="margin-bottom:10px;">Example Question</div>
+        <p style="font-size:0.87em;color:#2c3e50;background:#f7f9fa;border-left:3px solid #bdc3c7;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.65;"><em>Northfield City plans to reduce traffic congestion by converting one lane of the main highway into a dedicated bus lane. City planners argue this will reduce total commute times because more commuters will switch to the bus.</em></p>
+        <p style="font-size:0.9em;color:#2c3e50;margin-bottom:12px;line-height:1.6;font-weight:600;">Which of the following, if true, most weakens the city planners' argument?</p>
+        <div style="font-size:0.87em;color:#444;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;">
+          <span>(A) Bus fares in Northfield City are currently subsidised by the city government</span>
+          <span>(B) Most Northfield commuters live too far from bus stops to use the bus service conveniently</span>
+          <span>(C) Studies in other cities have shown that dedicated bus lanes improve bus journey times</span>
+          <span>(D) The main highway is the only route connecting residential suburbs to the city centre</span>
+          <span>(E) Traffic congestion in Northfield City has increased over the past decade</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (B).</strong> The planners assume commuters will switch to buses. If most cannot conveniently access bus stops, they won't switch — a lane is removed but car volume stays the same, worsening congestion. (A) doesn't affect whether people switch. (C) supports the plan. (D) is background. (E) is background.</p>
+        </details>
+      </div>
+
+      <div class="trap-box">
+        <div class="box-label">⚠️ COMMON TRAPS</div>
+        <ul class="trap-list">
+          <li>Choosing an answer that is about the same topic as the argument but does not actually affect the logic — relevance to the topic is not the same as impact on the conclusion</li>
+          <li>Confusing the direction: a weakener must make the conclusion less likely, not just introduce doubt about a premise</li>
+        </ul>
+      </div>
+
+      <div class="summary-box">
+        <div class="box-label">📋 LESSON SUMMARY</div>
+        <ul class="summary-list">
+          <li>Strengthen: find a choice that makes the conclusion more probable — support the assumption or rule out alternatives</li>
+          <li>Weaken: find a choice that makes the conclusion less probable — attack the assumption or introduce an alternative cause</li>
+          <li>Correct answers affect the probability of the conclusion, they do not need to prove or disprove it absolutely</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 QUICK TIP</div>
+        <p>The correct answer doesn't need to prove or disprove the conclusion outright — it just needs to shift the probability. Extreme answer choices that "prove" or "definitely disprove" are usually traps.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="ch-nav-btn" onclick="goToChapter(1 - 1)">← Previous</button>
+        <button class="mark-btn" id="mark-1" onclick="markComplete(event,1)">Mark Complete</button>
+        <button class="ch-nav-btn" onclick="goToChapter(1 + 1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div class="chapter-panel" id="ch-2">
+      <div class="ch-tag">Lesson 3</div>
+      <h2 class="ch-title">Assumptions</h2>
+
+      <div class="obj-box">
+        <div class="box-label">🎯 LEARNING OBJECTIVES</div>
+        <ul class="obj-list">
+          <li>Define the gap between stated premises and conclusion</li>
+          <li>Apply the Negation Test to verify a Necessary Assumption answer</li>
+          <li>Distinguish necessary assumptions (must be true for the argument to hold) from sufficient assumptions (alone would guarantee the conclusion)</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 CORE CONCEPT</div>
+        <p>A necessary assumption is something that must be true for the argument to hold — remove it and the argument collapses. A sufficient assumption alone would guarantee the conclusion. Both types bridge the unstated gap between the premises and the conclusion, and neither is explicitly stated in the argument itself.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Find the gap between the premise and the conclusion — this is where the assumption lives.</span></li>
+        <li><span class="step-num">2</span><span>For Necessary Assumption: use the Negation Test — if negating the answer choice destroys the argument, that choice is a necessary assumption.</span></li>
+        <li><span class="step-num">3</span><span>For Sufficient Assumption: look for a choice that, if added as a premise, makes the conclusion logically certain.</span></li>
+      </ul>
+
+      <div class="example-card">
+        <div class="section-heading" style="margin-bottom:10px;">Example Question</div>
+        <p style="font-size:0.87em;color:#2c3e50;background:#f7f9fa;border-left:3px solid #bdc3c7;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.65;"><em>Increasing the number of trees in urban areas reduces the urban heat island effect. Therefore, planting trees in downtown areas will reduce summer temperatures in those areas.</em></p>
+        <p style="font-size:0.9em;color:#2c3e50;margin-bottom:12px;line-height:1.6;font-weight:600;">The argument assumes which of the following?</p>
+        <div style="font-size:0.87em;color:#444;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;">
+          <span>(A) The urban heat island effect is the primary cause of elevated summer temperatures</span>
+          <span>(B) Downtown areas currently have fewer trees than they could support</span>
+          <span>(C) Tree planting in downtown areas is less expensive than alternative cooling methods</span>
+          <span>(D) Reducing the urban heat island effect will lower summer temperatures in those areas</span>
+          <span>(E) Cities with more trees experience lower average annual temperatures</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (D).</strong> The argument moves from "trees reduce the heat island effect" to "temperatures will drop." This requires assuming that reducing the heat island effect actually lowers temperatures. <em>Negation test:</em> if reducing the heat island effect does NOT lower temperatures, the conclusion collapses. (A) introduces "primary cause" — not needed. (B) and (C) are irrelevant. (E) covers all temperatures, not just summer.</p>
+        </details>
+      </div>
+
+      <div class="trap-box">
+        <div class="box-label">⚠️ COMMON TRAPS</div>
+        <ul class="trap-list">
+          <li>Selecting an answer that is true and relevant but not actually required for the argument — pass the Negation Test: if negating the choice does NOT destroy the argument, it is not a necessary assumption</li>
+          <li>Choosing an assumption that is already stated in the argument — assumptions are always unstated</li>
+        </ul>
+      </div>
+
+      <div class="summary-box">
+        <div class="box-label">📋 LESSON SUMMARY</div>
+        <ul class="summary-list">
+          <li>Negation Test: negate the answer choice. If the argument falls apart, it is a necessary assumption</li>
+          <li>Necessary assumptions bridge the gap — they are the minimum required for the logic to hold</li>
+          <li>Sufficient assumptions are stronger: they alone make the conclusion certain. Look for words like "if and only if" or absolute connections</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 QUICK TIP</div>
+        <p>Assumptions are never stated in the argument — they bridge the unstated gap. If you see a choice that merely repeats something from the passage, it is not an assumption.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="ch-nav-btn" onclick="goToChapter(2 - 1)">← Previous</button>
+        <button class="mark-btn" id="mark-2" onclick="markComplete(event,2)">Mark Complete</button>
+        <button class="ch-nav-btn" onclick="goToChapter(2 + 1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div class="chapter-panel" id="ch-3">
+      <div class="ch-tag">Lesson 4</div>
+      <h2 class="ch-title">Evaluate the Argument</h2>
+
+      <div class="obj-box">
+        <div class="box-label">🎯 LEARNING OBJECTIVES</div>
+        <ul class="obj-list">
+          <li>Identify which factor, if known, would most help determine whether the argument's conclusion is valid</li>
+          <li>Recognise that evaluate answers are questions or variables, not statements of fact</li>
+          <li>Apply the "either way" test to confirm the correct answer</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 CORE CONCEPT</div>
+        <p>Evaluate questions ask which piece of information would most help assess whether the argument's conclusion is valid. The answer is typically a factor or question whose answer could either confirm or undermine the argument's core assumption — it works in both directions.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Identify the core assumption of the argument — this is the hinge point the evaluation will test.</span></li>
+        <li><span class="step-num">2</span><span>Think of what evidence could either confirm or undermine that assumption before reading answer choices.</span></li>
+        <li><span class="step-num">3</span><span>Choose the option that, answered in either direction (yes or no), would meaningfully affect the argument's validity.</span></li>
+      </ul>
+
+      <div class="example-card">
+        <div class="section-heading" style="margin-bottom:10px;">Example Question</div>
+        <p style="font-size:0.87em;color:#2c3e50;background:#f7f9fa;border-left:3px solid #bdc3c7;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.65;"><em>Museum attendance has fallen 30% over the past decade. To increase attendance, the director proposes adding an interactive digital exhibit, citing a survey showing that 60% of non-visitors said they would be more likely to visit if the museum had more interactive exhibits.</em></p>
+        <p style="font-size:0.9em;color:#2c3e50;margin-bottom:12px;line-height:1.6;font-weight:600;">Which of the following would be most useful to know in evaluating the director's proposal?</p>
+        <div style="font-size:0.87em;color:#444;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;">
+          <span>(A) Whether the surveyed non-visitors have visited other museums with interactive exhibits</span>
+          <span>(B) Whether interactive exhibits cost more to maintain than traditional exhibits</span>
+          <span>(C) Whether the 60% who expressed interest are truly new potential visitors or current visitors who would visit more often</span>
+          <span>(D) Whether the museum's staff have experience operating digital technology</span>
+          <span>(E) Whether attendance declines were uniform across all visitor age groups</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (C).</strong> If the 60% are new visitors → the proposal could grow attendance (supports the plan). If they already visit regularly → the proposal won't grow total attendance (weakens the plan). This cuts both ways — exactly what an evaluate question requires. (B) is about cost, not attendance. (D) is irrelevant to whether attendance will rise.</p>
+        </details>
+      </div>
+
+      <div class="trap-box">
+        <div class="box-label">⚠️ COMMON TRAPS</div>
+        <ul class="trap-list">
+          <li>Selecting a factor that is interesting but would not actually change your assessment of the argument's strength — it must cut both ways (one answer strengthens, the other weakens)</li>
+          <li>Choosing a factor that is about a different aspect of the situation, not the core logical gap</li>
+        </ul>
+      </div>
+
+      <div class="summary-box">
+        <div class="box-label">📋 LESSON SUMMARY</div>
+        <ul class="summary-list">
+          <li>The "either way" test: if knowing the answer to the evaluate choice could either strengthen or weaken the argument, it is the right type of answer</li>
+          <li>Evaluate questions require you to find the core assumption first — you are looking for what would test it</li>
+          <li>The correct answer is usually a question or measurable factor, not a conclusion</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 QUICK TIP</div>
+        <p>The answer is usually a question or factor — not a statement of fact. Apply the "Yes/No Test": if answering yes strengthens the argument and answering no weakens it (or vice versa), it is the correct evaluator.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="ch-nav-btn" onclick="goToChapter(3 - 1)">← Previous</button>
+        <button class="mark-btn" id="mark-3" onclick="markComplete(event,3)">Mark Complete</button>
+        <button class="ch-nav-btn" onclick="goToChapter(3 + 1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div class="chapter-panel" id="ch-4">
+      <div class="ch-tag">Lesson 5</div>
+      <h2 class="ch-title">Inference &amp; Conclusion</h2>
+
+      <div class="obj-box">
+        <div class="box-label">🎯 LEARNING OBJECTIVES</div>
+        <ul class="obj-list">
+          <li>Identify what must be true given only the statements in the argument</li>
+          <li>Distinguish "must be true" from "likely to be true" or "could be true"</li>
+          <li>Avoid bringing in outside knowledge or assumptions when answering inference questions</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 CORE CONCEPT</div>
+        <p>Inference questions ask what must be true based only on the statements given — no outside knowledge or assumptions allowed. The correct answer follows necessarily from the provided facts and closely mirrors the language and scope of the passage, making the smallest logical leap possible.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Treat all given statements as facts — do not question their truth or introduce external knowledge.</span></li>
+        <li><span class="step-num">2</span><span>Find a choice that is necessarily true given those facts — not just plausible or likely, but certain.</span></li>
+        <li><span class="step-num">3</span><span>Eliminate choices that are merely possible, that go beyond the scope of the statements, or that require additional assumptions.</span></li>
+      </ul>
+
+      <div class="example-card">
+        <div class="section-heading" style="margin-bottom:10px;">Example Question</div>
+        <p style="font-size:0.87em;color:#2c3e50;background:#f7f9fa;border-left:3px solid #bdc3c7;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.65;"><em>Every employee who completed the advanced training programme received a pay raise last year. Marta received a pay raise last year but had not completed the advanced training programme.</em></p>
+        <p style="font-size:0.9em;color:#2c3e50;margin-bottom:12px;line-height:1.6;font-weight:600;">Which of the following must be true based only on the statements above?</p>
+        <div style="font-size:0.87em;color:#444;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;">
+          <span>(A) Marta is the only employee who received a pay raise without completing the programme</span>
+          <span>(B) Most employees who received pay raises had also completed the advanced training programme</span>
+          <span>(C) Employees who complete the programme are more productive than those who do not</span>
+          <span>(D) There is at least one way to receive a pay raise other than completing the training programme</span>
+          <span>(E) The training programme is the most common reason employees receive pay raises</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (D).</strong> Marta received a raise without completing the programme, so at least one other path to a raise must exist. This is necessarily true. (A) adds "only" — not stated. (B) "most" is not supported. (C) introduces productivity — out of scope. (E) "most common" is not supported.</p>
+        </details>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 QUICK TIP</div>
+        <p>Inference answers are conservative — they closely mirror the language of the passage and make minimal logical leaps. If an answer sounds dramatic or introduces new ideas, eliminate it immediately.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="ch-nav-btn" onclick="goToChapter(4 - 1)">← Previous</button>
+        <button class="ch-nav-btn" onclick="goToChapter(4 + 1)" disabled>Next →</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const TOTAL = 5;
+
+  function goToChapter(index) {
+    if (index < 0 || index >= TOTAL) return;
+    showChapter(index);
+  }
+
+  function showChapter(index) {
+    document.querySelectorAll('.chapter-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+
+    document.getElementById('ch-' + index).classList.add('active');
+    document.querySelector('.sidebar-item[data-ch="' + index + '"]').classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const ch = parseInt(item.getAttribute('data-ch'));
+      showChapter(ch);
+    });
+  });
+</script>
+
+</body>
+</html>

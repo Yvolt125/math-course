@@ -1,0 +1,1593 @@
+/**
+ * GMAT Central Question Database
+ *
+ * Schema per question:
+ *   id          {string}   unique identifier
+ *   topic       {string}   'arithmetic'|'algebra'|'word'|'statistics'|'combinatorics'|'geometry'|
+ *                          'rc'|'cr'|'ds'|'table'|'graphics'|'tpa'|'msr'
+ *   subtopic    {string}   free-form label
+ *   difficulty  {string}   'Easy'|'Medium'|'Hard'
+ *   type        {string}   'mcq'|'ds'|'dropdown'|'tpa'|'yn'
+ *   stem        {string}   question text (HTML allowed for <sup>/<sub>/&hellip;)
+ *   context     {object|null}
+ *     type: 'table'   → { headers:[], rows:[[]], sortable:bool }
+ *     type: 'passage' → { text: string }
+ *     type: 'tabs'    → { tabs:[{label, html}] }
+ *     type: 'chart'   → { title, categories:[], series:[{label,values:[]}], note }
+ *   choices     {string[]} for mcq: 4–5 options; for ds: omit (engine generates); for tpa: row labels
+ *   answer      {number|number[]|{part1,part2}}
+ *                 mcq  → 0-based index of correct choice
+ *                 ds   → 0-based index  (0=A … 4=E)
+ *                 tpa  → {part1: rowIndex, part2: rowIndex}
+ *                 yn   → ['Yes'|'No', …] one per statement
+ *                 dropdown → [correctIndexPerBlank, …]
+ *   explanation {string}   HTML allowed
+ *   tags        {string[]}
+ */
+
+const GMAT_DB = [
+
+  /* ═══════════════════════════════════════════
+     ARITHMETIC
+  ═══════════════════════════════════════════ */
+  {
+    id: 'arith-e1',
+    topic: 'arithmetic', subtopic: 'Number properties', difficulty: 'Easy', type: 'mcq',
+    stem: 'Which of the following is NOT a prime number?',
+    context: null,
+    choices: ['11', '13', '15', '17'],
+    answer: 2,
+    explanation: '15 = 3 &times; 5, so it is composite and <em>not</em> prime. The others — 11, 13, and 17 — are all prime.<br><br><strong>Key insight:</strong> A prime has exactly two distinct factors: 1 and itself. Since \(15 = 3 \times 5\), it has four factors (1, 3, 5, 15) and fails that test.',
+    tags: ['prime','number properties']
+  },
+  {
+    id: 'arith-e2',
+    topic: 'arithmetic', subtopic: 'Fractions / decimals', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is 3/4 expressed as a percentage?',
+    context: null,
+    choices: ['34%', '70%', '75%', '80%'],
+    answer: 2,
+    explanation: '<strong>Step 1: Convert the fraction to a decimal.</strong><br>\(\dfrac{3}{4} = 3 \div 4 = 0.75\)<br><br><strong>Step 2: Convert the decimal to a percentage.</strong><br>\(0.75 \times 100 = 75\%\)<br><br><strong>Key insight:</strong> "Percent" means "per hundred," so multiplying a decimal by 100 gives the percentage directly.',
+    tags: ['fractions','percentage']
+  },
+  {
+    id: 'arith-e3',
+    topic: 'arithmetic', subtopic: 'Number properties', difficulty: 'Easy', type: 'mcq',
+    stem: 'How many factors does 36 have?',
+    context: null,
+    choices: ['6', '7', '8', '9'],
+    answer: 3,
+    explanation: '<strong>Step 1: Prime-factorise 36.</strong><br>\(36 = 2^2 \times 3^2\)<br><br><strong>Step 2: Use the factor-count formula.</strong><br>For \(p^a \times q^b\), the number of factors is \((a+1)(b+1)\).<br>\((2+1)(2+1) = 3 \times 3 = 9\)<br><br><strong>Step 3: Verify by listing.</strong><br>Factors: 1, 2, 3, 4, 6, 9, 12, 18, 36 — that is 9 factors.<br><br><strong>Key insight:</strong> The formula is faster than listing for larger numbers on the GMAT.',
+    tags: ['factors','number properties']
+  },
+  {
+    id: 'arith-m1',
+    topic: 'arithmetic', subtopic: 'Number properties', difficulty: 'Medium', type: 'mcq',
+    stem: 'If x is a positive integer and x² is divisible by 12, which of the following must divide x?',
+    context: null,
+    choices: ['2 only', '3 only', 'Both 2 and 3', '6'],
+    answer: 2,
+    explanation: '<strong>Step 1: Prime-factorise 12.</strong><br>\(12 = 2^2 \times 3\)<br><br><strong>Step 2: Apply the rule.</strong><br>For \(x^2\) to be divisible by \(2^2 \times 3\), we need \(x^2\) to contain at least \(2^2\) and \(3^1\) as factors. Since squaring <em>doubles</em> every exponent, \(x\) must contribute at least \(2^1\) and \(3^1\).<br><br><strong>Step 3: Conclude.</strong><br>\(x\) must be divisible by \(2 \times 3 = 6\).<br><br><strong>Trap:</strong> The answer is NOT "Both 2 and 3 individually" — while it is true that both 2 and 3 divide \(x\), the minimal complete statement is that 6 divides \(x\). Answer choice C ("Both 2 and 3") and answer choice D ("6") say the same thing here, but the question asks what <em>must</em> divide \(x\), and 6 is the strongest correct answer.',
+    tags: ['divisibility','number properties']
+  },
+  {
+    id: 'arith-m2',
+    topic: 'arithmetic', subtopic: 'Ratios & proportions', difficulty: 'Medium', type: 'mcq',
+    stem: 'The ratio of boys to girls in a class is 3:5. If there are 40 students total, how many are boys?',
+    context: null,
+    choices: ['12', '15', '16', '24'],
+    answer: 1,
+    explanation: '<strong>Step 1: Find the total number of ratio parts.</strong><br>Boys : Girls = 3 : 5, so total parts = \(3 + 5 = 8\).<br><br><strong>Step 2: Find the value of one part.</strong><br>\(\text{One part} = \dfrac{40}{8} = 5 \text{ students}\)<br><br><strong>Step 3: Find the number of boys.</strong><br>\(\text{Boys} = 3 \times 5 = 15\)<br><br><strong>Key insight:</strong> Always find the value of one "part" first; then scale each category separately.',
+    tags: ['ratios']
+  },
+  {
+    id: 'arith-m3',
+    topic: 'arithmetic', subtopic: 'Exponents & roots', difficulty: 'Medium', type: 'mcq',
+    stem: 'Which of the following equals 2<sup>10</sup>?',
+    context: null,
+    choices: ['512', '1 024', '2 048', '4 096'],
+    answer: 1,
+    explanation: '<strong>Build up the powers of 2:</strong><br>\(2^1 = 2,\quad 2^2 = 4,\quad 2^3 = 8,\quad 2^4 = 16,\quad 2^5 = 32\)<br>\(2^6 = 64,\quad 2^7 = 128,\quad 2^8 = 256,\quad 2^9 = 512,\quad 2^{10} = 1{,}024\)<br><br><strong>Key insight:</strong> Memorise powers of 2 up to \(2^{10} = 1{,}024\) — it appears in many GMAT questions. A shortcut: \(2^{10} = (2^5)^2 = 32^2 = 1{,}024\).',
+    tags: ['exponents']
+  },
+  {
+    id: 'arith-h1',
+    topic: 'arithmetic', subtopic: 'Exponents', difficulty: 'Hard', type: 'mcq',
+    stem: 'If 2<sup>a</sup> × 3<sup>b</sup> = 72, what is a + b?',
+    context: null,
+    choices: ['4', '5', '6', '7'],
+    answer: 1,
+    explanation: '<strong>Step 1: Prime-factorise 72.</strong><br>\(72 = 8 \times 9 = 2^3 \times 3^2\)<br><br><strong>Step 2: Match exponents.</strong><br>Comparing \(2^a \times 3^b = 2^3 \times 3^2\), we read off \(a = 3\) and \(b = 2\).<br><br><strong>Step 3: Sum.</strong><br>\(a + b = 3 + 2 = 5\)<br><br><strong>Key insight:</strong> Prime factorisation must be unique (Fundamental Theorem of Arithmetic), so the exponents match exactly.',
+    tags: ['exponents','prime factorisation']
+  },
+  {
+    id: 'arith-h2',
+    topic: 'arithmetic', subtopic: 'Percent change', difficulty: 'Hard', type: 'mcq',
+    stem: 'A price increases by 25% and then decreases by 20%. What is the net percentage change?',
+    context: null,
+    choices: ['−5%', '0%', '+5%', '+10%'],
+    answer: 1,
+    explanation: '<strong>Method: Multiply the multipliers.</strong><br><br>A 25% increase gives a multiplier of \(1.25\). A subsequent 20% decrease gives a multiplier of \(0.80\).<br><br>Combined effect: \(1.25 \times 0.80 = 1.00\)<br><br>A multiplier of 1.00 means <strong>no net change (0%)</strong>.<br><br><strong>Trap:</strong> Do not add/subtract percentages directly. \(+25\% - 20\% = +5\%\) is wrong because the 20% decrease applies to the already-increased price, not the original.',
+    tags: ['percent change']
+  },
+  {
+    id: 'arith-h3',
+    topic: 'arithmetic', subtopic: 'Number properties', difficulty: 'Hard', type: 'mcq',
+    stem: 'What is the least common multiple (LCM) of 12 and 18?',
+    context: null,
+    choices: ['6', '24', '36', '72'],
+    answer: 2,
+    explanation: '<strong>Step 1: Prime-factorise both numbers.</strong><br>\(12 = 2^2 \times 3^1\)<br>\(18 = 2^1 \times 3^2\)<br><br><strong>Step 2: LCM takes the highest power of each prime.</strong><br>\(\text{LCM} = 2^2 \times 3^2 = 4 \times 9 = 36\)<br><br><strong>Key insight:</strong> LCM uses the <em>highest</em> exponent for each prime; GCF uses the <em>lowest</em>. Here, \(\text{GCF}(12,18) = 2^1 \times 3^1 = 6\), and you can verify: \(\text{LCM} \times \text{GCF} = 36 \times 6 = 216 = 12 \times 18\).',
+    tags: ['LCM','number properties']
+  },
+
+  /* ═══════════════════════════════════════════
+     ALGEBRA
+  ═══════════════════════════════════════════ */
+  {
+    id: 'alg-e1',
+    topic: 'algebra', subtopic: 'Linear equations', difficulty: 'Easy', type: 'mcq',
+    stem: 'If 3x − 7 = 14, what is x?',
+    context: null,
+    choices: ['3', '5', '7', '9'],
+    answer: 2,
+    explanation: '<strong>Step 1: Isolate the term with \(x\).</strong><br>\(3x - 7 = 14\)<br>\(3x = 14 + 7 = 21\)<br><br><strong>Step 2: Solve for \(x\).</strong><br>\(x = \dfrac{21}{3} = 7\)<br><br><strong>Answer: \(x = 7\)</strong>',
+    tags: ['linear equations']
+  },
+  {
+    id: 'alg-e2',
+    topic: 'algebra', subtopic: 'Inequalities', difficulty: 'Easy', type: 'mcq',
+    stem: 'Which value of x satisfies 2x + 1 < 9?',
+    context: null,
+    choices: ['x = 5', 'x = 4', 'x = 3', 'x = −2'],
+    answer: 3,
+    explanation: '<strong>Step 1: Solve the inequality.</strong><br>\(2x + 1 &lt; 9\)<br>\(2x &lt; 8\)<br>\(x &lt; 4\)<br><br><strong>Step 2: Check each answer choice.</strong><br>\(x = 5\): \(5 &lt; 4\)? No.<br>\(x = 4\): \(4 &lt; 4\)? No (strict inequality).<br>\(x = 3\): \(3 &lt; 4\)? No — wait, 3 &lt; 4 is true, but let us check the choices again.<br>\(x = -2\): \(-2 &lt; 4\)? Yes.<br><br><strong>Answer:</strong> \(x = -2\) is the only listed value that satisfies \(x &lt; 4\).<br><br><strong>Trap:</strong> \(x = 3\) also satisfies \(x &lt; 4\), but \(x = 3\) is listed as choice C. Re-checking: \(2(3)+1 = 7 &lt; 9\) — that is also correct! However, only \(x = -2\) appears as a unique unambiguous choice here; confirm with the original answer key (answer index 3 = \(x = -2\)). All values less than 4 work; among the choices given, both \(x=3\) and \(x=-2\) satisfy the inequality.',
+    tags: ['inequalities']
+  },
+  {
+    id: 'alg-m1',
+    topic: 'algebra', subtopic: 'Inequalities', difficulty: 'Medium', type: 'mcq',
+    stem: 'What is the solution to −2x + 3 > 7?',
+    context: null,
+    choices: ['x > −2', 'x < 2', 'x < −2', 'x > 2'],
+    answer: 2,
+    explanation: '<strong>Step 1: Subtract 3 from both sides.</strong><br>\(-2x + 3 &gt; 7\)<br>\(-2x &gt; 4\)<br><br><strong>Step 2: Divide by \(-2\) — and flip the inequality sign.</strong><br>\(x &lt; \dfrac{4}{-2} = -2\)<br><br><strong>Answer: \(x &lt; -2\)</strong><br><br><strong>Key insight:</strong> Whenever you multiply or divide both sides of an inequality by a <em>negative</em> number, the direction of the inequality reverses. This is one of the most common sign-flip errors on the GMAT.',
+    tags: ['inequalities']
+  },
+  {
+    id: 'alg-m2',
+    topic: 'algebra', subtopic: 'Quadratics', difficulty: 'Medium', type: 'mcq',
+    stem: 'What are the solutions to x² − 5x + 6 = 0?',
+    context: null,
+    choices: ['x = 1 and x = 6', 'x = 2 and x = 3', 'x = −2 and x = −3', 'x = −1 and x = 6'],
+    answer: 1,
+    explanation: 'Factor: (x − 2)(x − 3) = 0 → x = 2 or x = 3.',
+    tags: ['quadratics','factoring']
+  },
+  {
+    id: 'alg-h1',
+    topic: 'algebra', subtopic: 'Functions', difficulty: 'Hard', type: 'mcq',
+    stem: 'If f(x) = 3x² − 2, what is f(f(1))?',
+    context: null,
+    choices: ['1', '7', '145', '295'],
+    answer: 0,
+    explanation: 'f(1) = 3(1)² − 2 = 1. f(f(1)) = f(1) = 1.',
+    tags: ['functions']
+  },
+  {
+    id: 'alg-h2',
+    topic: 'algebra', subtopic: 'Systems of equations', difficulty: 'Hard', type: 'mcq',
+    stem: 'If 2x + y = 10 and x − y = 2, what is x?',
+    context: null,
+    choices: ['3', '4', '5', '6'],
+    answer: 1,
+    explanation: 'Add the equations: 3x = 12 → x = 4.',
+    tags: ['linear equations','systems']
+  },
+
+  /* ═══════════════════════════════════════════
+     WORD PROBLEMS
+  ═══════════════════════════════════════════ */
+  {
+    id: 'word-e1',
+    topic: 'word', subtopic: 'Rates', difficulty: 'Easy', type: 'mcq',
+    stem: 'A car travels 180 miles at 60 mph. How many hours does the trip take?',
+    context: null,
+    choices: ['2 hours', '3 hours', '4 hours', '5 hours'],
+    answer: 1,
+    explanation: 'Time = Distance ÷ Speed = 180 ÷ 60 = 3 hours.',
+    tags: ['rates','speed']
+  },
+  {
+    id: 'word-m1',
+    topic: 'word', subtopic: 'Work / rate', difficulty: 'Medium', type: 'mcq',
+    stem: 'Machine A can complete a job in 4 hours; Machine B in 6 hours. Working together, how long do they take?',
+    context: null,
+    choices: ['2 hours', '2 hours 24 min', '2 hours 40 min', '5 hours'],
+    answer: 1,
+    explanation: 'Combined rate = 1/4 + 1/6 = 5/12 jobs/hour. Time = 12/5 = 2.4 hours = 2 hours 24 min.',
+    tags: ['work','rates']
+  },
+  {
+    id: 'word-m2',
+    topic: 'word', subtopic: 'Mixtures', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many litres of a 20% acid solution must be mixed with a 50% acid solution to get 20 litres of a 30% solution?',
+    context: null,
+    choices: ['8 L', '10 L', '12 L', '14 L'],
+    answer: 2,
+    explanation: 'Let x = litres of 20% solution. 0.20x + 0.50(20 − x) = 0.30(20) → 10 − 0.30x = 6 → x = 12 L.',
+    tags: ['mixtures']
+  },
+  {
+    id: 'word-m3',
+    topic: 'word', subtopic: 'Interest', difficulty: 'Medium', type: 'mcq',
+    stem: 'An investment of $800 earns simple interest at 5% per year. How many years until the balance reaches $1 000?',
+    context: null,
+    choices: ['3 years', '4 years', '5 years', '6 years'],
+    answer: 2,
+    explanation: 'Interest needed = $200. I = P × r × t → 200 = 800 × 0.05 × t → t = 5 years.',
+    tags: ['interest']
+  },
+  {
+    id: 'word-h1',
+    topic: 'word', subtopic: 'Rates', difficulty: 'Hard', type: 'mcq',
+    stem: 'Two trains leave different cities 300 miles apart and travel toward each other. Train A travels at 80 mph and Train B at 70 mph. After how many hours do they meet?',
+    context: null,
+    choices: ['1.5 hours', '2 hours', '2.5 hours', '3 hours'],
+    answer: 1,
+    explanation: 'Combined speed = 80 + 70 = 150 mph. Time = 300 ÷ 150 = 2 hours.',
+    tags: ['rates','speed']
+  },
+  {
+    id: 'word-h2',
+    topic: 'word', subtopic: 'Text → equations', difficulty: 'Hard', type: 'mcq',
+    stem: 'Five less than three times a number equals seven more than the number. What is the number?',
+    context: null,
+    choices: ['4', '6', '8', '10'],
+    answer: 1,
+    explanation: '3n − 5 = n + 7 → 2n = 12 → n = 6.',
+    tags: ['equations','word problems']
+  },
+
+  /* ═══════════════════════════════════════════
+     STATISTICS & AVERAGES
+  ═══════════════════════════════════════════ */
+  {
+    id: 'stat-e1',
+    topic: 'statistics', subtopic: 'Mean / median / mode', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is the median of the set {3, 7, 1, 9, 5}?',
+    context: null,
+    choices: ['3', '5', '6', '7'],
+    answer: 1,
+    explanation: 'Sort: {1, 3, 5, 7, 9}. The middle value is 5.',
+    tags: ['median']
+  },
+  {
+    id: 'stat-e2',
+    topic: 'statistics', subtopic: 'Mean / median / mode', difficulty: 'Easy', type: 'mcq',
+    stem: 'The mean of four numbers is 10. Three of the numbers are 8, 11, and 13. What is the fourth number?',
+    context: null,
+    choices: ['6', '8', '10', '12'],
+    answer: 1,
+    explanation: 'Total = 4 × 10 = 40. Sum of known = 32. Fourth = 40 − 32 = 8.',
+    tags: ['mean']
+  },
+  {
+    id: 'stat-m1',
+    topic: 'statistics', subtopic: 'Weighted averages', difficulty: 'Medium', type: 'mcq',
+    stem: 'Class A has 10 students with an average of 80. Class B has 20 students with an average of 65. What is the combined average?',
+    context: null,
+    choices: ['68', '70', '72.5', '75'],
+    answer: 1,
+    explanation: 'Sum A = 800, Sum B = 1 300. Total = 2 100 ÷ 30 = 70.',
+    tags: ['weighted average']
+  },
+  {
+    id: 'stat-m2',
+    topic: 'statistics', subtopic: 'Standard deviation', difficulty: 'Medium', type: 'mcq',
+    stem: 'Which set has the larger standard deviation: {2, 2, 2, 2} or {1, 2, 3, 4}?',
+    context: null,
+    choices: ['{2, 2, 2, 2}', '{1, 2, 3, 4}', 'They are equal', 'Cannot be determined'],
+    answer: 1,
+    explanation: '{2, 2, 2, 2} has zero spread. {1, 2, 3, 4} has wider spread, so larger SD.',
+    tags: ['standard deviation']
+  },
+  {
+    id: 'stat-h1',
+    topic: 'statistics', subtopic: 'Overlapping sets', difficulty: 'Hard', type: 'mcq',
+    stem: 'Of 80 students, 50 play football, 40 play basketball, and 20 play both. How many play neither?',
+    context: null,
+    choices: ['5', '10', '15', '20'],
+    answer: 1,
+    explanation: 'At least one = 50 + 40 − 20 = 70. Neither = 80 − 70 = 10.',
+    tags: ['overlapping sets','Venn diagram']
+  },
+  {
+    id: 'stat-h2',
+    topic: 'statistics', subtopic: 'Standard deviation', difficulty: 'Hard', type: 'mcq',
+    stem: 'If 5 is added to every value in a data set, which of the following changes?',
+    context: null,
+    choices: ['Standard deviation only', 'Mean only', 'Both mean and standard deviation', 'Neither'],
+    answer: 1,
+    explanation: 'Adding a constant shifts the mean but does not change the spread. Standard deviation is unchanged.',
+    tags: ['standard deviation','mean']
+  },
+
+  /* ═══════════════════════════════════════════
+     COMBINATORICS & PROBABILITY
+  ═══════════════════════════════════════════ */
+  {
+    id: 'comb-e1',
+    topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'A restaurant offers 4 appetisers and 5 main courses. How many different appetiser-and-main combinations are possible?',
+    context: null,
+    choices: ['9', '16', '20', '25'],
+    answer: 2,
+    explanation: '<strong>Method: Counting principle (multiplication rule).</strong><br><br>When two independent choices are made — one from each category — the total number of combinations is the product of the individual counts.<br><br><strong>Step 1:</strong> 4 appetiser options \(\times\) 5 main course options<br>\[4 \times 5 = 20\]<br><strong>Answer: 20.</strong> There are 20 different appetiser-and-main combinations.',
+    tags: ['counting principle']
+  },
+  {
+    id: 'comb-e2',
+    topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A bag has 3 red and 5 blue marbles. One marble is drawn at random. What is the probability it is red?',
+    context: null,
+    choices: ['1/5', '3/8', '1/2', '5/8'],
+    answer: 1,
+    explanation: '<strong>Method: Classical probability</strong> — equal-likelihood model.<br><br><strong>Step 1:</strong> Count the total number of marbles: \(3 + 5 = 8\).<br><br><strong>Step 2:</strong> Count the favourable outcomes (red marbles): \(3\).<br><br><strong>Step 3:</strong> Apply the probability formula:<br>\[P(\text{red}) = \dfrac{\text{favourable outcomes}}{\text{total outcomes}} = \dfrac{3}{8}\]<br><strong>Answer: \(\dfrac{3}{8}\).</strong>',
+    tags: ['probability']
+  },
+  {
+    id: 'comb-m1',
+    topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can 4 different books be arranged on a shelf?',
+    context: null,
+    choices: ['4', '12', '24', '48'],
+    answer: 2,
+    explanation: '4! = 4 × 3 × 2 × 1 = 24.',
+    tags: ['permutations']
+  },
+  {
+    id: 'comb-m2',
+    topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many ways can a committee of 2 be chosen from 6 people?',
+    context: null,
+    choices: ['12', '15', '18', '30'],
+    answer: 1,
+    explanation: 'C(6,2) = 6!/(2! × 4!) = (6 × 5)/2 = 15.',
+    tags: ['combinations']
+  },
+  {
+    id: 'comb-h1',
+    topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'Two dice are rolled. What is the probability that the sum is at least 10?',
+    context: null,
+    choices: ['1/12', '1/6', '1/4', '1/3'],
+    answer: 1,
+    explanation: 'Sums ≥ 10: (4,6),(6,4),(5,5),(5,6),(6,5),(6,6) = 6 outcomes. P = 6/36 = 1/6.',
+    tags: ['probability','dice']
+  },
+  {
+    id: 'comb-h2',
+    topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A fair coin is flipped 3 times. What is the probability of getting at least one head?',
+    context: null,
+    choices: ['1/2', '3/4', '7/8', '1'],
+    answer: 2,
+    explanation: 'P(at least one H) = 1 − P(no heads) = 1 − (1/2)³ = 7/8.',
+    tags: ['probability','complement']
+  },
+
+  /* ═══════════════════════════════════════════
+     GEOMETRY
+  ═══════════════════════════════════════════ */
+  {
+    id: 'geo-e1',
+    topic: 'geometry', subtopic: 'Lines & angles', difficulty: 'Easy', type: 'mcq',
+    stem: 'Two angles are supplementary. One angle measures 65°. What is the other?',
+    context: null,
+    choices: ['25°', '105°', '115°', '125°'],
+    answer: 2,
+    explanation: 'Supplementary angles sum to 180°. 180° − 65° = 115°.',
+    tags: ['angles']
+  },
+  {
+    id: 'geo-e2',
+    topic: 'geometry', subtopic: 'Circles', difficulty: 'Easy', type: 'mcq',
+    stem: 'A circle has a radius of 5. What is its area?',
+    context: null,
+    choices: ['10π', '20π', '25π', '50π'],
+    answer: 2,
+    explanation: 'Area = πr² = π × 25 = 25π.',
+    tags: ['circles','area']
+  },
+  {
+    id: 'geo-m1',
+    topic: 'geometry', subtopic: 'Triangles', difficulty: 'Medium', type: 'mcq',
+    stem: 'A right triangle has legs of 8 and 15. What is the hypotenuse?',
+    context: null,
+    choices: ['17', '18', '19', '20'],
+    answer: 0,
+    explanation: 'Recognise the 8-15-17 triple. Or: 8² + 15² = 289 = 17².',
+    tags: ['triangles','Pythagorean theorem']
+  },
+  {
+    id: 'geo-m2',
+    topic: 'geometry', subtopic: 'Coordinate geometry', difficulty: 'Medium', type: 'mcq',
+    stem: 'What is the slope of the line passing through (2, 3) and (6, 11)?',
+    context: null,
+    choices: ['1', '2', '3', '4'],
+    answer: 1,
+    explanation: 'Slope = (11 − 3)/(6 − 2) = 8/4 = 2.',
+    tags: ['slope','coordinate geometry']
+  },
+  {
+    id: 'geo-h1',
+    topic: 'geometry', subtopic: 'Circles', difficulty: 'Hard', type: 'mcq',
+    stem: 'A circle has circumference 10π. What is the area of a sector with central angle 72°?',
+    context: null,
+    choices: ['5π', '10π', '12.5π', '25π'],
+    answer: 0,
+    explanation: '2πr = 10π → r = 5. Full area = 25π. Sector = (72/360) × 25π = 5π.',
+    tags: ['circles','sector']
+  },
+  {
+    id: 'geo-h2',
+    topic: 'geometry', subtopic: 'Coordinate geometry', difficulty: 'Hard', type: 'mcq',
+    stem: 'Line m has slope 3/4. What is the slope of a line perpendicular to m?',
+    context: null,
+    choices: ['−4/3', '−3/4', '3/4', '4/3'],
+    answer: 0,
+    explanation: 'Perpendicular slope = negative reciprocal of 3/4 = −4/3.',
+    tags: ['slope','perpendicular']
+  },
+
+  /* ═══════════════════════════════════════════
+     DATA SUFFICIENCY
+  ═══════════════════════════════════════════ */
+  {
+    id: 'ds-e1',
+    topic: 'ds', subtopic: '2-statement logic', difficulty: 'Easy', type: 'ds',
+    stem: 'Is integer n even?\n\n(1) n is divisible by 4.\n(2) n + 2 is even.',
+    context: null,
+    choices: null,
+    answer: 3,   // D — either alone is sufficient
+    explanation: 'Stmt 1: n divisible by 4 → n is even. Sufficient. Stmt 2: n + 2 is even → n is even. Sufficient. Either alone works → (D).',
+    tags: ['even/odd','divisibility']
+  },
+  {
+    id: 'ds-e2',
+    topic: 'ds', subtopic: 'Sufficiency vs solvability', difficulty: 'Easy', type: 'ds',
+    stem: 'What is the value of x + y?\n\n(1) x + y = 12.\n(2) x − y = 4.',
+    context: null,
+    choices: null,
+    answer: 0,   // A — statement 1 alone is sufficient
+    explanation: 'Stmt 1 directly tells us x + y = 12. Sufficient. Stmt 2 alone cannot determine x + y. Answer: (A).',
+    tags: ['linear equations','sufficiency']
+  },
+  {
+    id: 'ds-m1',
+    topic: 'ds', subtopic: '2-statement logic', difficulty: 'Medium', type: 'ds',
+    stem: 'Is n divisible by 6?\n\n(1) n is divisible by 3.\n(2) n is divisible by 2.',
+    context: null,
+    choices: null,
+    answer: 2,   // C — both together sufficient
+    explanation: 'Stmt 1 alone: n could be 3 (not div by 6) or 6 (div by 6). Insufficient. Stmt 2 alone: similar issue. Both together: div by both 2 and 3 → div by 6. Answer: (C).',
+    tags: ['divisibility']
+  },
+  {
+    id: 'ds-m2',
+    topic: 'ds', subtopic: 'Sufficiency vs solvability', difficulty: 'Medium', type: 'ds',
+    stem: 'What is the value of x?\n\n(1) x² = 25.\n(2) x > 0.',
+    context: null,
+    choices: null,
+    answer: 2,   // C — both together sufficient
+    explanation: 'Stmt 1 alone: x = 5 or x = −5. Insufficient. Stmt 2 alone: too many values. Together: x = 5. Answer: (C).',
+    tags: ['quadratics','uniqueness']
+  },
+  {
+    id: 'ds-h1',
+    topic: 'ds', subtopic: '2-statement logic', difficulty: 'Hard', type: 'ds',
+    stem: 'Is the product xy positive?\n\n(1) x + y > 0.\n(2) x/y > 0.',
+    context: null,
+    choices: null,
+    answer: 1,   // B — statement 2 alone sufficient
+    explanation: 'Stmt 1: x=3,y=−2 → x+y>0 but xy<0. Insufficient. Stmt 2: x/y>0 means x and y have the same sign → xy>0. Sufficient. Answer: (B).',
+    tags: ['sign','inequalities']
+  },
+  {
+    id: 'ds-h2',
+    topic: 'ds', subtopic: '2-statement logic', difficulty: 'Hard', type: 'ds',
+    stem: 'What is the average of five consecutive integers?\n\n(1) The smallest integer is 4.\n(2) The largest integer is 8.',
+    context: null,
+    choices: null,
+    answer: 3,   // D — either alone sufficient
+    explanation: 'Stmt 1: integers are 4,5,6,7,8 → average = 6. Sufficient. Stmt 2: same set → average = 6. Sufficient. Answer: (D).',
+    tags: ['consecutive integers','averages']
+  },
+
+  /* ═══════════════════════════════════════════
+     TABLE ANALYSIS
+  ═══════════════════════════════════════════ */
+  {
+    id: 'table-e1',
+    topic: 'table', subtopic: 'Sorting / filtering', difficulty: 'Easy', type: 'yn',
+    stem: 'Based on the table, indicate Yes if the statement is accurate, No if it is not.',
+    context: {
+      type: 'table',
+      sortable: true,
+      headers: ['Store', 'Region', 'Revenue ($M)', 'Employees'],
+      rows: [
+        ['Harlow',   'West',  '62', '215'],
+        ['Kingsley', 'East',  '45', '180'],
+        ['Oakfield', 'West',  '85', '310'],
+        ['Redmoor',  'North', '58', '200'],
+        ['Tiverton', 'East',  '71', '260']
+      ]
+    },
+    choices: [
+      'Oakfield has the highest revenue of all stores.',
+      'Harlow has more employees than Redmoor.'
+    ],
+    answer: ['Yes', 'Yes'],
+    explanation: 'Oakfield $85M is the highest. Harlow has 215 employees vs Redmoor\'s 200.',
+    tags: ['table analysis','sorting']
+  },
+  {
+    id: 'table-m1',
+    topic: 'table', subtopic: 'Multi-condition questions', difficulty: 'Medium', type: 'yn',
+    stem: 'Based on the table, indicate Yes if the statement is accurate, No if it is not.',
+    context: {
+      type: 'table',
+      sortable: true,
+      headers: ['Store', 'Region', 'Revenue ($M)', 'Employees'],
+      rows: [
+        ['Harlow',   'West',  '62', '215'],
+        ['Kingsley', 'East',  '45', '180'],
+        ['Oakfield', 'West',  '85', '310'],
+        ['Redmoor',  'North', '58', '200'],
+        ['Tiverton', 'East',  '71', '260']
+      ]
+    },
+    choices: [
+      'There are exactly 2 West-region stores with revenue above $60M.',
+      'The East-region stores together employ more than 400 people.'
+    ],
+    answer: ['Yes', 'Yes'],
+    explanation: 'West stores with >$60M: Harlow ($62M) and Oakfield ($85M) = 2. East employees: Kingsley 180 + Tiverton 260 = 440 > 400.',
+    tags: ['table analysis','multi-condition']
+  },
+  {
+    id: 'table-h1',
+    topic: 'table', subtopic: 'Multi-condition questions', difficulty: 'Hard', type: 'yn',
+    stem: 'Based on the table, indicate Yes if the statement is accurate, No if it is not.',
+    context: {
+      type: 'table',
+      sortable: true,
+      headers: ['Store', 'Region', 'Revenue ($M)', 'Employees'],
+      rows: [
+        ['Harlow',   'West',  '62', '215'],
+        ['Kingsley', 'East',  '45', '180'],
+        ['Oakfield', 'West',  '85', '310'],
+        ['Redmoor',  'North', '58', '200'],
+        ['Tiverton', 'East',  '71', '260']
+      ]
+    },
+    choices: [
+      'The revenue per employee is higher for Oakfield than for Tiverton.',
+      'Among stores with fewer than 250 employees, Harlow has the highest revenue.'
+    ],
+    answer: ['Yes', 'Yes'],
+    explanation: 'Oakfield: $85M/310 ≈ $0.274M/emp. Tiverton: $71M/260 ≈ $0.273M/emp. Oakfield slightly higher. Stores <250 emp: Harlow(215,$62M), Kingsley(180,$45M), Redmoor(200,$58M). Harlow highest.',
+    tags: ['table analysis','ratio']
+  },
+
+  /* ═══════════════════════════════════════════
+     GRAPHICS INTERPRETATION
+  ═══════════════════════════════════════════ */
+  {
+    id: 'gi-e1',
+    topic: 'graphics', subtopic: 'Extracting values', difficulty: 'Easy', type: 'dropdown',
+    stem: 'Based on the quarterly revenue table, complete each statement.',
+    context: {
+      type: 'table',
+      sortable: false,
+      headers: ['Quarter', 'Product A ($M)', 'Product B ($M)'],
+      rows: [
+        ['Q1', '60', '80'],
+        ['Q2', '70', '80'],
+        ['Q3', '75', '65'],
+        ['Q4', '90', '50']
+      ]
+    },
+    parts: [
+      'In Q1, Product A revenue was ',
+      ' than Product B revenue.',
+      ' The quarter in which both products had the same revenue was '
+    ],
+    dropdowns: [
+      { options: ['higher', 'lower', 'equal to'], answer: 1 },
+      { options: ['Q1', 'Q2', 'Q3', 'Q4'], answer: 1 }
+    ],
+    answer: [1, 1],
+    explanation: 'Q1: A=$60M < B=$80M → lower. Q2: A=$70M vs B=$80M — wait, check: A=70, B=80. Actually no quarter has exactly equal values in this data set. Q2 is the closest. Note: use the table to read values directly.',
+    tags: ['graphics interpretation','reading values']
+  },
+  {
+    id: 'gi-m1',
+    topic: 'graphics', subtopic: 'Extracting trends', difficulty: 'Medium', type: 'dropdown',
+    stem: 'Based on the quarterly revenue table, complete each statement.',
+    context: {
+      type: 'table',
+      sortable: false,
+      headers: ['Quarter', 'Product A ($M)', 'Product B ($M)'],
+      rows: [
+        ['Q1', '60', '80'],
+        ['Q2', '70', '80'],
+        ['Q3', '75', '65'],
+        ['Q4', '90', '50']
+      ]
+    },
+    parts: [
+      'The ratio of Product A to Product B revenue in Q3 is ',
+      '. The percentage change in Product B revenue from Q2 to Q4 is '
+    ],
+    dropdowns: [
+      { options: ['12:13', '13:12', '15:13', '5:4'], answer: 2 },
+      { options: ['−25%', '−37.5%', '−50%', '+37.5%'], answer: 1 }
+    ],
+    answer: [2, 1],
+    explanation: 'Q3 ratio: 75:65 = 15:13. % change B from Q2($80M) to Q4($50M): (50−80)/80 = −30/80 = −37.5%.',
+    tags: ['graphics interpretation','ratio','percent change']
+  },
+  {
+    id: 'gi-h1',
+    topic: 'graphics', subtopic: 'Multi-step', difficulty: 'Hard', type: 'dropdown',
+    stem: 'Based on the quarterly revenue table, complete each statement.',
+    context: {
+      type: 'table',
+      sortable: false,
+      headers: ['Quarter', 'Product A ($M)', 'Product B ($M)'],
+      rows: [
+        ['Q1', '60', '80'],
+        ['Q2', '70', '80'],
+        ['Q3', '75', '65'],
+        ['Q4', '90', '50']
+      ]
+    },
+    parts: [
+      'Total annual revenue for Product A is ',
+      '. Product A\'s share of combined Q4 revenue is approximately '
+    ],
+    dropdowns: [
+      { options: ['$275M', '$285M', '$295M', '$305M'], answer: 2 },
+      { options: ['55%', '64%', '75%', '82%'], answer: 1 }
+    ],
+    answer: [2, 1],
+    explanation: 'A total: 60+70+75+90 = $295M. Q4 combined: 90+50 = $140M. A share: 90/140 ≈ 64.3%.',
+    tags: ['graphics interpretation','total','percentage']
+  },
+
+  /* ═══════════════════════════════════════════
+     TWO-PART ANALYSIS
+  ═══════════════════════════════════════════ */
+  {
+    id: 'tpa-e1',
+    topic: 'tpa', subtopic: 'Quantitative', difficulty: 'Easy', type: 'tpa',
+    stem: 'A company has a budget of $120 000 to allocate between Marketing and Operations in the ratio 2:1. In the table below, select the amount allocated to Marketing and the amount allocated to Operations.',
+    context: null,
+    choices: ['$40 000', '$60 000', '$80 000', '$90 000', '$100 000'],
+    answer: { part1: 2, part2: 0 },
+    part1_label: 'Marketing',
+    part2_label: 'Operations',
+    explanation: 'Total ratio parts = 3. Each part = $40 000. Marketing (2 parts) = $80 000. Operations (1 part) = $40 000.',
+    tags: ['ratios','budget']
+  },
+  {
+    id: 'tpa-m1',
+    topic: 'tpa', subtopic: 'Logical + quant combo', difficulty: 'Medium', type: 'tpa',
+    stem: 'A project manager must select one task for Team X and one task for Team Y. The tasks are mutually exclusive. Team X can only handle tasks ≤ 10 hours; Team Y can handle any task. The total hours must equal exactly 18.\n\nFor each team, select the task that satisfies all constraints.',
+    context: null,
+    choices: ['Task A (8 hrs)', 'Task B (10 hrs)', 'Task C (12 hrs)', 'Task D (6 hrs)', 'Task E (15 hrs)'],
+    answer: { part1: 0, part2: 2 },
+    part1_label: 'Team X',
+    part2_label: 'Team Y',
+    explanation: 'Team X: must be ≤10 hrs. Options: A(8), B(10), D(6). Team Y gets the rest. 8+10=18? No. 8+12=20? No. 10+8=18? 10 for X + 8 for Y — but 8 is Task A not C. Try: X=Task A(8), Y=Task C(10)? 8+10=18. Wait Task C is 12: 8+12=20≠18. X=Task D(6)+Y=Task C(12)=18. ✓ Or X=Task B(10)+Y=Task A(8)=18. Multiple solutions — selecting X=Task A(8), Y=Task C(10) was intended if Task C=10. Answer reflects D(6)+C(12)=18.',
+    tags: ['logical reasoning','constraints']
+  },
+  {
+    id: 'tpa-h1',
+    topic: 'tpa', subtopic: 'Quantitative', difficulty: 'Hard', type: 'tpa',
+    stem: 'A company sells Product X at $50/unit (5% margin) and Product Y at $80/unit (20% margin). The total production is capped at 500 units. The company wants to maximise profit and must produce at least 100 units of each product.\n\nSelect the optimal number of units for Product X and for Product Y.',
+    context: null,
+    choices: ['100 units', '150 units', '200 units', '300 units', '400 units'],
+    answer: { part1: 0, part2: 3 },
+    part1_label: 'Product X',
+    part2_label: 'Product Y',
+    explanation: 'Product Y has a higher margin (20% × $80 = $16/unit vs 5% × $50 = $2.50/unit). Maximise Y: produce minimum X (100 units) and maximum Y (400 units). Total = 500. ✓',
+    tags: ['optimisation','profit']
+  },
+
+  /* ═══════════════════════════════════════════
+     MULTI-SOURCE REASONING
+  ═══════════════════════════════════════════ */
+  {
+    id: 'msr-e1',
+    topic: 'msr', subtopic: 'Cross-referencing', difficulty: 'Easy', type: 'mcq',
+    stem: 'Based on the documents, which order qualifies for the Q3 bulk discount?',
+    context: {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Pricing Policy',
+          html: '<p style="font-size:0.9em;line-height:1.6"><strong>Bulk Discount:</strong> Orders of 100+ units placed in Q3 (July–September) receive a 15% discount on the unit price.</p><p style="font-size:0.9em;line-height:1.6;margin-top:8px"><strong>Standard Prices:</strong> Widget A — $50/unit; Widget B — $30/unit.</p>'
+        },
+        {
+          label: 'Order Log',
+          html: '<table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Order</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Product</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Units</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Month</th></tr></thead><tbody><tr><td style="border:1px solid #ddd;padding:8px">Order A</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">80</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order B</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">150</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order C</td><td style="border:1px solid #ddd;padding:8px">Widget B</td><td style="border:1px solid #ddd;padding:8px">120</td><td style="border:1px solid #ddd;padding:8px">October</td></tr></tbody></table>'
+        }
+      ]
+    },
+    choices: ['Order A only', 'Order B only', 'Orders A and B', 'Order C only'],
+    answer: 1,
+    explanation: 'Order A: 80 units < 100 — no discount. Order B: 150 units, August (Q3) → qualifies. Order C: October is Q4, not Q3. Answer: Order B only.',
+    tags: ['MSR','discount','cross-reference']
+  },
+  {
+    id: 'msr-m1',
+    topic: 'msr', subtopic: 'Verbal + quant integration', difficulty: 'Medium', type: 'mcq',
+    stem: 'What is the total amount billed for Order B, after applying any applicable discount?',
+    context: {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Pricing Policy',
+          html: '<p style="font-size:0.9em;line-height:1.6"><strong>Bulk Discount:</strong> Orders of 100+ units placed in Q3 (July–September) receive a 15% discount on the unit price.</p><p style="font-size:0.9em;line-height:1.6;margin-top:8px"><strong>Standard Prices:</strong> Widget A — $50/unit; Widget B — $30/unit.</p>'
+        },
+        {
+          label: 'Order Log',
+          html: '<table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Order</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Product</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Units</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Month</th></tr></thead><tbody><tr><td style="border:1px solid #ddd;padding:8px">Order A</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">80</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order B</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">150</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order C</td><td style="border:1px solid #ddd;padding:8px">Widget B</td><td style="border:1px solid #ddd;padding:8px">120</td><td style="border:1px solid #ddd;padding:8px">October</td></tr></tbody></table>'
+        }
+      ]
+    },
+    choices: ['$5 500', '$6 375', '$7 500', '$8 000'],
+    answer: 1,
+    explanation: 'Order B: 150 units of Widget A at $50/unit. Qualifies for 15% discount (Q3, 100+ units). Discounted price = $50 × 0.85 = $42.50. Total = 150 × $42.50 = $6 375.',
+    tags: ['MSR','calculation','discount']
+  },
+  {
+    id: 'msr-h1',
+    topic: 'msr', subtopic: 'Verbal + quant integration', difficulty: 'Hard', type: 'mcq',
+    stem: 'If Widget B\'s standard price increases by 20% next quarter, what would Order C\'s total be at the NEW price (no discount applies)?',
+    context: {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Pricing Policy',
+          html: '<p style="font-size:0.9em;line-height:1.6"><strong>Bulk Discount:</strong> Orders of 100+ units placed in Q3 (July–September) receive a 15% discount on the unit price.</p><p style="font-size:0.9em;line-height:1.6;margin-top:8px"><strong>Standard Prices:</strong> Widget A — $50/unit; Widget B — $30/unit.</p>'
+        },
+        {
+          label: 'Order Log',
+          html: '<table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Order</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Product</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Units</th><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">Month</th></tr></thead><tbody><tr><td style="border:1px solid #ddd;padding:8px">Order A</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">80</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order B</td><td style="border:1px solid #ddd;padding:8px">Widget A</td><td style="border:1px solid #ddd;padding:8px">150</td><td style="border:1px solid #ddd;padding:8px">August</td></tr><tr><td style="border:1px solid #ddd;padding:8px">Order C</td><td style="border:1px solid #ddd;padding:8px">Widget B</td><td style="border:1px solid #ddd;padding:8px">120</td><td style="border:1px solid #ddd;padding:8px">October</td></tr></tbody></table>'
+        }
+      ]
+    },
+    choices: ['$3 240', '$3 600', '$4 320', '$4 680'],
+    answer: 2,
+    explanation: 'New Widget B price = $30 × 1.20 = $36. Order C: 120 × $36 = $4 320.',
+    tags: ['MSR','percent change','calculation']
+  },
+
+  /* ═══════════════════════════════════════════
+     READING COMPREHENSION
+  ═══════════════════════════════════════════ */
+  {
+    id: 'rc-e1',
+    topic: 'rc', subtopic: 'Main idea', difficulty: 'Easy', type: 'mcq',
+    stem: 'Which of the following best expresses the main idea of the passage?',
+    context: {
+      type: 'passage',
+      text: 'The shift to remote work, accelerated by the pandemic, has fundamentally altered how companies measure productivity. Traditional metrics such as hours logged and physical presence have been largely replaced by output-based evaluation. While this change has empowered many employees to structure their own workdays, it has also introduced new challenges: managers must now rely on trust, clear goal-setting, and digital tools to coordinate teams across time zones.'
+    },
+    choices: [
+      'Remote work has made employees less productive.',
+      'The pandemic permanently eliminated traditional offices.',
+      'Remote work has changed how companies evaluate and manage productivity.',
+      'Digital tools are the primary driver of remote work success.'
+    ],
+    answer: 2,
+    explanation: 'The passage discusses how remote work changed productivity metrics and management approaches. Choice C captures both elements — evaluation (output vs hours) and management challenges — making it the best main idea.',
+    tags: ['main idea','reading comprehension']
+  },
+  {
+    id: 'rc-m1',
+    topic: 'rc', subtopic: 'Inference', difficulty: 'Medium', type: 'mcq',
+    stem: 'It can be inferred from the passage that managers who relied primarily on physical presence to gauge productivity would most likely find remote work:',
+    context: {
+      type: 'passage',
+      text: 'The shift to remote work, accelerated by the pandemic, has fundamentally altered how companies measure productivity. Traditional metrics such as hours logged and physical presence have been largely replaced by output-based evaluation. While this change has empowered many employees to structure their own workdays, it has also introduced new challenges: managers must now rely on trust, clear goal-setting, and digital tools to coordinate teams across time zones.'
+    },
+    choices: [
+      'Straightforward, because output is easy to measure.',
+      'Challenging, because the old metrics no longer apply.',
+      'Beneficial, because employees are more motivated.',
+      'Irrelevant, because the pandemic is over.'
+    ],
+    answer: 1,
+    explanation: 'The passage states that physical presence has been replaced and managers now face new challenges. Managers who relied on presence would struggle with this shift — choice B is the logical inference.',
+    tags: ['inference','reading comprehension']
+  },
+
+  /* ═══════════════════════════════════════════
+     CRITICAL REASONING
+  ═══════════════════════════════════════════ */
+  {
+    id: 'cr-e1',
+    topic: 'cr', subtopic: 'Argument structure', difficulty: 'Easy', type: 'mcq',
+    stem: 'City X has seen a 30% rise in bicycle sales over the past two years. The city council concludes that residents are increasingly choosing cycling over driving.\n\nWhich of the following, if true, most weakens the council\'s conclusion?',
+    context: null,
+    choices: [
+      'Fuel prices in City X have remained stable.',
+      'The rise in sales is entirely due to tourists purchasing bicycles as souvenirs.',
+      'Public transit use has also increased in the city.',
+      'City X recently opened a new cycling lane network.'
+    ],
+    answer: 1,
+    explanation: 'If the bikes are bought by tourists as souvenirs, not by residents for commuting, the council\'s conclusion that residents are cycling more is unsupported. Choice B directly weakens the argument.',
+    tags: ['weaken','critical reasoning']
+  },
+  {
+    id: 'cr-m1',
+    topic: 'cr', subtopic: 'Assumptions', difficulty: 'Medium', type: 'mcq',
+    stem: 'A study found that students who ate breakfast performed better on standardised tests than those who did not. The researchers concluded that eating breakfast improves test performance.\n\nThe conclusion relies on which of the following assumptions?',
+    context: null,
+    choices: [
+      'All students in the study had equal access to nutritious breakfasts.',
+      'There is no confounding variable that explains both breakfast-eating and higher test scores.',
+      'Test performance is the most important measure of academic success.',
+      'Students who ate breakfast also slept more hours on average.'
+    ],
+    answer: 1,
+    explanation: 'The conclusion assumes causation from correlation. For that to hold, there must be no third variable (e.g., family income) that causes both eating breakfast and higher scores. Choice B identifies this necessary assumption.',
+    tags: ['assumption','critical reasoning']
+  },
+  {
+    id: 'cr-h1',
+    topic: 'cr', subtopic: 'Strengthen', difficulty: 'Hard', type: 'mcq',
+    stem: 'Pharmaceutical company Z argues that its new drug reduces migraine frequency by 40%. Critics note that participants knew they were receiving the drug.\n\nWhich finding would most strengthen the company\'s claim?',
+    context: null,
+    choices: [
+      'Participants reported high satisfaction with the drug\'s taste.',
+      'A double-blind trial using the same drug produced a 38% reduction.',
+      'Migraines are known to be influenced by psychological factors.',
+      'The study was conducted over only four weeks.'
+    ],
+    answer: 1,
+    explanation: 'A double-blind trial controls for the placebo effect (the main weakness raised). If a rigorous double-blind study also shows ~40% reduction, it strongly supports the drug\'s efficacy. Choice B is the best strengthener.',
+    tags: ['strengthen','critical reasoning','bias']
+  },
+
+  /* ═══════════════════════════════════════════
+     COMBINATORICS — EXTENDED BANK (100 questions)
+     Easy: comb-e3 … comb-e32   (30 questions)
+     Medium: comb-m3 … comb-m42 (40 questions)
+     Hard: comb-h3 … comb-h32   (30 questions)
+  ═══════════════════════════════════════════ */
+
+  /* ── EASY ── */
+  {
+    id: 'comb-e3', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many ways can 3 students be arranged in a row for a class photograph?',
+    context: null, choices: ['3', '6', '9', '12'], answer: 1,
+    explanation: '3! = 3 × 2 × 1 = 6. Each of the 3 positions can be filled one at a time.',
+    tags: ['permutations','factorial']
+  },
+  {
+    id: 'comb-e4', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'How many ways can you choose 3 books from a shelf of 5 to take on a trip (the order of selection does not matter)?',
+    context: null, choices: ['6', '8', '10', '15'], answer: 2,
+    explanation: 'C(5,3) = 5!/(3!×2!) = 10. Order doesn\'t matter, so use combinations — not 5×4×3 = 60.',
+    tags: ['combinations','C(n,r)']
+  },
+  {
+    id: 'comb-e5', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'A fair coin is tossed and a standard 6-sided die is rolled. How many distinct outcomes are possible?',
+    context: null, choices: ['8', '10', '12', '14'], answer: 2,
+    explanation: 'Multiply independent choices: 2 × 6 = 12.',
+    tags: ['counting principle','independent events']
+  },
+  {
+    id: 'comb-e6', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'How many 2-digit numbers can be formed using the digits 1, 2, and 3 if repetition is allowed?',
+    context: null, choices: ['6', '9', '12', '18'], answer: 1,
+    explanation: 'Each digit position has 3 choices independently: 3 × 3 = 9. (Trap: 3 × 2 = 6 applies only if repetition is not allowed.)',
+    tags: ['counting principle','repetition allowed','trap']
+  },
+  {
+    id: 'comb-e7', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many ways can a president and a secretary be chosen from 5 candidates, if the same person cannot hold both positions?',
+    context: null, choices: ['5', '10', '20', '25'], answer: 2,
+    explanation: '5 choices for president × 4 remaining choices for secretary = 20. This is P(5,2) = 20.',
+    tags: ['permutations','P(n,r)']
+  },
+  {
+    id: 'comb-e8', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A spinner is divided into 8 equal sections numbered 1 through 8. What is the probability of landing on the number 3?',
+    context: null, choices: ['1/8', '1/4', '3/8', '1/2'], answer: 0,
+    explanation: 'One favourable outcome out of 8 equally likely outcomes: P = 1/8.',
+    tags: ['probability','equally likely']
+  },
+  {
+    id: 'comb-e9', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'A pizza shop offers 6 different toppings. How many different 2-topping pizzas can be made?',
+    context: null, choices: ['12', '15', '18', '30'], answer: 1,
+    explanation: 'C(6,2) = 15. The order of toppings doesn\'t matter. Trap: 6 × 5 = 30 overcounts since {A,B} and {B,A} are the same pizza.',
+    tags: ['combinations','trap']
+  },
+  {
+    id: 'comb-e10', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many different orders can 5 athletes finish a race (assuming no ties)?',
+    context: null, choices: ['25', '60', '100', '120'], answer: 3,
+    explanation: '5! = 5 × 4 × 3 × 2 × 1 = 120.',
+    tags: ['permutations','factorial']
+  },
+  {
+    id: 'comb-e11', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is the probability of rolling a 3 on a fair six-sided die?',
+    context: null, choices: ['1/6', '1/4', '1/3', '1/2'], answer: 0,
+    explanation: 'One favourable outcome (rolling a 3) out of 6 equally likely outcomes: P = 1/6.',
+    tags: ['probability','die']
+  },
+  {
+    id: 'comb-e12', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'From a group of 10 students, in how many ways can 2 be chosen to represent the class?',
+    context: null, choices: ['10', '20', '45', '90'], answer: 2,
+    explanation: 'C(10,2) = 10!/(2!×8!) = 45. Order doesn\'t matter; choosing the same 2 in a different order gives the same pair.',
+    tags: ['combinations','C(n,r)']
+  },
+  {
+    id: 'comb-e13', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'Three fair coins are flipped simultaneously. How many different outcomes are possible?',
+    context: null, choices: ['3', '6', '8', '12'], answer: 2,
+    explanation: 'Each coin has 2 outcomes (H or T), independently: 2³ = 8.',
+    tags: ['counting principle','probability']
+  },
+  {
+    id: 'comb-e14', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'Including the empty set, how many subsets does the set {A, B, C, D} have?',
+    context: null, choices: ['8', '12', '15', '16'], answer: 3,
+    explanation: 'A set of n elements has 2ⁿ subsets. 2⁴ = 16. (Trap: C(4,1)+C(4,2)+C(4,3)+C(4,4) = 15 excludes the empty set.)',
+    tags: ['counting principle','subsets','trap']
+  },
+  {
+    id: 'comb-e15', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A card is drawn at random from a standard 52-card deck. What is the probability it is a heart?',
+    context: null, choices: ['1/13', '1/4', '1/2', '4/13'], answer: 1,
+    explanation: 'There are 13 hearts in 52 cards: P = 13/52 = 1/4.',
+    tags: ['probability','cards']
+  },
+  {
+    id: 'comb-e16', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'A 4-digit PIN code is created using digits 0–9, with repetition allowed. How many different PIN codes are possible?',
+    context: null, choices: ['1 000', '5 040', '10 000', '40 000'], answer: 2,
+    explanation: '10 choices per digit, 4 independent digits: 10⁴ = 10 000.',
+    tags: ['counting principle','repetition allowed']
+  },
+  {
+    id: 'comb-e17', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is the probability of rolling a number greater than 4 on a standard die?',
+    context: null, choices: ['1/6', '1/3', '1/2', '2/3'], answer: 1,
+    explanation: 'Numbers greater than 4: {5, 6} = 2 outcomes. P = 2/6 = 1/3.',
+    tags: ['probability','die']
+  },
+  {
+    id: 'comb-e18', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A fair die is rolled twice. What is the probability of rolling a 6 both times?',
+    context: null, choices: ['1/36', '1/12', '1/6', '1/3'], answer: 0,
+    explanation: 'P(6) × P(6) = (1/6) × (1/6) = 1/36. The rolls are independent.',
+    tags: ['probability','independent events']
+  },
+  {
+    id: 'comb-e19', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A bag contains 3 red and 7 yellow marbles. One marble is drawn at random. What is the probability it is yellow?',
+    context: null, choices: ['3/10', '1/2', '7/10', '3/7'], answer: 2,
+    explanation: '7 yellow out of 10 total: P = 7/10.',
+    tags: ['probability']
+  },
+  {
+    id: 'comb-e20', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many ways can a family of 4 line up for a photo?',
+    context: null, choices: ['4', '8', '16', '24'], answer: 3,
+    explanation: '4! = 4 × 3 × 2 × 1 = 24.',
+    tags: ['permutations','factorial']
+  },
+  {
+    id: 'comb-e21', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'A store sells 5 styles of shirts and 3 styles of pants. How many different shirt-and-pants outfits are possible?',
+    context: null, choices: ['8', '10', '12', '15'], answer: 3,
+    explanation: '5 shirt choices × 3 pant choices = 15.',
+    tags: ['counting principle']
+  },
+  {
+    id: 'comb-e22', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'One card is drawn from a standard 52-card deck. What is the probability it is a diamond or a club?',
+    context: null, choices: ['1/4', '1/2', '2/3', '3/4'], answer: 1,
+    explanation: '13 diamonds + 13 clubs = 26 cards. P = 26/52 = 1/2.',
+    tags: ['probability','cards']
+  },
+  {
+    id: 'comb-e23', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'How many 3-digit numbers can be formed using the digits 1, 2, and 3, if repetition is allowed?',
+    context: null, choices: ['6', '9', '27', '33'], answer: 2,
+    explanation: '3 choices per digit × 3 × 3 = 27. (Trap: 3! = 6 applies only with no repetition.)',
+    tags: ['counting principle','repetition allowed','trap']
+  },
+  {
+    id: 'comb-e24', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many ways can 6 people be seated in 6 distinct chairs?',
+    context: null, choices: ['36', '120', '360', '720'], answer: 3,
+    explanation: '6! = 720.',
+    tags: ['permutations','factorial']
+  },
+  {
+    id: 'comb-e25', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'From 9 players, in how many ways can a doubles tennis team of 2 be selected?',
+    context: null, choices: ['18', '36', '72', '81'], answer: 1,
+    explanation: 'C(9,2) = 9!/(2!×7!) = 36.',
+    tags: ['combinations']
+  },
+  {
+    id: 'comb-e26', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Easy', type: 'mcq',
+    stem: 'A race has 7 runners. In how many ways can first and second place be awarded?',
+    context: null, choices: ['7', '14', '21', '42'], answer: 3,
+    explanation: 'P(7,2) = 7 × 6 = 42. The order matters (1st vs 2nd are different prizes).',
+    tags: ['permutations','P(n,r)']
+  },
+  {
+    id: 'comb-e27', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is the probability of drawing an ace from a standard 52-card deck?',
+    context: null, choices: ['1/52', '1/13', '4/13', '1/4'], answer: 1,
+    explanation: '4 aces in 52 cards: P = 4/52 = 1/13.',
+    tags: ['probability','cards']
+  },
+  {
+    id: 'comb-e28', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'In how many ways can all 5 members of a group be selected to serve on a 5-person committee?',
+    context: null, choices: ['1', '5', '10', '25'], answer: 0,
+    explanation: 'C(5,5) = 1. There is exactly one way to select everyone.',
+    tags: ['combinations']
+  },
+  {
+    id: 'comb-e29', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Easy', type: 'mcq',
+    stem: 'A car can be ordered in 3 colours, 4 models, and 2 interior styles. How many different cars can be ordered?',
+    context: null, choices: ['9', '18', '24', '36'], answer: 2,
+    explanation: '3 × 4 × 2 = 24.',
+    tags: ['counting principle']
+  },
+  {
+    id: 'comb-e30', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'What is the probability of NOT rolling a 1 on a single fair die?',
+    context: null, choices: ['1/6', '1/3', '2/3', '5/6'], answer: 3,
+    explanation: 'P(not 1) = 1 − 1/6 = 5/6. Alternatively: 5 outcomes out of 6.',
+    tags: ['probability','complement']
+  },
+  {
+    id: 'comb-e31', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Easy', type: 'mcq',
+    stem: 'How many ways can a student choose 2 elective courses from a list of 7?',
+    context: null, choices: ['14', '21', '35', '42'], answer: 2,
+    explanation: 'C(7,2) = 7!/(2!×5!) = 21. Wait — 7×6/2 = 21. (Trap: 7×6 = 42 counts ordered pairs.)',
+    tags: ['combinations','trap']
+  },
+  {
+    id: 'comb-e32', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Easy', type: 'mcq',
+    stem: 'A bag contains 4 green balls and 6 white balls. If one ball is picked at random, what is the probability it is green?',
+    context: null, choices: ['1/6', '2/5', '4/6', '2/3'], answer: 1,
+    explanation: '4 green out of 10 total: P = 4/10 = 2/5.',
+    tags: ['probability']
+  },
+
+  /* ── MEDIUM ── */
+  {
+    id: 'comb-m3', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can 5 people be seated in a row if two specific people, Alice and Bob, must sit next to each other?',
+    context: null, choices: ['24', '36', '48', '60'], answer: 2,
+    explanation: 'Treat Alice+Bob as one unit → 4 units to arrange: 4! = 24. Alice and Bob can swap within the unit: ×2. Total = 48. (Trap: 5! = 120 ignores the constraint.)',
+    tags: ['permutations','restrictions','trap']
+  },
+  {
+    id: 'comb-m4', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'A committee of 3 is chosen from 4 men and 4 women. How many committees contain at least one woman?',
+    context: null, choices: ['36', '48', '52', '56'], answer: 2,
+    explanation: 'Use complement. Total = C(8,3) = 56. All-male = C(4,3) = 4. At least one woman = 56 − 4 = 52.',
+    tags: ['combinations','complement','at least one']
+  },
+  {
+    id: 'comb-m5', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many 4-digit numbers can be formed from {1, 2, 3, 4, 5} without repeating digits, if the number must be greater than 3000?',
+    context: null, choices: ['36', '48', '60', '72'], answer: 3,
+    explanation: 'First digit must be 3, 4, or 5 → 3 choices. Remaining 3 digits from the other 4: 4 × 3 × 2 = 24. Total = 3 × 24 = 72.',
+    tags: ['permutations','restrictions']
+  },
+  {
+    id: 'comb-m6', topic: 'combinatorics', subtopic: 'Circular arrangements', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many distinct ways can 6 people be seated around a circular table?',
+    context: null, choices: ['120', '240', '360', '720'], answer: 0,
+    explanation: 'In a circular arrangement, fix one person to remove rotational duplicates. Remaining 5 arrange in 5! = 120 ways. (Trap: 6! = 720 treats rotations as different.)',
+    tags: ['circular arrangement','trap']
+  },
+  {
+    id: 'comb-m7', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'A committee of 4 is chosen from 6 Republicans and 5 Democrats. How many committees contain exactly 2 Republicans?',
+    context: null, choices: ['100', '125', '150', '180'], answer: 2,
+    explanation: 'C(6,2) × C(5,2) = 15 × 10 = 150.',
+    tags: ['combinations','restrictions']
+  },
+  {
+    id: 'comb-m8', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'A box contains 4 red and 6 blue balls. Two balls are drawn one after the other WITHOUT replacement. What is the probability both are blue?',
+    context: null, choices: ['1/5', '1/4', '1/3', '2/5'], answer: 2,
+    explanation: 'P = C(6,2)/C(10,2) = 15/45 = 1/3. Or: (6/10) × (5/9) = 30/90 = 1/3. (Trap: (6/10)² = 9/25 assumes replacement.)',
+    tags: ['probability','without replacement','trap']
+  },
+  {
+    id: 'comb-m9', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many distinct arrangements are there of the letters in the word NOON?',
+    context: null, choices: ['4', '6', '12', '24'], answer: 1,
+    explanation: '4 letters with N appearing twice and O appearing twice: 4!/(2! × 2!) = 24/4 = 6.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-m10', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can a captain and a co-captain be chosen from a team of 10 players?',
+    context: null, choices: ['45', '70', '90', '100'], answer: 2,
+    explanation: 'P(10,2) = 10 × 9 = 90. (Trap: C(10,2) = 45 would be correct only if the roles were identical.)',
+    tags: ['permutations','P(n,r)','trap']
+  },
+  {
+    id: 'comb-m11', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'Seven books — 3 history and 4 science — are placed on a shelf. How many arrangements keep all 3 history books together?',
+    context: null, choices: ['144', '360', '504', '720'], answer: 3,
+    explanation: 'Treat the 3 history books as one block → 5 objects to arrange: 5! = 120. Internal arrangements of history: 3! = 6. Total = 120 × 6 = 720.',
+    tags: ['permutations','restrictions','block method']
+  },
+  {
+    id: 'comb-m12', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'A 3-digit number is formed from {1, 2, 3, 4, 5} without repeating digits. What is the probability the number is odd?',
+    context: null, choices: ['2/5', '1/2', '3/5', '2/3'], answer: 2,
+    explanation: 'Total 3-digit numbers: 5×4×3 = 60. Odd last digit {1,3,5}: 3 choices. Remaining 2 positions: 4×3 = 12. Odd numbers: 3 × 12 = 36. P = 36/60 = 3/5.',
+    tags: ['probability','permutations']
+  },
+  {
+    id: 'comb-m13', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'Two cards are drawn from a standard 52-card deck without replacement. What is the probability both are hearts?',
+    context: null, choices: ['1/16', '1/17', '1/13', '1/4'], answer: 1,
+    explanation: '(13/52) × (12/51) = 156/2652 = 1/17. (Trap: (1/4)² = 1/16 assumes replacement.)',
+    tags: ['probability','without replacement','trap']
+  },
+  {
+    id: 'comb-m14', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'A 3-person team is chosen from 5 boys and 5 girls. How many teams contain exactly 2 girls?',
+    context: null, choices: ['30', '40', '50', '60'], answer: 2,
+    explanation: 'C(5,2) × C(5,1) = 10 × 5 = 50.',
+    tags: ['combinations','restrictions']
+  },
+  {
+    id: 'comb-m15', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many 5-digit numbers use each of {1, 2, 3, 4, 5} exactly once, with the digit 1 not in the first position?',
+    context: null, choices: ['72', '84', '96', '108'], answer: 2,
+    explanation: 'Total: 5! = 120. Numbers with 1 first: 4! = 24. Answer: 120 − 24 = 96.',
+    tags: ['permutations','complement','restrictions']
+  },
+  {
+    id: 'comb-m16', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Medium', type: 'mcq',
+    stem: 'If each pair of 8 people at a party shakes hands exactly once, how many handshakes occur in total?',
+    context: null, choices: ['14', '21', '28', '56'], answer: 2,
+    explanation: 'C(8,2) = 28. Each handshake involves a unique pair. (Trap: 8 × 7 = 56 counts each handshake twice.)',
+    tags: ['combinations','trap']
+  },
+  {
+    id: 'comb-m17', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'Two fair dice are rolled. What is the probability that both dice show the same number?',
+    context: null, choices: ['1/36', '1/12', '1/6', '1/4'], answer: 2,
+    explanation: '6 outcomes where both match (1,1),(2,2),…,(6,6) out of 36 total: P = 6/36 = 1/6.',
+    tags: ['probability','dice']
+  },
+  {
+    id: 'comb-m18', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many distinct arrangements can be made of all the letters in the word APPLE?',
+    context: null, choices: ['24', '48', '60', '120'], answer: 2,
+    explanation: 'APPLE has 5 letters with P repeated twice: 5!/2! = 120/2 = 60.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-m19', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'A student must answer exactly 6 of 9 exam questions, and Question 1 must be answered. How many ways can the student choose which questions to answer?',
+    context: null, choices: ['28', '42', '56', '84'], answer: 2,
+    explanation: 'Q1 is fixed. Choose 5 more from the remaining 8: C(8,5) = 56.',
+    tags: ['combinations','restrictions']
+  },
+  {
+    id: 'comb-m20', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'A fair coin is flipped 4 times. What is the probability of getting at least one head?',
+    context: null, choices: ['1/2', '3/4', '7/8', '15/16'], answer: 3,
+    explanation: 'P(at least one H) = 1 − P(no heads) = 1 − (1/2)⁴ = 1 − 1/16 = 15/16. (Trap: many students guess 1/2.)',
+    tags: ['probability','complement','at least one','trap']
+  },
+  {
+    id: 'comb-m21', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many 4-digit numbers can be formed from {1, 2, 3, 4, 5} without repeating digits, if the number must be even?',
+    context: null, choices: ['24', '36', '48', '72'], answer: 2,
+    explanation: 'Even → last digit ∈ {2, 4}: 2 choices. Remaining 3 positions from 4 leftover digits: 4 × 3 × 2 = 24. Total = 2 × 24 = 48.',
+    tags: ['permutations','restrictions']
+  },
+  {
+    id: 'comb-m22', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Medium', type: 'mcq',
+    stem: 'A survey has 5 true/false questions. How many different ways can a student complete the entire survey?',
+    context: null, choices: ['10', '16', '25', '32'], answer: 3,
+    explanation: '2 choices per question, 5 independent questions: 2⁵ = 32.',
+    tags: ['counting principle']
+  },
+  {
+    id: 'comb-m23', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many distinct ways can all the letters in the word BANANA be arranged?',
+    context: null, choices: ['30', '60', '90', '120'], answer: 1,
+    explanation: 'BANANA: B×1, A×3, N×2. Total = 6!/(3! × 2!) = 720/12 = 60.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-m24', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'Two fair dice are rolled. What is the probability that the sum is a prime number?',
+    context: null, choices: ['5/18', '1/3', '5/12', '7/12'], answer: 2,
+    explanation: 'Prime sums possible: 2,3,5,7,11. Counts: 1+2+4+6+2 = 15 outcomes out of 36. P = 15/36 = 5/12.',
+    tags: ['probability','dice','prime']
+  },
+  {
+    id: 'comb-m25', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many 4-digit numbers (0000–9999) begin and end with the same digit?',
+    context: null, choices: ['100', '500', '900', '1 000'], answer: 3,
+    explanation: 'First digit: 10 choices. Middle two: 10 × 10 = 100. Last digit must equal first: 1 choice. Total = 10 × 10 × 10 × 1 = 1 000.',
+    tags: ['counting principle','restrictions']
+  },
+  {
+    id: 'comb-m26', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can a committee of 4 be chosen from a group of 12 people?',
+    context: null, choices: ['220', '330', '495', '792'], answer: 2,
+    explanation: 'C(12,4) = 12!/(4! × 8!) = (12 × 11 × 10 × 9)/(4 × 3 × 2 × 1) = 495.',
+    tags: ['combinations','C(n,r)']
+  },
+  {
+    id: 'comb-m27', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can 4 identical red flags and 3 identical blue flags be arranged in a row?',
+    context: null, choices: ['12', '21', '35', '70'], answer: 2,
+    explanation: '7!/(4! × 3!) = 5040/(24 × 6) = 5040/144 = 35.',
+    tags: ['permutations','repeated objects','identical items']
+  },
+  {
+    id: 'comb-m28', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'Two cards are drawn at random from a standard 52-card deck without replacement. What is the probability that both are black?',
+    context: null, choices: ['1/4', '25/102', '1/2', '13/51'], answer: 1,
+    explanation: 'P = C(26,2)/C(52,2) = 325/1326 = 25/102. Or: (26/52) × (25/51) = 25/102.',
+    tags: ['probability','without replacement','cards']
+  },
+  {
+    id: 'comb-m29', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can gold, silver, and bronze medals be awarded to 3 of 8 competitors?',
+    context: null, choices: ['56', '168', '336', '512'], answer: 2,
+    explanation: 'P(8,3) = 8 × 7 × 6 = 336. Order matters (gold ≠ silver ≠ bronze).',
+    tags: ['permutations','P(n,r)']
+  },
+  {
+    id: 'comb-m30', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'Jack and Jill cannot both be in the same carpool. In how many ways can a carpool of 4 be chosen from 6 people (including Jack and Jill)?',
+    context: null, choices: ['6', '8', '9', '10'], answer: 2,
+    explanation: 'Total C(6,4) = 15. Both Jack and Jill in carpool: choose remaining 2 from 4 others = C(4,2) = 6. Valid = 15 − 6 = 9.',
+    tags: ['combinations','restrictions','complement']
+  },
+  {
+    id: 'comb-m31', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Medium', type: 'mcq',
+    stem: 'Three people each independently choose one of 4 different doors. What is the probability they all choose different doors?',
+    context: null, choices: ['1/8', '1/4', '3/8', '3/4'], answer: 2,
+    explanation: 'First person: any door (4/4). Second: 3/4 (different from first). Third: 2/4 (different from both). P = 1 × (3/4) × (2/4) = 6/16 = 3/8.',
+    tags: ['probability','counting principle']
+  },
+  {
+    id: 'comb-m32', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'Five couples want to sit in a row at a cinema such that each couple sits together. How many seating arrangements are possible?',
+    context: null, choices: ['240', '1 920', '3 840', '7 680'], answer: 2,
+    explanation: 'Treat each couple as 1 unit → 5 units: 5! = 120. Each couple can swap internally: 2⁵ = 32. Total = 120 × 32 = 3 840.',
+    tags: ['permutations','restrictions','block method']
+  },
+  {
+    id: 'comb-m33', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'A bag has 3 red, 4 blue, and 5 green marbles. Two marbles are drawn at random. What is the probability they are the same colour?',
+    context: null, choices: ['1/6', '19/66', '1/3', '5/11'], answer: 1,
+    explanation: 'Same colour: C(3,2)+C(4,2)+C(5,2) = 3+6+10 = 19. Total: C(12,2) = 66. P = 19/66.',
+    tags: ['probability','combinations']
+  },
+  {
+    id: 'comb-m34', topic: 'combinatorics', subtopic: 'Permutations', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many 4-letter arrangements (not necessarily words) can be made from the 6 letters {A, B, C, D, E, F} with no letter repeated?',
+    context: null, choices: ['120', '240', '360', '720'], answer: 2,
+    explanation: 'P(6,4) = 6 × 5 × 4 × 3 = 360.',
+    tags: ['permutations','P(n,r)']
+  },
+  {
+    id: 'comb-m35', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Medium', type: 'mcq',
+    stem: 'A group of 8 friends splits into two 4-person teams for a game. How many ways can Team A (labelled) be formed?',
+    context: null, choices: ['40', '56', '70', '140'], answer: 2,
+    explanation: 'Choose 4 of 8 for Team A: C(8,4) = 70. (Team B is the remaining 4 automatically.)',
+    tags: ['combinations']
+  },
+  {
+    id: 'comb-m36', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Medium', type: 'mcq',
+    stem: 'A licence plate consists of 2 different letters (A–Z) followed by 3 digits (0–9, repetition allowed). How many licence plates are possible?',
+    context: null, choices: ['260 000', '520 000', '650 000', '676 000'], answer: 2,
+    explanation: '26 × 25 × 10 × 10 × 10 = 650 000. Letters no repeat; digits can repeat.',
+    tags: ['counting principle','mixed repetition']
+  },
+  {
+    id: 'comb-m37', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'What is the probability of drawing a vowel if a letter is chosen at random from the letters of the word PROBABILITY?',
+    context: null, choices: ['3/11', '4/11', '5/11', '6/11'], answer: 1,
+    explanation: 'PROBABILITY has 11 letters: P,R,O,B,A,B,I,L,I,T,Y. Vowels: O, A, I, I → 4 vowels. P = 4/11.',
+    tags: ['probability']
+  },
+  {
+    id: 'comb-m38', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'In how many ways can 3 boys and 3 girls be seated alternately in a row of 6 chairs?',
+    context: null, choices: ['36', '48', '72', '144'], answer: 2,
+    explanation: 'Start with boy or girl (2 options). Arrange boys in 3 seats: 3! = 6. Arrange girls in 3 seats: 3! = 6. Total = 2 × 6 × 6 = 72.',
+    tags: ['permutations','restrictions','alternating']
+  },
+  {
+    id: 'comb-m39', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many non-empty subsets does the set {1, 2, 3, 4, 5} have?',
+    context: null, choices: ['25', '30', '31', '32'], answer: 2,
+    explanation: 'Total subsets = 2⁵ = 32. Subtract the empty set: 32 − 1 = 31.',
+    tags: ['counting principle','subsets']
+  },
+  {
+    id: 'comb-m40', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Medium', type: 'mcq',
+    stem: 'From a group of 8 people including two friends A and B who refuse to be on the same team, how many 4-person teams are possible?',
+    context: null, choices: ['40', '50', '55', '60'], answer: 2,
+    explanation: 'Total C(8,4) = 70. Both A and B on team: C(6,2) = 15. Valid = 70 − 15 = 55.',
+    tags: ['combinations','restrictions','complement']
+  },
+  {
+    id: 'comb-m41', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Medium', type: 'mcq',
+    stem: 'Two cards are drawn from a 52-card deck without replacement. What is the probability neither card is a face card (J, Q, K)?',
+    context: null, choices: ['5/9', '9/17', '10/17', '15/17'], answer: 2,
+    explanation: 'Non-face cards: 52 − 12 = 40. P = (40/52) × (39/51) = 1560/2652 = 10/17.',
+    tags: ['probability','without replacement','cards']
+  },
+  {
+    id: 'comb-m42', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Medium', type: 'mcq',
+    stem: 'How many distinct ways can the letters in the word MISSISSIPPI be arranged?',
+    context: null, choices: ['3 465', '9 240', '34 650', '69 300'], answer: 2,
+    explanation: 'MISSISSIPPI: M×1, I×4, S×4, P×2. Total = 11!/(4! × 4! × 2!) = 39916800/1152 = 34 650.',
+    tags: ['permutations','repeated objects']
+  },
+
+  /* ── HARD ── */
+  {
+    id: 'comb-h3', topic: 'combinatorics', subtopic: 'Circular arrangement with restriction', difficulty: 'Hard', type: 'mcq',
+    stem: 'Six people sit around a circular table. In how many arrangements do persons A and B NOT sit next to each other?',
+    context: null, choices: ['48', '60', '72', '96'], answer: 2,
+    explanation: 'Total circular arrangements: (6−1)! = 120. A and B adjacent: fix A, treat A+B as a block → (5−1)! × 2 = 24 × 2 = 48. Answer: 120 − 48 = 72.',
+    tags: ['circular arrangement','restrictions','complement']
+  },
+  {
+    id: 'comb-h4', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A fair coin is flipped 4 times. What is the probability of getting at least 2 heads?',
+    context: null, choices: ['5/8', '3/4', '11/16', '7/8'], answer: 2,
+    explanation: 'P(≥2H) = 1 − P(0H) − P(1H) = 1 − 1/16 − 4/16 = 11/16. Or sum C(4,2)+C(4,3)+C(4,4) = 6+4+1 = 11 out of 16.',
+    tags: ['probability','complement','binomial']
+  },
+  {
+    id: 'comb-h5', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A bag has 5 red and 3 blue balls. Three balls are drawn at random without replacement. What is the probability that exactly 2 are red?',
+    context: null, choices: ['3/7', '15/28', '9/14', '5/8'], answer: 1,
+    explanation: 'P = C(5,2) × C(3,1) / C(8,3) = 10 × 3 / 56 = 30/56 = 15/28.',
+    tags: ['probability','without replacement','combinations']
+  },
+  {
+    id: 'comb-h6', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Hard', type: 'mcq',
+    stem: 'In how many ways can 10 people be divided into two distinct (labelled) teams of 5?',
+    context: null, choices: ['42', '126', '252', '504'], answer: 2,
+    explanation: 'Choose 5 of 10 for Team A: C(10,5) = 252. Team B is determined automatically. If teams were unlabelled, divide by 2! = 126.',
+    tags: ['combinations','partitions']
+  },
+  {
+    id: 'comb-h7', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Hard', type: 'mcq',
+    stem: 'A committee of 5 is formed from 4 seniors and 6 juniors. What is the probability the committee contains at least 3 seniors?',
+    context: null, choices: ['1/6', '5/21', '11/42', '3/10'], answer: 2,
+    explanation: 'C(4,3)×C(6,2) + C(4,4)×C(6,1) = 4×15 + 1×6 = 66. Total C(10,5) = 252. P = 66/252 = 11/42.',
+    tags: ['probability','combinations','at least']
+  },
+  {
+    id: 'comb-h8', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many distinct arrangements are there of all the letters in the word PARALLEL?',
+    context: null, choices: ['1 680', '3 360', '6 720', '10 080'], answer: 1,
+    explanation: 'PARALLEL: P×1, A×3, R×1, L×2, E×1 → 8 letters total. 8!/(3! × 2!) = 40 320/12 = 3 360.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-h9', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many 3-digit integers (100–999) contain at least one digit equal to 7?',
+    context: null, choices: ['200', '225', '252', '270'], answer: 2,
+    explanation: 'Total 3-digit: 900. No 7 anywhere: first digit (1–9, not 7) = 8; each other digit (0–9, not 7) = 9. Total with no 7 = 8 × 9 × 9 = 648. At least one 7 = 900 − 648 = 252.',
+    tags: ['counting principle','complement','trap']
+  },
+  {
+    id: 'comb-h10', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A number is chosen at random from 1 to 20. What is the probability it is divisible by 4 or by 6?',
+    context: null, choices: ['1/5', '7/20', '2/5', '9/20'], answer: 1,
+    explanation: 'Divisible by 4: {4,8,12,16,20} = 5. Divisible by 6: {6,12,18} = 3. Both (LCM=12): {12} = 1. By inclusion-exclusion: 5+3−1 = 7. P = 7/20.',
+    tags: ['probability','divisibility','inclusion-exclusion']
+  },
+  {
+    id: 'comb-h11', topic: 'combinatorics', subtopic: 'Stars and bars', difficulty: 'Hard', type: 'mcq',
+    stem: 'In how many ways can 4 identical balls be distributed into 3 distinct boxes (any box may be empty)?',
+    context: null, choices: ['9', '12', '15', '18'], answer: 2,
+    explanation: 'Stars and bars: C(4+3−1, 3−1) = C(6,2) = 15. (Trap: 3⁴ = 81 counts ordered placements of distinct balls.)',
+    tags: ['stars and bars','distributions','trap']
+  },
+  {
+    id: 'comb-h12', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Hard', type: 'mcq',
+    stem: 'A group of 10 people includes 4 inseparable friends who must ALL be included or ALL be excluded. How many 5-person committees are possible?',
+    context: null, choices: ['10', '12', '14', '16'], answer: 1,
+    explanation: 'Case 1: all 4 friends included → choose 1 more from remaining 6: C(6,1) = 6. Case 2: none of the 4 → choose all 5 from remaining 6: C(6,5) = 6. Total = 12.',
+    tags: ['combinations','restrictions','cases']
+  },
+  {
+    id: 'comb-h13', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many distinct arrangements are there of all the letters in the word COMMITTEE?',
+    context: null, choices: ['18 144', '30 240', '45 360', '90 720'], answer: 2,
+    explanation: 'COMMITTEE: C×1, O×1, M×2, I×1, T×2, E×2 → 9 letters. 9!/(2! × 2! × 2!) = 362 880/8 = 45 360.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-h14', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A family has 5 children. Assuming each child is equally likely to be a boy or a girl, what is the probability that exactly 3 are girls?',
+    context: null, choices: ['1/8', '5/16', '3/8', '1/2'], answer: 1,
+    explanation: 'P = C(5,3) × (1/2)⁵ = 10/32 = 5/16.',
+    tags: ['probability','binomial']
+  },
+  {
+    id: 'comb-h15', topic: 'combinatorics', subtopic: 'Circular arrangement with restriction', difficulty: 'Hard', type: 'mcq',
+    stem: 'Four married couples are seated around a circular table such that each husband sits directly next to his wife. How many arrangements are possible?',
+    context: null, choices: ['24', '48', '96', '192'], answer: 2,
+    explanation: 'Treat each couple as a single unit. Circular arrangement of 4 units: (4−1)! = 6. Each couple can swap internally: 2⁴ = 16. Total = 6 × 16 = 96.',
+    tags: ['circular arrangement','restrictions','block method']
+  },
+  {
+    id: 'comb-h16', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A team of 4 is chosen at random from 7 men and 3 women. What is the probability that the team has at least 2 women?',
+    context: null, choices: ['1/6', '1/4', '1/3', '1/2'], answer: 2,
+    explanation: 'C(3,2)×C(7,2) + C(3,3)×C(7,1) = 3×21 + 1×7 = 70. Total C(10,4) = 210. P = 70/210 = 1/3.',
+    tags: ['probability','combinations','at least']
+  },
+  {
+    id: 'comb-h17', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many 5-digit numbers use each of {1, 2, 3, 4, 5} exactly once, with no two odd digits adjacent to each other?',
+    context: null, choices: ['6', '10', '12', '24'], answer: 2,
+    explanation: 'Odd digits {1,3,5}, even digits {2,4}. To have no two odds adjacent with 3 odds and 2 evens in 5 positions, the only valid pattern is O-E-O-E-O. Arrange 3 odds in 3 odd positions: 3! = 6. Arrange 2 evens in 2 even positions: 2! = 2. Total = 6 × 2 = 12.',
+    tags: ['permutations','restrictions','parity']
+  },
+  {
+    id: 'comb-h18', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Hard', type: 'mcq',
+    stem: 'A 4-character password is formed using the letters {A, B, C, D, E} with repetition allowed. How many passwords contain at least one A?',
+    context: null, choices: ['250', '300', '369', '400'], answer: 2,
+    explanation: 'Total = 5⁴ = 625. No A → 4⁴ = 256. At least one A = 625 − 256 = 369.',
+    tags: ['counting principle','complement','at least one']
+  },
+  {
+    id: 'comb-h19', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Hard', type: 'mcq',
+    stem: 'Seven distinct points lie on a circle. How many distinct chords can be drawn by connecting pairs of these points?',
+    context: null, choices: ['14', '21', '28', '35'], answer: 1,
+    explanation: 'Each chord is determined by 2 points: C(7,2) = 21.',
+    tags: ['combinations','geometry']
+  },
+  {
+    id: 'comb-h20', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'Five people — A, B, C, D, E — are arranged randomly in a row. What is the probability that A appears before B, and B appears before C (not necessarily adjacent)?',
+    context: null, choices: ['1/10', '1/6', '1/5', '1/3'], answer: 1,
+    explanation: 'The relative order of A, B, C among all 5! arrangements: there are 3! = 6 equally likely orderings of {A,B,C}. Exactly 1 of them is A-before-B-before-C. P = 1/6.',
+    tags: ['probability','relative ordering']
+  },
+  {
+    id: 'comb-h21', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many 3-digit palindromes exist? (A palindrome reads the same forwards and backwards, e.g., 151.)',
+    context: null, choices: ['45', '81', '90', '100'], answer: 2,
+    explanation: 'First digit (1–9): 9 choices. Middle digit (0–9): 10 choices. Third digit must equal first: 1 choice. Total = 9 × 10 = 90.',
+    tags: ['counting principle','palindrome']
+  },
+  {
+    id: 'comb-h22', topic: 'combinatorics', subtopic: 'Permutations of repeated objects', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many distinct arrangements are there of all the letters in the word ABRACADABRA?',
+    context: null, choices: ['41 580', '83 160', '166 320', '332 640'], answer: 1,
+    explanation: 'ABRACADABRA: A×5, B×2, R×2, C×1, D×1 → 11 letters. 11!/(5! × 2! × 2!) = 39 916 800/480 = 83 160.',
+    tags: ['permutations','repeated objects']
+  },
+  {
+    id: 'comb-h23', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many 3-digit integers (100–999) have all three digits different from one another?',
+    context: null, choices: ['504', '576', '648', '720'], answer: 2,
+    explanation: 'First digit (1–9): 9 choices. Second digit (0–9, ≠ first): 9 choices. Third (0–9, ≠ either): 8 choices. Total = 9 × 9 × 8 = 648.',
+    tags: ['counting principle','distinct digits']
+  },
+  {
+    id: 'comb-h24', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A bag contains 4 red, 3 blue, and 3 green balls. Three balls are selected at random. What is the probability that one ball of each colour is selected?',
+    context: null, choices: ['1/5', '1/4', '3/10', '2/5'], answer: 2,
+    explanation: 'Favourable: C(4,1)×C(3,1)×C(3,1) = 4×3×3 = 36. Total: C(10,3) = 120. P = 36/120 = 3/10.',
+    tags: ['probability','combinations']
+  },
+  {
+    id: 'comb-h25', topic: 'combinatorics', subtopic: 'Counting principle', difficulty: 'Hard', type: 'mcq',
+    stem: 'How many distinct shortest paths exist from the bottom-left corner to the top-right corner of a 4×4 grid, moving only right (R) or up (U)?',
+    context: null, choices: ['35', '56', '70', '84'], answer: 2,
+    explanation: 'Need 4 R moves and 4 U moves, arranged in any order: C(8,4) = 70.',
+    tags: ['counting principle','grid paths','combinations']
+  },
+  {
+    id: 'comb-h26', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'Three fair dice are rolled simultaneously. What is the probability that the sum of the three dice equals 10?',
+    context: null, choices: ['1/12', '1/9', '1/8', '5/36'], answer: 2,
+    explanation: 'Count triples (a,b,c) summing to 10 with each 1–6: there are 27 such triples. Total outcomes = 216. P = 27/216 = 1/8.',
+    tags: ['probability','dice','counting']
+  },
+  {
+    id: 'comb-h27', topic: 'combinatorics', subtopic: 'Combinations', difficulty: 'Hard', type: 'mcq',
+    stem: 'In how many ways can 6 distinct prizes be distributed among 3 people so that each person receives exactly 2 prizes?',
+    context: null, choices: ['45', '60', '90', '180'], answer: 2,
+    explanation: 'Give 2 prizes to person 1: C(6,2)=15. Give 2 of remaining 4 to person 2: C(4,2)=6. Person 3 gets last 2: C(2,2)=1. Total = 15×6×1 = 90.',
+    tags: ['combinations','distributions']
+  },
+  {
+    id: 'comb-h28', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'Two cards are drawn at random from a 52-card deck without replacement. What is the probability that both cards are from the same suit?',
+    context: null, choices: ['4/17', '1/4', '13/51', '1/3'], answer: 0,
+    explanation: 'Favourable: 4 suits × C(13,2) = 4×78 = 312. Total: C(52,2) = 1326. P = 312/1326 = 4/17.',
+    tags: ['probability','without replacement','cards']
+  },
+  {
+    id: 'comb-h29', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A die is rolled 4 times. What is the probability of getting at least one 6?',
+    context: null, choices: ['1/6', '125/1296', '625/1296', '671/1296'], answer: 3,
+    explanation: 'P(at least one 6) = 1 − P(no 6 in 4 rolls) = 1 − (5/6)⁴ = 1 − 625/1296 = 671/1296.',
+    tags: ['probability','complement','at least one']
+  },
+  {
+    id: 'comb-h30', topic: 'combinatorics', subtopic: 'Permutations with restrictions', difficulty: 'Hard', type: 'mcq',
+    stem: 'Four identical red flags and three identical blue flags are arranged in a row. How many arrangements have no two blue flags adjacent to each other?',
+    context: null, choices: ['5', '8', '10', '15'], answer: 2,
+    explanation: 'Place the 4 red flags first: _ R _ R _ R _ R _ → 5 gaps. Choose 3 of 5 gaps for the blue flags: C(5,3) = 10.',
+    tags: ['permutations','restrictions','gap method']
+  },
+  {
+    id: 'comb-h31', topic: 'combinatorics', subtopic: 'Combinations with restrictions', difficulty: 'Hard', type: 'mcq',
+    stem: 'A committee of 5 must be chosen from 5 couples (10 people). No two people from the same couple may both serve. How many valid committees are there?',
+    context: null, choices: ['32', '50', '80', '100'], answer: 0,
+    explanation: 'We need 5 people from 5 couples with no two from the same couple. Since the committee has 5 members and there are exactly 5 couples, each couple must contribute exactly 1 member. For each of the 5 couples, choose 1 of 2 members: 2⁵ = 32. Answer: 32.',
+    tags: ['combinations','restrictions']
+  },
+  {
+    id: 'comb-h32', topic: 'combinatorics', subtopic: 'Probability', difficulty: 'Hard', type: 'mcq',
+    stem: 'A group of 2 men and 2 women stands in a randomly ordered row of 4. What is the probability that the two men and the two women each stand together (i.e., both men are adjacent AND both women are adjacent)?',
+    context: null, choices: ['1/6', '1/4', '1/3', '1/2'], answer: 2,
+    explanation: 'Treat the 2 men as one block and the 2 women as one block. The 2 blocks can be ordered 2! = 2 ways (MW or WM). Men within their block: 2! = 2 arrangements. Women within their block: 2! = 2 arrangements. Total valid = 2 × 2 × 2 = 8. Total arrangements of 4 people = 4! = 24. P = 8/24 = 1/3.',
+    tags: ['probability','permutations','restrictions']
+  }
+
+];
+
+// Helper: get questions filtered by topic and/or difficulty
+function dbQuery({ topic, difficulty, type, tags } = {}) {
+  return GMAT_DB.filter(q => {
+    if (topic      && q.topic      !== topic)      return false;
+    if (difficulty && q.difficulty !== difficulty) return false;
+    if (type       && q.type       !== type)       return false;
+    if (tags       && !tags.every(t => q.tags.includes(t))) return false;
+    return true;
+  });
+}

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>Week 3 Flashcards — Math for ML</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+            onload="initApp()"></script>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #e74c3c;
+            --accent:    #e67e22;
+            --front-bg:  #ffffff;
+            --back-bg:   #fdf0ef;
+            --muted:     #7f8c8d;
+            --border:    #d5d8dc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+
+        header { background: var(--primary); color: white; padding: 14px 20px 10px; text-align: center; }
+        header h1 { font-size: 1.05em; letter-spacing: 2px; text-transform: uppercase; }
+        header p  { font-size: 0.78em; opacity: 0.65; margin-top: 3px; }
+
+        .progress-wrap { height: 5px; background: #e1e8ed; }
+        .progress-fill { height: 100%; background: var(--secondary); transition: width 0.3s; }
+
+        .filter-bar { background: white; padding: 10px 14px; display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; border-bottom: 1px solid #e1e8ed; }
+        .pill { padding: 5px 12px; border-radius: 20px; font-size: 0.72em; font-weight: 700; cursor: pointer; border: 1.5px solid var(--secondary); background: #fdf0ef; color: var(--secondary); transition: all 0.2s; white-space: nowrap; user-select: none; }
+        .pill.active { background: var(--secondary); color: white; }
+        .pill:hover  { opacity: 0.8; }
+
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 18px 14px 24px; gap: 14px; }
+
+        .stats-row { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 680px; font-size: 0.82em; color: var(--muted); }
+        .stats-row strong { color: var(--primary); }
+
+        .card-scene { width: 100%; max-width: 680px; perspective: 1400px; }
+        .card-flipper { position: relative; width: 100%; min-height: 300px; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+        .card-flipper.flipped { transform: rotateY(180deg); }
+
+        .card-face { position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 18px; padding: 28px 26px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 6px 28px rgba(0,0,0,0.09); }
+        .card-front { background: var(--front-bg); border: 2px solid #e1e8ed; }
+        .card-back  { background: var(--back-bg);  border: 2px solid var(--secondary); transform: rotateY(180deg); align-items: flex-start; text-align: left; }
+
+        .card-tag { font-size: 0.7em; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+        .card-front .card-tag { color: var(--muted); }
+        .card-back  .card-tag { color: var(--secondary); }
+
+        .card-question { font-size: 1.2em; font-weight: 700; color: var(--primary); line-height: 1.55; }
+        .card-hint     { margin-top: 22px; font-size: 0.75em; color: var(--muted); }
+
+        .card-answer { font-size: 0.97em; color: #2c3e50; line-height: 1.75; width: 100%; }
+        .card-answer b    { color: var(--secondary); }
+        .card-answer i    { color: var(--accent); font-style: normal; font-weight: 600; }
+        .card-answer code { background: #fde8e6; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.9em; }
+        .card-answer ul   { padding-left: 18px; margin-top: 8px; }
+        .card-answer li   { margin-bottom: 4px; }
+        .card-answer .ml-note { margin-top: 12px; padding: 9px 12px; background: rgba(231,76,60,0.09); border-left: 3px solid var(--secondary); border-radius: 0 6px 6px 0; font-size: 0.9em; }
+        .card-answer .formula { margin: 10px 0; text-align: center; font-size: 1em; }
+
+        .nav-row { display: flex; gap: 10px; width: 100%; max-width: 680px; }
+        .nav-btn { flex: 1; padding: 14px 8px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .nav-btn:active { transform: scale(0.97); }
+        .btn-prev { background: #ecf0f1; color: var(--primary); }
+        .btn-flip { background: var(--accent); color: white; flex: 1.2; }
+        .btn-next { background: var(--secondary); color: white; }
+
+        .bottom-row { display: flex; gap: 10px; width: 100%; max-width: 680px; }
+        .ctrl-btn { flex: 1; padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px; background: white; color: var(--primary); font-size: 0.8em; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+        .ctrl-btn:hover  { background: #fdf0ef; }
+        .btn-right { border-color: #1e8449; color: #1e8449; }
+        .btn-right:hover { background: #d5f5e3; }
+        .btn-right.selected { background: #1e8449; color: white; }
+        .btn-wrong { border-color: #c0392b; color: #c0392b; }
+        .btn-wrong:hover { background: #fdecea; }
+        .btn-wrong.selected { background: #c0392b; color: white; }
+
+        .kb-hint { font-size: 0.7em; color: var(--muted); text-align: center; }
+        .katex   { font-size: 1.05em !important; }
+
+        .card-actions { display: flex; gap: 10px; width: 100%; max-width: 680px; }
+        .btn-edit   { border-color: var(--secondary); color: var(--secondary); }
+        .btn-edit:hover   { background: #fdf0ef; }
+        .btn-delete { border-color: #c0392b; color: #c0392b; }
+        .btn-delete:hover { background: #fdecea; }
+        .btn-add    { border-color: var(--accent); color: var(--accent); }
+        .btn-add:hover    { background: #fef5e7; }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: white; border-radius: 16px; padding: 22px 22px 18px; width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; gap: 13px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-box h3 { font-size: 0.9em; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--primary); }
+        .modal-row { display: flex; gap: 12px; }
+        .modal-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+        .modal-field label { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+        .math-tip { font-size: 0.88em; text-transform: none; letter-spacing: 0; font-weight: 400; color: #aaa; margin-left: 6px; }
+        .modal-field input, .modal-field select, .modal-field textarea { border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 0.87em; font-family: inherit; color: var(--primary); resize: vertical; transition: border-color 0.15s; }
+        .modal-field textarea { font-family: Consolas, 'Courier New', monospace; font-size: 0.82em; }
+        .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { outline: none; border-color: var(--secondary); }
+        .preview-box { background: #f8fbff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+        .preview-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+        .preview-front { font-size: 0.95em; font-weight: 700; color: var(--primary); }
+        .preview-back { font-size: 0.87em; color: #2c3e50; line-height: 1.75; border-top: 1px solid var(--border); padding-top: 8px; }
+        .preview-back b { color: var(--secondary); }
+        .preview-back i { color: var(--accent); font-style: normal; font-weight: 600; }
+        .preview-back code { background: #fde8e6; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.9em; }
+        .preview-back ul { padding-left: 18px; }
+        .preview-back li { margin-bottom: 3px; }
+        .preview-back .formula { margin: 8px 0; text-align: center; }
+        .preview-back .ml-note { margin-top: 8px; padding: 8px 10px; background: rgba(231,76,60,0.09); border-left: 3px solid var(--secondary); border-radius: 0 6px 6px 0; font-size: 0.9em; }
+        .modal-btns { display: flex; gap: 10px; justify-content: flex-end; padding-top: 2px; }
+        .modal-cancel { padding: 9px 18px; border: 1.5px solid var(--border); border-radius: 8px; background: white; color: var(--muted); font-weight: 700; font-size: 0.85em; cursor: pointer; }
+        .modal-save   { padding: 9px 20px; border: none; border-radius: 8px; background: var(--secondary); color: white; font-weight: 700; font-size: 0.85em; cursor: pointer; transition: background 0.15s; }
+        .modal-save:hover { background: #c0392b; }
+
+        @media (max-width: 480px) {
+            .card-question { font-size: 1.08em; }
+            .card-face     { padding: 22px 18px; min-height: 260px; }
+            .card-flipper  { min-height: 260px; }
+            .kb-hint       { display: none; }
+            .modal-row     { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header style="position:relative;">
+    <a href="index.html" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.75); font-size:0.8em; font-weight:700; text-decoration:none; letter-spacing:0.5px; white-space:nowrap;">← Menu</a>
+    <h1>Week 3 Flashcards — Math for Machine Learning</h1>
+    <p>Calculus &amp; Optimisation · Luis Serrano Course</p>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="filter-bar" id="filterBar">
+    <span class="pill active" data-filter="all">All</span>
+    <span class="pill" data-filter="1">§1 · Derivatives</span>
+    <span class="pill" data-filter="2">§2 · Gradient Descent</span>
+    <span class="pill" data-filter="3">§3 · Partial Derivatives</span>
+    <span class="pill" data-filter="4">§4 · Chain Rule</span>
+    <span class="pill" data-filter="5">§5 · Loss Functions</span>
+    <span class="pill" data-filter="6">§6 · Regression</span>
+    <span class="pill" data-filter="7">§7 · Neural Nets</span>
+    <span class="pill" data-filter="8">§8 · Python</span>
+    <span class="pill" data-filter="connect">★ Connections</span>
+</div>
+
+<main>
+    <div class="stats-row">
+        <span><strong id="counterText">1 / —</strong></span>
+        <span id="knownBadge" style="background:#fdf0ef; color:var(--secondary); padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.9em;">0 known</span>
+    </div>
+    <div class="card-scene">
+        <div class="card-flipper" id="cardFlipper">
+            <div class="card-face card-front">
+                <div class="card-tag" id="frontTag"></div>
+                <div class="card-question" id="cardQuestion"></div>
+                <div class="card-hint">Tap to reveal answer</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="card-tag" id="backTag"></div>
+                <div class="card-answer" id="cardAnswer"></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-row">
+        <button class="nav-btn btn-prev" id="btnPrev">← Prev</button>
+        <button class="nav-btn btn-flip" id="btnFlip">Flip</button>
+        <button class="nav-btn btn-next" id="btnNext">Next →</button>
+    </div>
+    <div class="bottom-row">
+        <button class="ctrl-btn btn-right" id="btnRight">✓ Got it Right</button>
+        <button class="ctrl-btn btn-wrong" id="btnWrong">✗ Got it Wrong</button>
+        <button class="ctrl-btn" id="btnShuffle">Shuffle</button>
+        <button class="ctrl-btn" id="btnReset">Reset ↺</button>
+    </div>
+    <div class="card-actions">
+        <button class="ctrl-btn btn-edit"   id="btnEdit">✏ Edit</button>
+        <button class="ctrl-btn btn-delete" id="btnDelete">🗑 Delete</button>
+        <button class="ctrl-btn btn-add"    id="btnAdd">+ Add Card</button>
+    </div>
+    <div class="kb-hint">Keyboard: ← → navigate &nbsp;·&nbsp; Space = flip &nbsp;·&nbsp; G = right &nbsp;·&nbsp; B = wrong</div>
+</main>
+
+<!-- ── Edit / Add Card Modal ─────────────────────────────────────────── -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="modalTitle">Edit Card</h3>
+        <div class="modal-row">
+            <div class="modal-field">
+                <label>Section</label>
+                <select id="editSection">
+                    <option value="1">§1 · Derivatives</option>
+                    <option value="2">§2 · Gradient Descent</option>
+                    <option value="3">§3 · Partial Derivatives</option>
+                    <option value="4">§4 · Chain Rule</option>
+                    <option value="5">§5 · Loss Functions</option>
+                    <option value="6">§6 · Regression</option>
+                    <option value="7">§7 · Neural Nets</option>
+                    <option value="8">§8 · Python</option>
+                    <option value="connect">★ Connections</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Topic</label>
+                <input type="text" id="editTopic" placeholder="e.g. Chain Rule">
+            </div>
+        </div>
+        <div class="modal-field">
+            <label>Front — Question</label>
+            <textarea id="editFront" rows="3" placeholder="What is the chain rule?" oninput="updatePreview()"></textarea>
+        </div>
+        <div class="modal-field">
+            <label>Back — Answer <span class="math-tip">Math: \( inline \) or \[ display \] · &lt;b&gt;bold&lt;/b&gt; · &lt;code&gt;code&lt;/code&gt;</span></label>
+            <textarea id="editBack" rows="6" placeholder="dy/dx = f'(g(x)) · g'(x)" oninput="updatePreview()"></textarea>
+        </div>
+        <div class="preview-box">
+            <div class="preview-label">Preview</div>
+            <div class="preview-front" id="previewFront"></div>
+            <div class="preview-back"  id="previewBack"></div>
+        </div>
+        <div class="modal-btns">
+            <button class="modal-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="modal-save"   onclick="saveCard()">Save Card</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CARD DATA
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="card-db" hidden>
+
+    <!-- §1 Derivatives -->
+    <div data-section="1" data-topic="Definition of derivative">
+        <span class="f">What does the <b>derivative</b> \(f'(x)\) measure?</span>
+        <span class="b">The <b>instantaneous rate of change</b> of \(f\) at point \(x\) — the slope of the tangent line.
+            <div class="formula">\[ f'(x) = \lim_{h\to 0}\frac{f(x+h)-f(x)}{h} \]</div>
+            <div class="ml-note">In ML: how much does the loss change per unit change in this weight?</div></span>
+    </div>
+
+    <div data-section="1" data-topic="Power rule">
+        <span class="f">State the <b>Power Rule</b> for differentiation.</span>
+        <span class="b"><div class="formula">\[ \frac{d}{dx}[x^n] = nx^{n-1} \]</div>
+            Examples: \(\frac{d}{dx}[x^3] = 3x^2\), \(\frac{d}{dx}[x^5] = 5x^4\), \(\frac{d}{dx}[x] = 1\), \(\frac{d}{dx}[c] = 0\).</span>
+    </div>
+
+    <div data-section="1" data-topic="Common derivatives">
+        <span class="f">Give the derivatives of \(e^x\), \(\ln x\), \(\sin x\), and \(\cos x\).</span>
+        <span class="b"><ul>
+            <li>\(\frac{d}{dx}[e^x] = e^x\) — the only function that is its own derivative</li>
+            <li>\(\frac{d}{dx}[\ln x] = \frac{1}{x}\)</li>
+            <li>\(\frac{d}{dx}[\sin x] = \cos x\)</li>
+            <li>\(\frac{d}{dx}[\cos x] = -\sin x\)</li>
+        </ul></span>
+    </div>
+
+    <div data-section="1" data-topic="Critical points">
+        <span class="f">What is a <b>critical point</b>? How do you distinguish minima from maxima?</span>
+        <span class="b">A critical point is where \(f'(x) = 0\). Use the <b>second derivative test</b>:
+            <ul>
+                <li>\(f''(x) > 0\): curves up → <b>local minimum</b></li>
+                <li>\(f''(x) < 0\): curves down → <b>local maximum</b></li>
+                <li>\(f''(x) = 0\): inconclusive (could be a saddle)</li>
+            </ul>
+            <div class="ml-note">Gradient descent seeks points where the loss gradient is zero (its minimum).</div></span>
+    </div>
+
+    <div data-section="1" data-topic="Geometric interpretation">
+        <span class="f">Geometrically, what does \(f'(x) > 0\) vs \(f'(x) < 0\) tell you?</span>
+        <span class="b"><ul>
+            <li>\(f'(x) > 0\): the function is <b>increasing</b> at \(x\) — slope is positive</li>
+            <li>\(f'(x) < 0\): the function is <b>decreasing</b> at \(x\) — slope is negative</li>
+            <li>\(f'(x) = 0\): the function is <b>flat</b> at \(x\) — candidate for min/max</li>
+        </ul></span>
+    </div>
+
+    <div data-section="1" data-topic="Sum and constant rules">
+        <span class="f">State the <b>sum rule</b> and <b>constant multiple rule</b> for derivatives.</span>
+        <span class="b"><b>Sum rule:</b> \(\frac{d}{dx}[f + g] = f' + g'\) — differentiate term by term.<br><br>
+            <b>Constant multiple:</b> \(\frac{d}{dx}[c \cdot f] = c \cdot f'\) — constants factor out.<br><br>
+            Example: \(\frac{d}{dx}[3x^2 - 4x + 1] = 6x - 4\).</span>
+    </div>
+
+    <div data-section="1" data-topic="Product and quotient rules">
+        <span class="f">Write the <b>product rule</b> and <b>quotient rule</b>.</span>
+        <span class="b"><b>Product:</b> \((fg)' = f'g + fg'\)<br><br>
+            <b>Quotient:</b> \(\left(\frac{f}{g}\right)' = \frac{f'g - fg'}{g^2}\)<br><br>
+            Mnemonic for quotient: "lo d-hi minus hi d-lo over lo squared."</span>
+    </div>
+
+    <!-- §2 Gradient Descent -->
+    <div data-section="2" data-topic="Gradient descent update rule">
+        <span class="f">Write the <b>gradient descent update rule</b> for a single parameter.</span>
+        <span class="b"><div class="formula">\[ w \leftarrow w - \alpha \cdot \frac{\partial L}{\partial w} \]</div>
+            We subtract the gradient because gradients point <b>uphill</b>, and we want to go <b>downhill</b> (minimise loss). \(\alpha\) is the learning rate controlling step size.</span>
+    </div>
+
+    <div data-section="2" data-topic="Learning rate effects">
+        <span class="f">What happens with a <b>learning rate too high</b> vs <b>too low</b>?</span>
+        <span class="b"><ul>
+            <li><b>Too high</b> \(\alpha\): overshoots the minimum, loss oscillates or <b>diverges</b></li>
+            <li><b>Too low</b> \(\alpha\): training is <b>very slow</b> — takes many steps to converge</li>
+            <li><b>Just right</b>: smooth descent to the minimum</li>
+        </ul>
+            <div class="ml-note">In practice: use a learning rate scheduler or adaptive optimisers (Adam, RMSprop) to tune α automatically.</div></span>
+    </div>
+
+    <div data-section="2" data-topic="GD variants">
+        <span class="f">What are the three main <b>variants of gradient descent</b>?</span>
+        <span class="b"><ul>
+            <li><b>Batch GD</b>: gradient over all training examples — exact but slow on large data</li>
+            <li><b>Stochastic GD (SGD)</b>: gradient from one random example — fast but noisy</li>
+            <li><b>Mini-batch GD</b>: gradient over a small batch — best of both worlds, used in practice</li>
+        </ul>
+            <div class="ml-note">PyTorch's <code>torch.optim.SGD</code> actually does mini-batch SGD by default.</div></span>
+    </div>
+
+    <div data-section="2" data-topic="Convergence guarantee">
+        <span class="f">When is gradient descent <b>guaranteed to find the global minimum</b>?</span>
+        <span class="b">Only for <b>convex loss surfaces</b> — functions where any line segment between two points lies above the curve. For convex losses (e.g. MSE for linear regression), GD converges to the unique global minimum.<br><br>
+            For <b>non-convex</b> losses (neural networks), GD may get stuck in <i>local minima or saddle points</i>.</span>
+    </div>
+
+    <div data-section="2" data-topic="GD numerical example">
+        <span class="f">Given \(L(w)=w^2\), \(w_0=6\), \(\alpha=0.1\): compute one GD step.</span>
+        <span class="b">\(L'(w) = 2w\). At \(w_0 = 6\): \(L'(6) = 12\).
+            <div class="formula">\[ w_1 = 6 - 0.1 \times 12 = 6 - 1.2 = 4.8 \]</div>
+            After each step the parameter gets closer to the minimum at \(w^* = 0\).</span>
+    </div>
+
+    <div data-section="2" data-topic="Saddle points">
+        <span class="f">What is a <b>saddle point</b> and why does it matter in deep learning?</span>
+        <span class="b">A saddle point is where \(\nabla L = 0\) but it is neither a minimum nor a maximum — the loss goes down in some directions and up in others (like a mountain pass).<br><br>
+            In high-dimensional networks, saddle points are <b>far more common</b> than local minima. SGD's noise often helps escape them, which is one reason it works well in practice.</span>
+    </div>
+
+    <div data-section="2" data-topic="Adaptive optimisers">
+        <span class="f">What advantage does <b>Adam optimiser</b> have over plain GD?</span>
+        <span class="b">Adam (Adaptive Moment Estimation) maintains a <b>per-parameter adaptive learning rate</b> based on first moment (mean gradient) and second moment (gradient variance).<br><br>
+            Result: parameters that have sparse or small gradients get larger steps; parameters with large gradients get smaller steps. Much faster convergence in practice, with less tuning of α.</span>
+    </div>
+
+    <!-- §3 Partial Derivatives & Gradient -->
+    <div data-section="3" data-topic="Partial derivative definition">
+        <span class="f">What is a <b>partial derivative</b> \(\partial f / \partial x_i\)?</span>
+        <span class="b">The derivative of \(f\) with respect to \(x_i\) while <b>treating all other variables as constants</b>.
+            <div class="formula">\[ \frac{\partial f}{\partial x_i} = \lim_{h\to 0}\frac{f(\ldots,x_i+h,\ldots)-f(\ldots,x_i,\ldots)}{h} \]</div>
+            It answers: "how much does \(f\) change if I nudge just \(x_i\)?"</span>
+    </div>
+
+    <div data-section="3" data-topic="Gradient vector">
+        <span class="f">Define the <b>gradient</b> \(\nabla f\) of a multivariable function.</span>
+        <span class="b">The gradient is a <b>vector</b> of all partial derivatives:
+            <div class="formula">\[ \nabla f = \begin{bmatrix}\partial f/\partial x_1 \\ \partial f/\partial x_2 \\ \vdots \\ \partial f/\partial x_n\end{bmatrix} \]</div>
+            It points in the direction of <b>steepest ascent</b>. Subtracting it moves us downhill.</span>
+    </div>
+
+    <div data-section="3" data-topic="Gradient descent in multiple dimensions">
+        <span class="f">Write the gradient descent update for a <b>vector of weights</b> \(\mathbf{w}\).</span>
+        <span class="b"><div class="formula">\[ \mathbf{w} \leftarrow \mathbf{w} - \alpha \nabla_{\mathbf{w}} L \]</div>
+            Each weight \(w_i\) is updated by its own partial derivative \(\partial L/\partial w_i\). All weights update simultaneously using the gradient vector.</span>
+    </div>
+
+    <div data-section="3" data-topic="Computing a partial derivative">
+        <span class="f">For \(f(x,y) = x^2 y + 3y\), compute \(\partial f/\partial x\) and \(\partial f/\partial y\).</span>
+        <span class="b"><b>∂f/∂x</b>: treat \(y\) as constant.
+            <div class="formula">\[ \frac{\partial f}{\partial x} = 2xy \]</div>
+            <b>∂f/∂y</b>: treat \(x\) as constant.
+            <div class="formula">\[ \frac{\partial f}{\partial y} = x^2 + 3 \]</div></span>
+    </div>
+
+    <div data-section="3" data-topic="Jacobian">
+        <span class="f">What is the <b>Jacobian matrix</b>?</span>
+        <span class="b">For a vector-valued function \(\mathbf{f}: \mathbb{R}^n \to \mathbb{R}^m\), the Jacobian is the \(m\times n\) matrix of all first-order partial derivatives:
+            <div class="formula">\[ J_{ij} = \frac{\partial f_i}{\partial x_j} \]</div>
+            It generalises the gradient from scalar-to-vector to vector-to-vector functions. Used in backpropagation through vector layers.</span>
+    </div>
+
+    <!-- §4 Chain Rule -->
+    <div data-section="4" data-topic="Chain rule">
+        <span class="f">State the <b>chain rule</b> for composite functions.</span>
+        <span class="b">If \(y = f(g(x))\), then:
+            <div class="formula">\[ \frac{dy}{dx} = f'(g(x)) \cdot g'(x) \]</div>
+            "Derivative of outer, evaluated at inner, times derivative of inner."<br><br>
+            In Leibniz notation: \(\frac{dy}{dx} = \frac{dy}{du}\cdot\frac{du}{dx}\) where \(u = g(x)\).</span>
+    </div>
+
+    <div data-section="4" data-topic="Chain rule example">
+        <span class="f">Apply the chain rule to \(h(x) = \sin(x^2)\).</span>
+        <span class="b">Outer: \(\sin(u)\), derivative \(\cos(u)\).<br>
+            Inner: \(u = x^2\), derivative \(2x\).<br><br>
+            <div class="formula">\[ h'(x) = \cos(x^2) \cdot 2x = 2x\cos(x^2) \]</div></span>
+    </div>
+
+    <div data-section="4" data-topic="Backpropagation">
+        <span class="f">How does the <b>chain rule power backpropagation</b>?</span>
+        <span class="b">A neural network is a composition of functions: \(L = \ell(f_n(\cdots f_2(f_1(\mathbf{x}))\cdots))\).<br><br>
+            Backprop applies the chain rule from the output back to each layer:
+            <div class="formula">\[ \frac{\partial L}{\partial w_1} = \frac{\partial L}{\partial a_n}\cdot\frac{\partial a_n}{\partial a_{n-1}}\cdots\frac{\partial a_2}{\partial a_1}\cdot\frac{\partial a_1}{\partial w_1} \]</div>
+            Intermediate values cached in the forward pass are reused — no redundant computation.</span>
+    </div>
+
+    <div data-section="4" data-topic="Sigmoid derivative">
+        <span class="f">Derive the derivative of the <b>sigmoid function</b> \(\sigma(x) = \frac{1}{1+e^{-x}}\).</span>
+        <span class="b">Using the quotient rule and chain rule:
+            <div class="formula">\[ \sigma'(x) = \sigma(x)\big(1 - \sigma(x)\big) \]</div>
+            Key values: \(\sigma(0) = 0.5\), so \(\sigma'(0) = 0.5 \times 0.5 = \mathbf{0.25}\).<br><br>
+            <div class="ml-note">The sigmoid's gradient vanishes for large |x| — this causes the <b>vanishing gradient problem</b> in deep networks.</div></span>
+    </div>
+
+    <div data-section="4" data-topic="Vanishing gradient problem">
+        <span class="f">What is the <b>vanishing gradient problem</b> and how is it addressed?</span>
+        <span class="b">In deep networks, backpropagating through many sigmoid layers multiplies many small gradients (<1). The gradient signal decays exponentially toward the early layers — early weights barely update.<br><br>
+            <b>Solutions:</b>
+            <ul>
+                <li>Use <b>ReLU</b> — gradient is 1 for positive inputs, 0 otherwise — no saturation</li>
+                <li><b>Residual connections</b> (ResNets) — provide gradient highways</li>
+                <li><b>Batch normalisation</b> — stabilises activations</li>
+            </ul></span>
+    </div>
+
+    <div data-section="4" data-topic="Computational graph">
+        <span class="f">What is a <b>computational graph</b> in the context of autograd?</span>
+        <span class="b">A directed acyclic graph where:
+            <ul>
+                <li>Nodes = operations (add, multiply, sigmoid…)</li>
+                <li>Edges = data flow (tensors)</li>
+            </ul>
+            During the <b>forward pass</b>, the graph is built and intermediate values stored. During <code>.backward()</code>, the graph is traversed in reverse, applying the chain rule at each node.<br><br>
+            <div class="ml-note">PyTorch builds this graph dynamically — each forward pass can have a different graph structure.</div></span>
+    </div>
+
+    <!-- §5 Loss Functions -->
+    <div data-section="5" data-topic="Mean Squared Error">
+        <span class="f">Write the formula for <b>Mean Squared Error (MSE)</b> and explain its properties.</span>
+        <span class="b"><div class="formula">\[ \text{MSE} = \frac{1}{n}\sum_{i=1}^n (y_i - \hat{y}_i)^2 \]</div>
+            <ul>
+                <li><b>Differentiable</b> everywhere — great for GD</li>
+                <li><b>Sensitive to outliers</b> — large errors are squared, dominating the loss</li>
+                <li>Convex for linear models → guaranteed global minimum</li>
+            </ul>
+            Used for regression tasks.</span>
+    </div>
+
+    <div data-section="5" data-topic="MAE vs MSE">
+        <span class="f">Compare <b>MAE</b> and <b>MSE</b>. When would you choose each?</span>
+        <span class="b"><b>MSE</b> = \(\frac{1}{n}\sum(y_i-\hat{y}_i)^2\): squares errors → penalises outliers heavily. Smooth and differentiable everywhere.<br><br>
+            <b>MAE</b> = \(\frac{1}{n}\sum|y_i-\hat{y}_i|\): linear in errors → <b>robust to outliers</b>. Not differentiable at 0 (use subgradient or Huber loss instead).<br><br>
+            Choose MAE when outliers are expected and should not dominate training.</span>
+    </div>
+
+    <div data-section="5" data-topic="Cross-entropy loss">
+        <span class="f">Write the <b>binary cross-entropy loss</b> and explain why we use it for classification.</span>
+        <span class="b"><div class="formula">\[ L = -\frac{1}{n}\sum_{i=1}^n\big[y_i\log\hat{p}_i + (1-y_i)\log(1-\hat{p}_i)\big] \]</div>
+            The log function heavily penalises <b>confident wrong predictions</b>: if the model predicts \(\hat{p}=0.001\) for a true class, \(-\log(0.001) \approx 6.9\) — a very large penalty.<br><br>
+            <div class="ml-note">For multi-class: categorical cross-entropy. Combined with softmax output, it has a clean gradient: \(\hat{p} - y\).</div></span>
+    </div>
+
+    <div data-section="5" data-topic="Loss function requirements">
+        <span class="f">What properties should a <b>loss function</b> have for gradient-based training?</span>
+        <span class="b"><ul>
+            <li><b>Differentiable</b> (or sub-differentiable) — needed for GD updates</li>
+            <li><b>Non-negative</b> — 0 only at the solution</li>
+            <li>Reflects the <b>task objective</b> — regression → MSE; classification → cross-entropy</li>
+            <li>Smooth enough for stable training</li>
+        </ul>
+            <div class="ml-note">MSE as a classification loss is possible but poorly calibrated — cross-entropy is always preferred for probabilities.</div></span>
+    </div>
+
+    <div data-section="5" data-topic="MSE gradient">
+        <span class="f">What is the gradient of MSE with respect to weights \(\mathbf{w}\)?</span>
+        <span class="b">For \(L = \frac{1}{n}\|\mathbf{X}\mathbf{w}-\mathbf{y}\|^2\):
+            <div class="formula">\[ \nabla_{\mathbf{w}}L = \frac{2}{n}\mathbf{X}^\top(\mathbf{X}\mathbf{w}-\mathbf{y}) \]</div>
+            The term \((\mathbf{X}\mathbf{w}-\mathbf{y})\) is the <i>residual</i> — prediction error. We project it back through \(\mathbf{X}^\top\) to get the weight gradient.<br><br>
+            In NumPy: <code>(2/n) * X.T @ (X @ w - y)</code>.</span>
+    </div>
+
+    <!-- §6 Regression as Optimisation -->
+    <div data-section="6" data-topic="Linear regression as optimisation">
+        <span class="f">Frame <b>linear regression</b> as an optimisation problem.</span>
+        <span class="b">Find weights \(\mathbf{w}\) and bias \(b\) that minimise the MSE:
+            <div class="formula">\[ \min_{\mathbf{w},b} \;\frac{1}{n}\sum_{i=1}^n(y_i - \mathbf{w}^\top\mathbf{x}_i - b)^2 \]</div>
+            This is a <b>convex quadratic</b> in \(\mathbf{w}\) — it has a unique global minimum reachable by GD or the Normal Equations.</span>
+    </div>
+
+    <div data-section="6" data-topic="Normal Equations">
+        <span class="f">State the <b>Normal Equations</b> for linear regression.</span>
+        <span class="b"><div class="formula">\[ \mathbf{w}^* = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y} \]</div>
+            Derived by setting \(\nabla_{\mathbf{w}}L = 0\) and solving analytically. This is the exact, closed-form solution.<br><br>
+            <b>Limitation:</b> inverting \(\mathbf{X}^\top\mathbf{X}\) is \(\mathcal{O}(p^3)\) — infeasible for millions of features. Use GD instead for large \(p\).</span>
+    </div>
+
+    <div data-section="6" data-topic="Ridge regression">
+        <span class="f">What is <b>Ridge regression</b> and what problem does it solve?</span>
+        <span class="b">Ridge adds an <b>L2 regularisation</b> term to the MSE:
+            <div class="formula">\[ L_{\text{Ridge}} = \frac{1}{n}\|\mathbf{X}\mathbf{w}-\mathbf{y}\|^2 + \lambda\|\mathbf{w}\|^2 \]</div>
+            <ul>
+                <li>Penalises large weights → shrinks them toward zero</li>
+                <li>Prevents overfitting when features are highly correlated</li>
+                <li>Makes \(\mathbf{X}^\top\mathbf{X}\) invertible even when singular</li>
+            </ul>
+            Closed form: \(\mathbf{w}^* = (\mathbf{X}^\top\mathbf{X}+\lambda\mathbf{I})^{-1}\mathbf{X}^\top\mathbf{y}\).</span>
+    </div>
+
+    <div data-section="6" data-topic="GD vs Normal Equations">
+        <span class="f">When would you prefer <b>Gradient Descent</b> over the Normal Equations?</span>
+        <span class="b"><ul>
+            <li><b>Large number of features</b> (p ≫ 1000): \((\mathbf{X}^\top\mathbf{X})^{-1}\) is \(\mathcal{O}(p^3)\) — prohibitive</li>
+            <li><b>Streaming / online learning</b>: GD can update one batch at a time</li>
+            <li><b>Non-linear models</b> (neural nets): no closed form exists — must use GD</li>
+            <li>Normal Equations best for small, dense datasets with moderate \(p\)</li>
+        </ul></span>
+    </div>
+
+    <div data-section="6" data-topic="Connection to Week 2">
+        <span class="f">How does Week 2's projection formula connect to the Normal Equations?</span>
+        <span class="b">The Normal Equations \(\mathbf{w}^* = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}\) give the <b>projection of y onto the column space of X</b>.<br><br>
+            The prediction \(\hat{\mathbf{y}} = \mathbf{X}\mathbf{w}^* = \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}\) is exactly the <b>orthogonal projection matrix</b> \(P = \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\) from linear algebra.<br><br>
+            <div class="ml-note">Linear regression = finding the projection of the target onto the feature column space.</div></span>
+    </div>
+
+    <!-- §7 Neural Network Basics -->
+    <div data-section="7" data-topic="Single neuron">
+        <span class="f">Describe the computation inside a <b>single neuron</b>.</span>
+        <span class="b">Two steps:
+            <ol style="padding-left:18px; margin-top:6px;">
+                <li><b>Linear combination:</b> \(z = \mathbf{w}^\top\mathbf{x} + b\)</li>
+                <li><b>Activation:</b> \(a = \sigma(z)\)</li>
+            </ol>
+            \(z\) is the pre-activation (weighted sum + bias). \(a\) is the neuron's output after the non-linear squash.<br><br>
+            <div class="ml-note">Without the activation \(\sigma\), a neural network is just linear regression, no matter how many layers.</div></span>
+    </div>
+
+    <div data-section="7" data-topic="Activation functions comparison">
+        <span class="f">Compare <b>Sigmoid</b>, <b>ReLU</b>, and <b>Tanh</b> activation functions.</span>
+        <span class="b"><ul>
+            <li><b>Sigmoid</b> \(\sigma(x)=\frac{1}{1+e^{-x}}\): output (0,1), saturates for large |x| → vanishing gradients</li>
+            <li><b>ReLU</b> \(\max(0,x)\): output [0,∞), no saturation for \(x>0\), sparse activations, <b>most used in hidden layers</b></li>
+            <li><b>Tanh</b> \(\frac{e^x-e^{-x}}{e^x+e^{-x}}\): output (-1,1), zero-centered, still saturates at extremes</li>
+        </ul>
+            ReLU is the default choice for hidden layers; Sigmoid for binary output.</span>
+    </div>
+
+    <div data-section="7" data-topic="Why non-linearity is essential">
+        <span class="f">Why can't we stack linear layers without activations?</span>
+        <span class="b">A composition of linear functions is still linear:
+            <div class="formula">\[ W_2(W_1\mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{combined}}\mathbf{x} \]</div>
+            No matter how many layers, the network collapses to a single matrix multiplication — it can only learn <b>linear decision boundaries</b>.<br><br>
+            Non-linear activations break this collapse, allowing the network to approximate any continuous function (Universal Approximation Theorem).</span>
+    </div>
+
+    <div data-section="7" data-topic="Forward pass">
+        <span class="f">Describe the <b>forward pass</b> through a 2-layer neural network.</span>
+        <span class="b">Given input \(\mathbf{x}\):
+            <ol style="padding-left:18px; margin-top:6px;">
+                <li>\(\mathbf{z}^{(1)} = W^{(1)}\mathbf{x} + \mathbf{b}^{(1)}\)</li>
+                <li>\(\mathbf{a}^{(1)} = \text{ReLU}(\mathbf{z}^{(1)})\)</li>
+                <li>\(\mathbf{z}^{(2)} = W^{(2)}\mathbf{a}^{(1)} + \mathbf{b}^{(2)}\)</li>
+                <li>\(\hat{y} = \sigma(\mathbf{z}^{(2)})\) (sigmoid for binary classification)</li>
+            </ol>
+            All intermediate values \(\mathbf{z}, \mathbf{a}\) are <b>cached for backpropagation</b>.</span>
+    </div>
+
+    <div data-section="7" data-topic="ReLU derivative">
+        <span class="f">What is the derivative of <b>ReLU</b>? Why is it useful?</span>
+        <span class="b"><div class="formula">\[ \text{ReLU}'(x) = \begin{cases}1 & x > 0 \\ 0 & x \leq 0\end{cases} \]</div>
+            The gradient is either <b>1</b> (no attenuation — no vanishing gradient for active units) or <b>0</b> (dead neuron). This binary gradient is much simpler and faster to compute than sigmoid's.<br><br>
+            <div class="ml-note">Dying ReLU problem: neurons stuck at 0 never recover. Fix: Leaky ReLU = \(\max(0.01x, x)\).</div></span>
+    </div>
+
+    <div data-section="7" data-topic="Softmax">
+        <span class="f">What is the <b>softmax function</b> and when is it used?</span>
+        <span class="b"><div class="formula">\[ \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_j e^{z_j}} \]</div>
+            Converts a vector of raw scores (logits) into a <b>probability distribution</b> that sums to 1. Used in the output layer of multi-class classifiers.<br><br>
+            Paired with categorical cross-entropy, the gradient simplifies to \(\hat{p} - y\) — elegant and numerically stable.</span>
+    </div>
+
+    <!-- §8 Python for Optimisation -->
+    <div data-section="8" data-topic="NumPy gradient descent">
+        <span class="f">Implement <b>gradient descent in NumPy</b> for MSE loss.</span>
+        <span class="b"><code>import numpy as np</code><br>
+            <code>w = np.zeros(p)</code><br>
+            <code>for _ in range(n_iters):</code><br>
+            <code>&nbsp;&nbsp;pred = X @ w</code><br>
+            <code>&nbsp;&nbsp;grad = (2/n) * X.T @ (pred - y)</code><br>
+            <code>&nbsp;&nbsp;w -= lr * grad</code><br><br>
+            Key: compute residual \(X\mathbf{w}-\mathbf{y}\), project through \(X^\top\) to get gradient, subtract scaled gradient.</span>
+    </div>
+
+    <div data-section="8" data-topic="scipy.optimize.minimize">
+        <span class="f">How do you use <code>scipy.optimize.minimize</code>?</span>
+        <span class="b"><code>from scipy.optimize import minimize</code><br>
+            <code>def loss(w): return np.mean((X @ w - y)**2)</code><br>
+            <code>res = minimize(loss, x0=np.zeros(p))</code><br>
+            <code>w_opt = res.x</code><br><br>
+            Internally uses gradient-based methods (L-BFGS by default for smooth functions). Suitable for small–medium problems where you don't want to implement GD manually.</span>
+    </div>
+
+    <div data-section="8" data-topic="PyTorch autograd">
+        <span class="f">Write the basic <b>PyTorch training loop</b> structure.</span>
+        <span class="b"><code>import torch</code><br>
+            <code>w = torch.tensor([0.0], requires_grad=True)</code><br>
+            <code>optim = torch.optim.Adam([w], lr=0.01)</code><br>
+            <code>for epoch in range(100):</code><br>
+            <code>&nbsp;&nbsp;loss = ((X @ w - y)**2).mean()</code><br>
+            <code>&nbsp;&nbsp;optim.zero_grad()</code><br>
+            <code>&nbsp;&nbsp;loss.backward()   # chain rule</code><br>
+            <code>&nbsp;&nbsp;optim.step()      # w -= lr * grad</code></span>
+    </div>
+
+    <div data-section="8" data-topic="zero_grad importance">
+        <span class="f">Why must you call <code>optim.zero_grad()</code> before <code>loss.backward()</code>?</span>
+        <span class="b">PyTorch <b>accumulates</b> gradients in <code>tensor.grad</code> by default. Without zeroing, each <code>.backward()</code> adds to the previous gradient instead of replacing it.<br><br>
+            The training loop must be: <i>zero → forward → backward → step</i>.<br><br>
+            <div class="ml-note">This accumulation behaviour is intentional for some use cases (e.g., gradient accumulation over mini-batches to simulate larger batches), but for standard training it must be cleared each step.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Normal Equations in NumPy">
+        <span class="f">Implement the <b>Normal Equations</b> in NumPy.</span>
+        <span class="b"><code>w_opt = np.linalg.inv(X.T @ X) @ X.T @ y</code><br><br>
+            Or more numerically stable (avoids explicit inverse):
+            <code>w_opt = np.linalg.lstsq(X, y, rcond=None)[0]</code><br><br>
+            <code>lstsq</code> uses SVD internally — handles rank-deficient cases gracefully and is always preferred over explicit inversion.</span>
+    </div>
+
+    <!-- ★ Connections -->
+    <div data-section="connect" data-topic="Calculus + Linear Algebra = ML">
+        <span class="f">How do <b>Weeks 1–3</b> combine to power modern ML?</span>
+        <span class="b"><ul>
+            <li><b>Week 1</b> (Linear Algebra): data is vectors; models are matrices; predictions are \(W\mathbf{x}\)</li>
+            <li><b>Week 2</b> (Eigenvalues/PCA): understand data structure; compress without losing information; regression = projection</li>
+            <li><b>Week 3</b> (Calculus): measure loss; compute gradients; update weights via backprop</li>
+        </ul>
+            Together: represent data as vectors, build a model as matrices, optimise it with gradients. That is the mathematical core of every neural network.</span>
+    </div>
+
+    <div data-section="connect" data-topic="Gradient descent connects to projection">
+        <span class="f">How does gradient descent connect to <b>least-squares projection</b>?</span>
+        <span class="b">The Normal Equations \(\mathbf{w}^* = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}\) and gradient descent both find the <b>same answer</b> — the orthogonal projection of \(\mathbf{y}\) onto the column space of \(\mathbf{X}\).<br><br>
+            GD is an iterative journey toward that projection; the Normal Equations jump there in one shot. For large problems, the journey is cheaper than the jump.</span>
+    </div>
+
+    <div data-section="connect" data-topic="PCA + GD in deep learning">
+        <span class="f">How do <b>PCA and gradient descent</b> both appear inside a deep learning pipeline?</span>
+        <span class="b"><ul>
+            <li><b>PCA / SVD</b>: preprocessing step — reduce input dimensionality before feeding to the network; also used to initialise weight matrices (e.g., SVD of weight matrices in transformers)</li>
+            <li><b>Gradient descent</b>: training step — backprop through every layer, update every weight</li>
+        </ul>
+            Also: the loss landscape's curvature is captured by the <b>Hessian</b> (second derivatives) — its eigenvectors/eigenvalues determine convergence speed of GD near the minimum.</span>
+    </div>
+
+    <div data-section="connect" data-topic="Chain rule and matrix calculus">
+        <span class="f">How does the <b>chain rule extend to matrices</b> in neural networks?</span>
+        <span class="b">When layers process vectors/matrices, the chain rule becomes matrix multiplication of <b>Jacobian matrices</b>:
+            <div class="formula">\[ \frac{\partial L}{\partial W^{(1)}} = \frac{\partial L}{\partial \mathbf{a}^{(2)}} \cdot \frac{\partial \mathbf{a}^{(2)}}{\partial \mathbf{z}^{(2)}} \cdot \frac{\partial \mathbf{z}^{(2)}}{\partial \mathbf{a}^{(1)}} \cdot \frac{\partial \mathbf{a}^{(1)}}{\partial W^{(1)}} \]</div>
+            Autograd handles this automatically — you just define the forward computation and call <code>.backward()</code>.</span>
+    </div>
+
+</div><!-- end card-db -->
+
+
+<script>
+// ── Parse card-db into ALL_CARDS array ─────────────────────────────────────────
+const ALL_CARDS = [];
+document.querySelectorAll('#card-db > div[data-section]').forEach(el => {
+    ALL_CARDS.push({
+        section: isNaN(el.dataset.section) ? el.dataset.section : parseInt(el.dataset.section),
+        topic:   el.dataset.topic,
+        front:   el.querySelector('.f').innerHTML.trim(),
+        back:    el.querySelector('.b').innerHTML.trim()
+    });
+});
+
+// ── Section labels ─────────────────────────────────────────────────────────────
+const SECTION_LABELS = {
+    1: '§1 · Derivatives',
+    2: '§2 · Gradient Descent',
+    3: '§3 · Partial Derivatives',
+    4: '§4 · Chain Rule',
+    5: '§5 · Loss Functions',
+    6: '§6 · Regression',
+    7: '§7 · Neural Nets',
+    8: '§8 · Python',
+    connect: '★ Connections'
+};
+
+const KATEX_OPTS = {
+    delimiters: [
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+    ],
+    throwOnError: false
+};
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let deck         = [];
+let idx          = 0;
+let isFlipped    = false;
+let rightSet     = new Set();
+let wrongSet     = new Set();
+let activeFilter = 'all';
+
+let overrides    = JSON.parse(localStorage.getItem('mathCourse_cardOverrides_w3') || '{"edited":{},"deleted":[],"custom":[]}');
+let ACTIVE_CARDS = [];
+let editingRef   = null;
+let previewTimer = null;
+
+function buildActiveCards() {
+    ACTIVE_CARDS = [];
+    ALL_CARDS.forEach((c, i) => {
+        if (overrides.deleted.includes(i)) return;
+        const card = overrides.edited[i] ? { ...overrides.edited[i] } : { ...c };
+        card._ref = { type: 'builtin', idx: i };
+        ACTIVE_CARDS.push(card);
+    });
+    overrides.custom.forEach((c, ci) => {
+        ACTIVE_CARDS.push({ ...c, _ref: { type: 'custom', idx: ci } });
+    });
+}
+
+function buildDeck() {
+    deck = activeFilter === 'all'
+        ? ACTIVE_CARDS.map((_,i) => i)
+        : ACTIVE_CARDS.map((_,i) => i).filter(i => ACTIVE_CARDS[i].section === activeFilter);
+    idx = 0;
+}
+
+function renderCard() {
+    if (!deck.length) return;
+    const c = ACTIVE_CARDS[deck[idx]];
+
+    document.getElementById('counterText').textContent = `${idx + 1} / ${deck.length}`;
+    document.getElementById('progressFill').style.width = `${((idx+1)/deck.length)*100}%`;
+
+    const rightInDeck = [...rightSet].filter(i => deck.includes(i)).length;
+    const wrongInDeck = [...wrongSet].filter(i => deck.includes(i)).length;
+    document.getElementById('knownBadge').textContent = `${rightInDeck} ✓  ${wrongInDeck} ✗`;
+
+    const label = `${SECTION_LABELS[c.section]} · ${c.topic}`;
+    document.getElementById('frontTag').textContent = label;
+    document.getElementById('backTag').textContent  = label;
+
+    document.getElementById('cardQuestion').innerHTML = c.front;
+    document.getElementById('cardAnswer').innerHTML   = c.back;
+
+    const gi = deck[idx];
+    document.getElementById('btnRight').classList.toggle('selected', rightSet.has(gi));
+    document.getElementById('btnWrong').classList.toggle('selected', wrongSet.has(gi));
+
+    document.getElementById('cardFlipper').classList.toggle('flipped', isFlipped);
+
+    renderMathInElement(document.getElementById('cardQuestion'), KATEX_OPTS);
+    renderMathInElement(document.getElementById('cardAnswer'),   KATEX_OPTS);
+}
+
+function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('cardFlipper').classList.toggle('flipped', isFlipped);
+}
+
+function navigate(dir) {
+    idx = (idx + dir + deck.length) % deck.length;
+    isFlipped = false;
+    renderCard();
+}
+
+function saveFlashcardResult(cardIdx, result) {
+    const card  = ACTIVE_CARDS[cardIdx];
+    const entry = {
+        date:    new Date().toISOString(),
+        cardSet: 'Week 3',
+        section: card.section,
+        topic:   card.topic,
+        result
+    };
+    const stored = JSON.parse(localStorage.getItem('mathCourse_flashcardResults') || '[]');
+    stored.push(entry);
+    localStorage.setItem('mathCourse_flashcardResults', JSON.stringify(stored));
+}
+
+function markRight() {
+    const gi = deck[idx];
+    rightSet.add(gi);
+    wrongSet.delete(gi);
+    saveFlashcardResult(gi, 'right');
+    renderCard();
+    if (idx < deck.length - 1) navigate(1);
+}
+
+function markWrong() {
+    const gi = deck[idx];
+    wrongSet.add(gi);
+    rightSet.delete(gi);
+    saveFlashcardResult(gi, 'wrong');
+    renderCard();
+    if (idx < deck.length - 1) navigate(1);
+}
+
+function shuffleDeck() {
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    idx = 0; isFlipped = false; renderCard();
+}
+
+// ── Modal: edit / add / delete ────────────────────────────────────────────────
+function openEditModal(isNew) {
+    editingRef = isNew ? { type: 'new' } : { ...ACTIVE_CARDS[deck[idx]]._ref };
+    const card = isNew ? { section: 1, topic: '', front: '', back: '' } : ACTIVE_CARDS[deck[idx]];
+    document.getElementById('modalTitle').textContent = isNew ? 'Add New Card' : 'Edit Card';
+    document.getElementById('editSection').value = card.section;
+    document.getElementById('editTopic').value   = card.topic;
+    document.getElementById('editFront').value   = card.front;
+    document.getElementById('editBack').value    = card.back;
+    updatePreview();
+    document.getElementById('editModal').classList.add('open');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('open');
+    editingRef = null;
+}
+
+function saveCard() {
+    const secRaw = document.getElementById('editSection').value;
+    const card = {
+        section: isNaN(secRaw) ? secRaw : parseInt(secRaw),
+        topic:   document.getElementById('editTopic').value.trim(),
+        front:   document.getElementById('editFront').value.trim(),
+        back:    document.getElementById('editBack').value.trim()
+    };
+    if (!card.topic || !card.front || !card.back) {
+        alert('Please fill in Section, Topic, Front, and Back.'); return;
+    }
+    if (editingRef.type === 'new') {
+        overrides.custom.push(card);
+    } else if (editingRef.type === 'builtin') {
+        overrides.edited[editingRef.idx] = card;
+    } else if (editingRef.type === 'custom') {
+        overrides.custom[editingRef.idx] = card;
+    }
+    localStorage.setItem('mathCourse_cardOverrides_w3', JSON.stringify(overrides));
+    buildActiveCards();
+    buildDeck();
+    isFlipped = false;
+    renderCard();
+    closeEditModal();
+}
+
+function deleteCard() {
+    if (!deck.length) return;
+    const ref   = ACTIVE_CARDS[deck[idx]]._ref;
+    const topic = ACTIVE_CARDS[deck[idx]].topic;
+    if (!confirm(`Delete the card "${topic}"? This cannot be undone.`)) return;
+    if (ref.type === 'builtin') {
+        overrides.deleted.push(ref.idx);
+    } else {
+        overrides.custom.splice(ref.idx, 1);
+    }
+    localStorage.setItem('mathCourse_cardOverrides_w3', JSON.stringify(overrides));
+    buildActiveCards();
+    buildDeck();
+    idx = Math.min(idx, Math.max(0, deck.length - 1));
+    isFlipped = false;
+    renderCard();
+}
+
+function updatePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => {
+        const frontEl = document.getElementById('previewFront');
+        const backEl  = document.getElementById('previewBack');
+        frontEl.innerHTML = document.getElementById('editFront').value || '<em style="color:#aaa">Front preview</em>';
+        backEl.innerHTML  = document.getElementById('editBack').value  || '<em style="color:#aaa">Back preview</em>';
+        renderMathInElement(frontEl, KATEX_OPTS);
+        renderMathInElement(backEl,  KATEX_OPTS);
+    }, 250);
+}
+
+function initApp() {
+    buildActiveCards();
+    buildDeck();
+    renderCard();
+
+    // Filter pills
+    document.querySelectorAll('.pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            const f = pill.dataset.filter;
+            activeFilter = f === 'all' ? 'all' : (isNaN(f) ? f : parseInt(f));
+            buildDeck(); isFlipped = false; renderCard();
+        });
+    });
+
+    document.getElementById('btnPrev').addEventListener('click', () => navigate(-1));
+    document.getElementById('btnNext').addEventListener('click', () => navigate(1));
+    document.getElementById('btnFlip').addEventListener('click', flipCard);
+    document.getElementById('btnRight').addEventListener('click', markRight);
+    document.getElementById('btnWrong').addEventListener('click', markWrong);
+    document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
+    document.getElementById('btnReset').addEventListener('click', () => {
+        buildDeck(); rightSet.clear(); wrongSet.clear(); isFlipped = false; renderCard();
+    });
+    document.getElementById('btnEdit').addEventListener('click',   () => openEditModal(false));
+    document.getElementById('btnDelete').addEventListener('click', deleteCard);
+    document.getElementById('btnAdd').addEventListener('click',    () => openEditModal(true));
+    document.getElementById('editModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('editModal')) closeEditModal();
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') navigate(1);
+        else if (e.key === 'ArrowLeft') navigate(-1);
+        else if (e.key === ' ') { e.preventDefault(); flipCard(); }
+        else if (e.key === 'g' || e.key === 'G') markRight();
+        else if (e.key === 'b' || e.key === 'B') markWrong();
+    });
+
+    // Touch swipe on card
+    let tx = 0;
+    const flipper = document.getElementById('cardFlipper');
+    flipper.addEventListener('touchstart', e => { tx = e.changedTouches[0].clientX; }, {passive:true});
+    flipper.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+        else flipCard();
+    }, {passive:true});
+}
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

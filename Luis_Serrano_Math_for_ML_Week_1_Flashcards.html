@@ -613,6 +613,24 @@
             Positive sign → orientation <b>preserved</b>. Non-zero → matrix is <b>non-singular</b>.</span>
     </div>
 
+    <div data-section="5" data-topic="Worked calculation — 2×2 determinant">
+        <span class="f">Calculate the determinant:<br>\[ A = \begin{bmatrix} 4 & 3 \\ 2 & 5 \end{bmatrix} \]</span>
+        <span class="b">det(A) = ad − bc = (4)(5) − (3)(2) = 20 − 6 = <strong>14</strong><br>Non-zero → A is non-singular, invertible, full rank.</span>
+    </div>
+
+    <div data-section="5" data-topic="Worked calculation — singular check">
+        <span class="f">Is this matrix singular or non-singular?<br>\[ B = \begin{bmatrix} 2 & 6 \\ 1 & 3 \end{bmatrix} \]</span>
+        <span class="b">det(B) = (2)(3) − (6)(1) = 6 − 6 = <strong>0</strong><br>det = 0 → singular (row 2 = ½ row 1, linearly dependent).<br>No inverse, no unique solution.</span>
+    </div>
+
+    <div data-section="5" data-topic="Upper triangular shortcut">
+        <span class="f">When is the determinant just the product of the diagonal entries?</span>
+        <span class="b">When the matrix is <b>upper triangular</b> — all entries <i>below</i> the main diagonal are zero.
+            <div class="formula">\( \det\!\begin{pmatrix} a & b & c \\ 0 & e & f \\ 0 & 0 & i \end{pmatrix} = a \times e \times i \)</div>
+            No cross-multiplication needed — just multiply the diagonal.
+            <div class="ml-note">This is why Gaussian Elimination can reveal the determinant: GE converts any matrix to upper triangular form, so the det equals the product of the resulting pivots.</div></span>
+    </div>
+
     <!-- §6 Gaussian Elimination -->
     <div data-section="6" data-topic="Goal">
         <span class="f">What is the <b>goal</b> of Gaussian Elimination?</span>
@@ -687,6 +705,11 @@
             <b>Infinite solutions:</b> A row becomes \([0 \;\; 0 \;|\; 0]\) — the equation vanishes entirely, leaving a free variable unconstrained.</span>
     </div>
 
+    <div data-section="6" data-topic="Worked calculation — 2×2 system">
+        <span class="f">Solve this system step by step using row reduction:<br>\[ \begin{cases} x + y = 3 \\ 2x + 4y = 10 \end{cases} \]</span>
+        <span class="b">Augmented matrix: \(\begin{bmatrix}1&1&|&3\\2&4&|&10\end{bmatrix}\)<br>R₂ ← R₂ − 2R₁: \(\begin{bmatrix}1&1&|&3\\0&2&|&4\end{bmatrix}\)<br>R₂ ← ½R₂: \(\begin{bmatrix}1&1&|&3\\0&1&|&2\end{bmatrix}\)<br>R₁ ← R₁ − R₂: \(\begin{bmatrix}1&0&|&1\\0&1&|&2\end{bmatrix}\)<br><strong>x = 1, y = 2</strong></span>
+    </div>
+
     <!-- §7 The Matrix Inverse -->
     <div data-section="7" data-topic="Definition">
         <span class="f">What is the <b>inverse matrix</b> \(A^{-1}\)?</span>
@@ -756,6 +779,11 @@
             Computing \(A^{-1}\) explicitly is rarely necessary in practice.</span>
     </div>
 
+    <div data-section="7" data-topic="Worked calculation — solve Ax = b">
+        <span class="f">Given A = \(\begin{bmatrix}2&1\\1&3\end{bmatrix}\), b = \(\begin{bmatrix}5\\10\end{bmatrix}\)<br>Solve Ax = b. Start by checking det(A).</span>
+        <span class="b">det(A) = 6 − 1 = 5 ≠ 0 → invertible.<br>Use <code>np.linalg.solve(A, b)</code> → <strong>x = [1, 3]</strong><br>Check: 2(1)+1(3)=5 ✓; 1(1)+3(3)=10 ✓</span>
+    </div>
+
     <!-- §8 Python / NumPy -->
     <div data-section="8" data-topic="Solve system">
         <span class="f">Solve \(Ax = b\) in NumPy.</span>
@@ -822,6 +850,132 @@
             <code>if not np.isclose(det, 0):</code><br>
             <code>&nbsp;&nbsp;x = np.linalg.solve(A, b)</code><br>
             <code>&nbsp;&nbsp;print(x)&nbsp;&nbsp;# [1. 2.]</code></span>
+    </div>
+
+    <div data-section="8" data-topic="ndarray — why NumPy">
+        <span class="f">What is an <b>ndarray</b>, and why use NumPy arrays instead of Python lists?</span>
+        <span class="b">An <b>ndarray</b> (n-dimensional array) is NumPy's core object for storing numerical data.
+            <ul>
+                <li><b>Faster</b> — operations run in compiled C, not interpreted Python</li>
+                <li><b>More compact</b> — homogeneous data stored in contiguous memory</li>
+                <li><b>Native maths</b> — supports element-wise arithmetic with standard operators; no loops needed</li>
+            </ul>
+            <div class="ml-note">For any numerical or ML work, always use NumPy arrays over plain Python lists.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="np.array()">
+        <span class="f">How do you create a 1D NumPy array from a Python list?</span>
+        <span class="b"><code>arr = np.array([10, 12])</code>
+            <br><br>This is the fundamental constructor — pass any Python list (or nested list) to <code>np.array()</code>.
+            <div class="ml-note">Works for any dimension: <code>np.array([[1,2],[3,4]])</code> creates a 2D array.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="np.arange()">
+        <span class="f">What does <code>np.arange(start, stop, step)</code> do?</span>
+        <span class="b">Returns an array of values from <b>start</b> (inclusive) to <b>stop</b> (exclusive), spaced by <b>step</b>.
+            <div class="formula"><code>np.arange(1, 20, 3)</code> → <code>[1, 4, 7, 10, 13, 16, 19]</code></div>
+            Like Python's <code>range()</code>, but returns a NumPy array instead of an iterator.</span>
+    </div>
+
+    <div data-section="8" data-topic="np.linspace()">
+        <span class="f">What does <code>np.linspace(start, stop, num)</code> do, and what is its default dtype?</span>
+        <span class="b">Returns <b>num</b> evenly spaced values between <b>start</b> and <b>stop</b> (both inclusive).
+            <div class="formula"><code>np.linspace(0, 100, 5)</code> → <code>[0., 25., 50., 75., 100.]</code></div>
+            Default dtype is <b>float</b>. Change with the <code>dtype</code> parameter:
+            <br><code>np.linspace(0, 100, 5, dtype=int)</code></span>
+    </div>
+
+    <div data-section="8" data-topic="Array constructors">
+        <span class="f">Name four NumPy functions that create arrays without a list, and what each returns.</span>
+        <span class="b"><ul>
+            <li><code>np.ones(n)</code> — array of <b>ones</b></li>
+            <li><code>np.zeros(n)</code> — array of <b>zeros</b></li>
+            <li><code>np.empty(n)</code> — <b>uninitialized</b> array (random leftover memory)</li>
+            <li><code>np.random.rand(n)</code> — array of <b>random values</b> between 0 and 1</li>
+        </ul>
+        <div class="ml-note"><code>np.empty()</code> skips initialisation → faster than <code>np.zeros()</code> when you know you will immediately overwrite every value.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="2D arrays & reshape">
+        <span class="f">How do you create a 2D array, and how do you reshape an existing 1D array?</span>
+        <span class="b">Create directly with nested lists:<br>
+            <code>np.array([[1,2,3],[4,5,6]])</code>
+            <br><br>Reshape an existing array:<br>
+            <code>np.reshape(one_dim_arr, (2, 3))</code>
+            <div class="ml-note">Total elements must stay the same: 6 elements → (2, 3) or (3, 2) or (1, 6) etc.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="ndim / shape / size">
+        <span class="f">What do <code>arr.ndim</code>, <code>arr.shape</code>, and <code>arr.size</code> each return?</span>
+        <span class="b">For <code>arr = np.array([[1,2,3],[4,5,6]])</code>:
+            <ul>
+                <li><code>arr.ndim</code> → <b>2</b> — number of dimensions</li>
+                <li><code>arr.shape</code> → <b>(2, 3)</b> — length of each dimension</li>
+                <li><code>arr.size</code> → <b>6</b> — total number of elements</li>
+            </ul></span>
+    </div>
+
+    <div data-section="8" data-topic="Element-wise arithmetic">
+        <span class="f">How does NumPy handle <code>+</code>, <code>-</code>, and <code>*</code> between two arrays?</span>
+        <span class="b">All three are <b>element-wise</b> — each position is computed independently.
+            <div class="formula"><code>[2,4,6] * [1,3,5]</code> → <code>[2, 12, 30]</code></div>
+            <div class="ml-note">Element-wise <code>*</code> is <b>not</b> the dot product. For the dot product use <code>np.dot(a, b)</code> or the <code>@</code> operator.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Broadcasting">
+        <span class="f">What is <b>broadcasting</b> in NumPy?</span>
+        <span class="b">Automatically applying a <b>scalar</b> (or smaller array) to every element of a larger array — without writing a loop.
+            <div class="formula"><code>km = np.array([1, 5, 10])</code><br><code>miles = km * 0.621371</code> → <code>[0.62, 3.11, 6.21]</code></div>
+            The scalar is "broadcast" across all elements.</span>
+    </div>
+
+    <div data-section="8" data-topic="2D indexing">
+        <span class="f">How do you access element at row <i>i</i>, column <i>j</i> of a 2D NumPy array?</span>
+        <span class="b"><code>arr[i][j]</code> — indices are <b>zero-based</b>.
+            <div class="formula"><code>two_dim = np.array([[1,2,3],[4,5,6],[7,8,9]])</code><br><code>two_dim[2][1]</code> → <b>8</b> (row 3, col 2)</div>
+            You can also write <code>arr[i, j]</code> — equivalent shorthand.</span>
+    </div>
+
+    <div data-section="8" data-topic="Slicing">
+        <span class="f">What is the slicing syntax for a NumPy array, and what are the defaults?</span>
+        <span class="b"><code>array[start : end : step]</code>
+            <ul>
+                <li>Omit <b>start</b> → assumes <b>0</b></li>
+                <li>Omit <b>end</b> → assumes <b>length of array</b></li>
+                <li>Omit <b>step</b> → assumes <b>1</b></li>
+            </ul>
+            <div class="formula"><code>arr[::2]</code> — every other element from start to end</div></span>
+    </div>
+
+    <div data-section="8" data-topic="vstack / hstack / hsplit">
+        <span class="f">What do <code>np.vstack</code>, <code>np.hstack</code>, and <code>np.hsplit</code> do?</span>
+        <span class="b"><ul>
+            <li><code>np.vstack([a, b])</code> — stack arrays <b>vertically</b> (rows on top of each other)</li>
+            <li><code>np.hstack([a, b])</code> — stack arrays <b>horizontally</b> (side by side)</li>
+            <li><code>np.hsplit(arr, n)</code> — split an array into <b>n</b> equal pieces along columns</li>
+        </ul>
+        <div class="ml-note"><code>vstack([a,b])</code> creates a 2D matrix; <code>hstack([a,b])</code> produces a longer 1D array (for 1D inputs).</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Augmented matrix + plot_lines">
+        <span class="f">How do you build an augmented matrix in NumPy, and how do you visualise a system?</span>
+        <span class="b">Combine coefficient matrix <code>A</code> and constant vector <code>b</code>:
+            <br><code>augmented = np.hstack([A, b.reshape(-1, 1)])</code>
+            <br><br>Then visualise with the utility helper:
+            <br><code>from utils import plot_lines</code>
+            <br><code>plot_lines(augmented)</code>
+            <div class="ml-note">The augmented matrix <code>[A | b]</code> is the same format used in Gaussian Elimination.</div></span>
+    </div>
+
+    <div data-section="8" data-topic="Singular system behaviour">
+        <span class="f">What happens if you call <code>np.linalg.solve(A, b)</code> on a singular matrix?</span>
+        <span class="b">NumPy raises a <code>LinAlgError</code> — it cannot find a unique solution because the matrix is singular.
+            <br><br><b>Safe pattern:</b><br>
+            <code>if not np.isclose(np.linalg.det(A), 0):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;x = np.linalg.solve(A, b)</code><br>
+            <code>else:</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;print("Singular — no unique solution")</code>
+            <div class="ml-note">Always check the determinant before calling solve or inv on an untrusted matrix.</div></span>
     </div>
 
     <!-- ★ Connections -->

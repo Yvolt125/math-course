@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: The Dot Product</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s2',
+    title: 'The Dot Product',
+    subtitle: 'Alignment · Orthogonality · Cosine similarity',
+    color: '#3498db',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'The dot product a · b = a₁b₁ + a₂b₂ + … + aₙbₙ measures…',
+            options: [
+                'The length of vector a',
+                'How much two vectors point in the same direction',
+                'The cross product of two vectors',
+                'The determinant of a matrix'
+            ],
+            answer: 1,
+            explanation: 'The dot product quantifies alignment. Large positive = same direction; zero = perpendicular; large negative = opposite directions. It is the core operation in every linear model prediction.'
+        },
+        {
+            type: 'fill',
+            before: 'The geometric form of the dot product is: a · b = ‖a‖ · ‖b‖ · cos(',
+            after: ')',
+            answer: ['θ', 'theta'],
+            explanation: 'θ is the angle between the two vectors. cos(0°) = 1 (parallel, max alignment), cos(90°) = 0 (perpendicular, zero alignment), cos(180°) = −1 (opposite, max anti-alignment).'
+        },
+        {
+            type: 'mc',
+            prompt: 'If a · b = 0, the two vectors are…',
+            options: [
+                'Parallel — pointing the same direction',
+                'Orthogonal — completely independent, at 90°',
+                'Anti-parallel — pointing opposite directions',
+                'Equal in length'
+            ],
+            answer: 1,
+            explanation: 'a · b = 0 means cos(θ) = 0, so θ = 90°. The vectors are orthogonal — they share no component in common. In ML, orthogonal features are completely uncorrelated.'
+        },
+        {
+            type: 'tf',
+            prompt: 'A dot product result of −5 means the two vectors point in exactly opposite directions.',
+            answer: false,
+            explanation: 'Negative means the angle θ > 90° (they point "away" from each other more than they align), but not necessarily exactly opposite. Exactly opposite requires a · b = −‖a‖‖b‖ (i.e., θ = 180°).'
+        },
+        {
+            type: 'type',
+            prompt: 'In the linear model ŷ = w · x + b, the prediction is a ___ product of the weight vector and the feature vector.',
+            answer: 'dot',
+            explanation: 'ŷ = w·x + b = w₁x₁ + w₂x₂ + … + wₙxₙ + b. The dot product measures how much the input x aligns with the learned weight direction w. High alignment → high predicted value.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Cosine similarity between two vectors is defined as…',
+            options: [
+                '‖a‖ · ‖b‖',
+                'a · b',
+                '(a · b) / (‖a‖ · ‖b‖)',
+                'a − b'
+            ],
+            answer: 2,
+            explanation: 'Cosine similarity = (a · b) / (‖a‖‖b‖) = cos(θ). It normalises the dot product so only direction matters, not magnitude. Range: −1 (opposite) to +1 (identical). Used in NLP, recommendation systems, and attention.'
+        },
+        {
+            type: 'tf',
+            prompt: 'In a Transformer attention mechanism, the dot product between query and key vectors measures how relevant a key is to the query.',
+            answer: true,
+            explanation: 'Attention score = q · k. High dot product (high alignment) = high attention weight = the model focuses more on that key-value pair. The dot product is the alignment measure at the heart of attention.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Projections &amp; Least Squares</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w2s3',
+    title: 'Projections & Least Squares',
+    subtitle: 'Closest approximation · Normal equations',
+    color: '#e67e22',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'The projection of vector a onto vector b represents…',
+            options: [
+                'The length of a',
+                'The component of a that lies in the direction of b — the closest point on b\'s line to a',
+                'The cross product of a and b',
+                'The angle between a and b'
+            ],
+            answer: 1,
+            explanation: 'proj_b(a) is the "shadow" of a onto b — the closest point on b\'s line to the tip of a. It decomposes a into a part along b and a part perpendicular to b.'
+        },
+        {
+            type: 'fill',
+            before: 'The scalar projection of a onto b is: (a · b) / ',
+            after: '',
+            answer: ['‖b‖', '||b||', 'b'],
+            explanation: '(a·b)/‖b‖ gives the signed length of the projection. Multiply by the unit vector b̂ = b/‖b‖ to get the full vector projection: proj_b(a) = [(a·b)/(b·b)] · b.'
+        },
+        {
+            type: 'tf',
+            prompt: 'The error vector (a − proj_b(a)) is always perpendicular to b.',
+            answer: true,
+            explanation: 'This is the fundamental geometric property of projection: the residual is always orthogonal to the direction you projected onto. Perpendicularity = minimised distance = closest point.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Why is the projection solution the "least squares" solution?',
+            options: [
+                'It minimises the number of equations',
+                'It minimises the sum of squared errors between prediction and actual values',
+                'It maximises the dot product between a and b',
+                'It ensures det(A) = 0'
+            ],
+            answer: 1,
+            explanation: 'When no exact solution exists (b not in column space of A), the projection finds the closest possible answer — the x̂ that minimises ‖Ax̂ − b‖². This is least squares: minimise sum of squared residuals.'
+        },
+        {
+            type: 'type',
+            prompt: 'The equations A^T A x̂ = A^T b that solve the least squares problem are called the ___ equations.',
+            answer: ['normal', 'normal equations'],
+            explanation: 'The normal equations arise from the perpendicularity condition: the residual (Ax̂ − b) must be perpendicular to every column of A. Solving them gives the best-fit x̂.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The closed-form solution for linear regression weights is ŵ = (XᵀX)⁻¹Xᵀy. Where does this formula come from?',
+            options: [
+                'Arbitrarily defined by statisticians',
+                'Solving the normal equations from the geometric projection condition',
+                'Taking the derivative of the dot product',
+                'Applying the determinant formula'
+            ],
+            answer: 1,
+            explanation: 'Linear regression is geometric projection! You\'re projecting b onto the column space of X. The normal equations A^TAx̂ = A^Tb, solved for x̂, give exactly (X^TX)^{-1}X^Ty — the OLS formula.'
+        },
+        {
+            type: 'tf',
+            prompt: 'If Ax = b has an exact solution, then the least squares solution equals that exact solution.',
+            answer: true,
+            explanation: 'If b is already in the column space of A (exact solution exists), the projection of b onto the column space is b itself. The least squares solution collapses to the exact solution — it\'s a generalisation, not a different method.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistics &amp; Averages — GMAT Quant</title>
+  <meta name="theme-color" content="#1a252f" />
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root { --accent: #1a5276; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    header { background: #1a252f; color: white; padding: 16px 20px; display: flex; align-items: center; position: relative; }
+    .back { position: absolute; left: 16px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88em; transition: color 0.2s; }
+    .back:hover { color: white; }
+    .header-center { flex: 1; text-align: center; }
+    .header-center h1 { font-size: 1em; letter-spacing: 2px; text-transform: uppercase; }
+    .header-center p  { font-size: 0.75em; opacity: 0.6; margin-top: 3px; }
+
+    .tab-bar { background: white; border-bottom: 2px solid #e1e8ed; display: flex; }
+    .tab { flex: 1; padding: 13px; text-align: center; font-size: 0.85em; font-weight: 600; text-decoration: none; color: #7f8c8d; transition: color 0.2s; }
+    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
+
+    .layout { display: flex; min-height: calc(100vh - 104px); }
+
+    .sidebar { width: 220px; min-width: 220px; background: white; border-right: 1px solid #e1e8ed; padding: 24px 0; position: sticky; top: 0; height: calc(100vh - 104px); overflow-y: auto; }
+    .sidebar-title { font-size: 0.7em; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #95a5a6; padding: 0 20px 12px; }
+    .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 11px 20px; cursor: pointer; font-size: 0.875em; color: #5d6d7e; font-weight: 500; border-left: 3px solid transparent; transition: all 0.2s; text-decoration: none; }
+    .sidebar-link:hover { background: #eaf2f8; color: var(--accent); }
+    .sidebar-link.active { border-left-color: var(--accent); color: var(--accent); background: #eaf2f8; font-weight: 600; }
+    .sidebar-num { width: 24px; height: 24px; border-radius: 50%; background: #e1e8ed; color: #7f8c8d; font-size: 0.75em; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+    .sidebar-link.active .sidebar-num { background: var(--accent); color: white; }
+    .ch-time { font-size: 0.68em; color: #aab7c4; margin-left: auto; }
+    .ch-check { font-size: 0.9em; cursor: pointer; color: #bdc3c7; flex-shrink: 0; transition: color 0.15s; }
+    .ch-check.done { color: #27ae60; }
+
+    .main { flex: 1; padding: 32px; max-width: 820px; }
+    .chapter { display: none; animation: fadeIn 0.25s ease; }
+    .chapter.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chapter-tag { display: inline-block; background: #eaf2f8; color: #5d6d7e; font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; }
+    .chapter-title { font-size: 1.75em; font-weight: 700; color: #1a252f; margin-bottom: 24px; line-height: 1.2; }
+
+    .obj-box { background: #eaf2f8; border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .obj-list { list-style: none; padding: 0; margin-top: 8px; }
+    .obj-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 16px; position: relative; line-height: 1.5; }
+    .obj-list li::before { content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+    .core-concept { border-left: 4px solid var(--accent); background: #eaf2f8; border-radius: 0 8px 8px 0; padding: 18px 20px; margin-bottom: 28px; }
+    .core-concept .label { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .core-concept p { font-size: 0.92em; color: #34495e; line-height: 1.65; }
+    .core-concept p + p { margin-top: 8px; }
+
+    .steps-heading { font-size: 0.82em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #5d6d7e; margin-bottom: 14px; }
+    .steps { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .steps li { display: flex; align-items: flex-start; gap: 14px; font-size: 0.92em; color: #34495e; line-height: 1.6; }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.78em; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    .example-card { background: white; border: 2px dashed #d5dbdb; border-radius: 10px; padding: 22px; margin-bottom: 28px; }
+    .example-label { font-size: 0.78em; font-weight: 700; color: #888; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+    .trap-box { background: #fdf2f2; border-left: 4px solid #e74c3c; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .trap-list { list-style: none; padding: 0; margin-top: 8px; }
+    .trap-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 18px; position: relative; line-height: 1.5; }
+    .trap-list li::before { content: '✕'; position: absolute; left: 0; color: #e74c3c; font-weight: 700; }
+    .trap-label { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #e74c3c; margin-bottom: 4px; }
+
+    .summary-box { background: #f9f9f9; border: 1px solid #e1e8ed; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .summary-list { list-style: none; padding: 0; margin-top: 8px; }
+    .summary-list li { font-size: 0.87em; color: #2c3e50; padding: 4px 0 4px 18px; position: relative; line-height: 1.5; border-bottom: 1px solid #f0f0f0; }
+    .summary-list li:last-child { border-bottom: none; }
+    .summary-list li::before { content: '→'; position: absolute; left: 0; color: #7f8c8d; }
+    .summary-label { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #7f8c8d; margin-bottom: 4px; }
+
+    .quick-tip { border-left: 4px solid #f1c40f; background: #fefde7; border-radius: 0 8px 8px 0; padding: 16px 20px; margin-bottom: 32px; }
+    .quick-tip .label { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #d4ac0d; margin-bottom: 7px; }
+    .quick-tip p { font-size: 0.9em; color: #34495e; line-height: 1.6; }
+
+    .chapter-nav { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e1e8ed; margin-top: 8px; }
+    .nav-btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: 7px; font-size: 0.85em; font-weight: 600; cursor: pointer; border: 2px solid var(--accent); color: var(--accent); background: white; transition: all 0.2s; }
+    .nav-btn:hover { background: var(--accent); color: white; }
+    .nav-btn:disabled, .nav-btn.disabled { border-color: #d5dbdb; color: #bdc3c7; cursor: not-allowed; background: white; pointer-events: none; }
+    .mark-btn { padding: 10px 16px; border-radius: 8px; border: 1.5px solid #27ae60; background: white; color: #27ae60; font-size: 0.84em; font-weight: 600; cursor: pointer; }
+    .mark-btn.done { background: #27ae60; color: white; }
+
+    @media (max-width: 640px) { .sidebar { display: none; } .main { padding: 20px 16px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="gmat.html" class="back">← GMAT</a>
+    <div class="header-center">
+      <h1>Statistics &amp; Averages</h1>
+      <p>Quantitative Reasoning · 4 lessons</p>
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <span class="tab active">Lessons</span>
+    <a href="gmat_statistics_ex.html" class="tab">Practice</a>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-title">Lessons</div>
+      <div class="sidebar-link active" data-chapter="0">
+        <span class="ch-check" data-ch="0" onclick="markComplete(event,0)">○</span>
+        <span class="sidebar-num">1</span>
+        Mean, Median &amp; Mode
+        <span class="ch-time">~5 min</span>
+      </div>
+      <div class="sidebar-link" data-chapter="1">
+        <span class="ch-check" data-ch="1" onclick="markComplete(event,1)">○</span>
+        <span class="sidebar-num">2</span>
+        Weighted Averages
+        <span class="ch-time">~5 min</span>
+      </div>
+      <div class="sidebar-link" data-chapter="2">
+        <span class="ch-check" data-ch="2" onclick="markComplete(event,2)">○</span>
+        <span class="sidebar-num">3</span>
+        Range &amp; Standard Deviation
+        <span class="ch-time">~5 min</span>
+      </div>
+      <div class="sidebar-link" data-chapter="3">
+        <span class="ch-check" data-ch="3" onclick="markComplete(event,3)">○</span>
+        <span class="sidebar-num">4</span>
+        Overlapping Sets
+        <span class="ch-time">~5 min</span>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- Lesson 1 -->
+      <div class="chapter active" id="chapter-0">
+        <div class="chapter-tag">Lesson 1</div>
+        <h2 class="chapter-title">Mean, Median &amp; Mode</h2>
+
+        <div class="obj-box">
+          <div class="label" style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a5276;margin-bottom:4px;">Objectives</div>
+          <ul class="obj-list">
+            <li>Calculate the arithmetic mean (average) as the sum divided by the count.</li>
+            <li>Find the median by ordering a data set — it is the middle value (or average of the two middle values).</li>
+            <li>Identify when the mean and median differ, and what that reveals about the data's distribution.</li>
+          </ul>
+        </div>
+
+        <div class="core-concept">
+          <div class="label">📌 Core Concept</div>
+          <p><strong>Mean</strong> = Sum of values ÷ Count. <strong>Median</strong> = the middle value when data is sorted in order. <strong>Mode</strong> = the most frequently occurring value.</p>
+          <p>The GMAT frequently gives you the average and count, then asks for the sum — or gives the sum and count, then asks you to add a value that changes the average. The relationship Sum = Mean × Count is the key tool.</p>
+        </div>
+
+        <div class="steps-heading">How to Approach It</div>
+        <ol class="steps">
+          <li><span class="step-num">1</span>Use Sum = Mean × Count to find a missing sum or to work backwards from a target average.</li>
+          <li><span class="step-num">2</span>For median questions: sort the data first, then locate the middle position(s). For n values, the median is at position (n+1)/2.</li>
+          <li><span class="step-num">3</span>For "new average after adding a value" questions: compute the old sum, add the new value, divide by new count.</li>
+          <li><span class="step-num">4</span>Note whether the question asks for mean, median, or mode — they can all give different answers for the same data set.</li>
+        </ol>
+
+        <div class="example-card" style="text-align:left;">
+          <div class="example-label">Example</div>
+          <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">The average (mean) of five numbers is 14. When a sixth number is added, the new average becomes 15. What is the sixth number?</p>
+          <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <span>(A) 15</span><span>(B) 18</span><span>(C) 20</span><span>(D) 22</span><span>(E) 25</span>
+          </div>
+          <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+            <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+            <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (C).</strong> Old sum = 5 × 14 = 70. New sum = 6 × 15 = 90. Sixth number = 90 − 70 = 20. Common trap: choosing (A) 15 because "the new average is 15" — the sixth number must be higher than the new average to pull it up.</p>
+          </details>
+        </div>
+
+        <div class="trap-box">
+          <div class="trap-label">Common Traps</div>
+          <ul class="trap-list">
+            <li>Adding a new value equal to the current average and expecting the average to change — adding a value equal to the current mean leaves the mean unchanged.</li>
+            <li>Forgetting to sort the data before finding the median — the median is positional, not the arithmetical middle of the range.</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-label">Key Takeaways</div>
+          <ul class="summary-list">
+            <li>Sum = Mean × Count. Use this to find any one of the three quantities given the other two.</li>
+            <li>Median requires sorting first. For an even number of values, average the two middle numbers.</li>
+            <li>Mode is simply the most frequent value — a data set can have no mode, one mode, or multiple modes.</li>
+          </ul>
+        </div>
+
+        <div class="quick-tip">
+          <div class="label">💡 Quick Tip</div>
+          <p>Whenever the GMAT gives you an average, immediately multiply by the count to get the sum. This one step unlocks almost every "average" question on the test.</p>
+        </div>
+
+        <div class="chapter-nav">
+          <button class="nav-btn disabled" disabled>← Previous</button>
+          <button class="mark-btn" id="mark-0" onclick="markComplete(event,0)">Mark Complete</button>
+          <button class="nav-btn" onclick="goToChapter(1)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Lesson 2 -->
+      <div class="chapter" id="chapter-1">
+        <div class="chapter-tag">Lesson 2</div>
+        <h2 class="chapter-title">Weighted Averages</h2>
+
+        <div class="obj-box">
+          <div class="label" style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a5276;margin-bottom:4px;">Objectives</div>
+          <ul class="obj-list">
+            <li>Compute a weighted average as (Σ weight × value) ÷ Σ weights.</li>
+            <li>Recognise that the overall average is pulled toward the group with the larger weight (count).</li>
+            <li>Use the alligation shortcut to quickly estimate weighted averages in mixture-style problems.</li>
+          </ul>
+        </div>
+
+        <div class="core-concept">
+          <div class="label">📌 Core Concept</div>
+          <p>A weighted average accounts for the fact that different values contribute differently based on their frequency or proportion. If one group is much larger than another, the combined average is pulled toward that group's value — never simply the arithmetic mean of the two group averages.</p>
+          <p>Weighted average = (n₁ × avg₁ + n₂ × avg₂) ÷ (n₁ + n₂).</p>
+        </div>
+
+        <div class="steps-heading">How to Approach It</div>
+        <ol class="steps">
+          <li><span class="step-num">1</span>Compute the total sum for each group: sum = count × average.</li>
+          <li><span class="step-num">2</span>Add the sums across all groups to get the grand total sum.</li>
+          <li><span class="step-num">3</span>Divide the grand total sum by the total count across all groups.</li>
+          <li><span class="step-num">4</span>Sanity-check: the result must lie between the two group averages (never outside that range).</li>
+        </ol>
+
+        <div class="example-card" style="text-align:left;">
+          <div class="example-label">Example</div>
+          <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">Class A has 20 students with an average score of 80. Class B has 30 students with an average score of 70. What is the combined average score of all students?</p>
+          <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <span>(A) 73</span><span>(B) 74</span><span>(C) 75</span><span>(D) 76</span><span>(E) 77</span>
+          </div>
+          <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+            <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+            <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (B).</strong> Sum A = 20 × 80 = 1,600. Sum B = 30 × 70 = 2,100. Total sum = 3,700. Total students = 50. Average = 3,700 ÷ 50 = 74. Common trap: averaging 80 and 70 to get 75 — this only works if both groups are the same size. Class B is larger, so the answer is pulled toward 70.</p>
+          </details>
+        </div>
+
+        <div class="trap-box">
+          <div class="trap-label">Common Traps</div>
+          <ul class="trap-list">
+            <li>Simple-averaging two group averages when the group sizes are unequal — always weight by count (or frequency).</li>
+            <li>Expecting the combined average to equal the midpoint — it only does when both groups are the same size.</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-label">Key Takeaways</div>
+          <ul class="summary-list">
+            <li>Weighted average = (Σ n × avg) ÷ Σ n. Each group's average is weighted by its count.</li>
+            <li>The result is always between the two group averages and is pulled toward the larger group.</li>
+            <li>Simple arithmetic average of group averages is only valid when groups are equal-sized.</li>
+          </ul>
+        </div>
+
+        <div class="quick-tip">
+          <div class="label">💡 Quick Tip</div>
+          <p>The combined average is always closer to the average of the larger group. Use this as a quick check: if you average two groups and your answer is closer to the smaller group, something went wrong.</p>
+        </div>
+
+        <div class="chapter-nav">
+          <button class="nav-btn" onclick="goToChapter(0)">← Previous</button>
+          <button class="mark-btn" id="mark-1" onclick="markComplete(event,1)">Mark Complete</button>
+          <button class="nav-btn" onclick="goToChapter(2)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Lesson 3 -->
+      <div class="chapter" id="chapter-2">
+        <div class="chapter-tag">Lesson 3</div>
+        <h2 class="chapter-title">Range &amp; Standard Deviation</h2>
+
+        <div class="obj-box">
+          <div class="label" style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a5276;margin-bottom:4px;">Objectives</div>
+          <ul class="obj-list">
+            <li>Calculate the range as max − min and understand what it measures.</li>
+            <li>Understand standard deviation as a measure of spread around the mean — without computing it by hand.</li>
+            <li>Compare the standard deviations of two sets by reasoning about their spread, not by calculating.</li>
+          </ul>
+        </div>
+
+        <div class="core-concept">
+          <div class="label">📌 Core Concept</div>
+          <p><strong>Range</strong> = largest value − smallest value. Simple to compute but sensitive to outliers.</p>
+          <p><strong>Standard deviation (SD)</strong> measures how spread out values are around the mean. A higher SD means values are more scattered; a lower SD means they cluster tightly around the mean. On the GMAT, you are tested on the <em>concept</em> of standard deviation — never asked to compute it by hand.</p>
+          <p>Adding or subtracting the same constant to every value does not change the SD (the spread stays identical). Multiplying every value by a constant scales the SD by that constant.</p>
+        </div>
+
+        <div class="steps-heading">How to Approach It</div>
+        <ol class="steps">
+          <li><span class="step-num">1</span>For range questions: identify max and min, then subtract.</li>
+          <li><span class="step-num">2</span>For SD comparison questions: visualise how tightly clustered the values are around the mean — closer clustering means lower SD.</li>
+          <li><span class="step-num">3</span>If every value in a set is shifted by the same amount (±k), the mean changes but SD stays the same.</li>
+          <li><span class="step-num">4</span>If every value is multiplied by k, the SD is also multiplied by k (and the mean is multiplied by k).</li>
+        </ol>
+
+        <div class="example-card" style="text-align:left;">
+          <div class="example-label">Example</div>
+          <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">Set A = {2, 4, 6, 8, 10} and Set B = {4, 5, 6, 7, 8}. Which set has the greater standard deviation?</p>
+          <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <span>(A) Set A</span><span>(B) Set B</span><span>(C) They are equal</span><span>(D) Cannot be determined</span>
+          </div>
+          <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+            <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+            <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (A).</strong> Both sets have mean = 6. Set A values range from 2 to 10 — each is further from the mean. Set B values range from 4 to 8 — they cluster more tightly around 6. No calculation needed: more spread = higher SD. Set A has a greater standard deviation.</p>
+          </details>
+        </div>
+
+        <div class="trap-box">
+          <div class="trap-label">Common Traps</div>
+          <ul class="trap-list">
+            <li>Thinking that adding a constant to every value increases the standard deviation — shift operations change the mean, not the spread.</li>
+            <li>Confusing range with standard deviation — a set can have a large range but still have most values clustered near the mean, giving a moderate SD.</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-label">Key Takeaways</div>
+          <ul class="summary-list">
+            <li>Range = max − min. Quick to compute; sensitive to extreme values.</li>
+            <li>Standard deviation measures spread around the mean. Compare sets visually — no formula needed.</li>
+            <li>Shifting all values by ±k: mean changes, SD unchanged. Multiplying by k: both mean and SD scale by k.</li>
+          </ul>
+        </div>
+
+        <div class="quick-tip">
+          <div class="label">💡 Quick Tip</div>
+          <p>For standard deviation comparison questions, find both means, then ask: "Which set's values deviate more from their mean?" That set has the higher SD. You do not need to compute SD — just reason about spread.</p>
+        </div>
+
+        <div class="chapter-nav">
+          <button class="nav-btn" onclick="goToChapter(1)">← Previous</button>
+          <button class="mark-btn" id="mark-2" onclick="markComplete(event,2)">Mark Complete</button>
+          <button class="nav-btn" onclick="goToChapter(3)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Lesson 4 -->
+      <div class="chapter" id="chapter-3">
+        <div class="chapter-tag">Lesson 4</div>
+        <h2 class="chapter-title">Overlapping Sets (Venn Diagrams)</h2>
+
+        <div class="obj-box">
+          <div class="label" style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a5276;margin-bottom:4px;">Objectives</div>
+          <ul class="obj-list">
+            <li>Apply the inclusion-exclusion principle: |A ∪ B| = |A| + |B| − |A ∩ B|.</li>
+            <li>Set up a 2×2 matrix or Venn diagram to organise two-category problems.</li>
+            <li>Solve three-category overlapping set problems using the extended inclusion-exclusion formula.</li>
+          </ul>
+        </div>
+
+        <div class="core-concept">
+          <div class="label">📌 Core Concept</div>
+          <p>When counting elements that belong to one or more categories, simply adding each group's count double-counts items in the overlap. The inclusion-exclusion principle corrects for this: Total in A or B = |A| + |B| − |A ∩ B|.</p>
+          <p>For GMAT purposes, a 2×2 table (rows = in/out of A; columns = in/out of B) is usually faster and less error-prone than a Venn diagram for two-category problems.</p>
+        </div>
+
+        <div class="steps-heading">How to Approach It</div>
+        <ol class="steps">
+          <li><span class="step-num">1</span>Draw a 2×2 table with category A (yes/no) as rows and category B (yes/no) as columns.</li>
+          <li><span class="step-num">2</span>Fill in every cell you can from the given information.</li>
+          <li><span class="step-num">3</span>Use row/column totals to find the missing cell.</li>
+          <li><span class="step-num">4</span>Verify: all row totals and column totals should sum to the grand total.</li>
+        </ol>
+
+        <div class="example-card" style="text-align:left;">
+          <div class="example-label">Example</div>
+          <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">Of 100 students, 60 study French, 50 study Spanish, and 20 study both. How many students study neither French nor Spanish?</p>
+          <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <span>(A) 5</span><span>(B) 10</span><span>(C) 20</span><span>(D) 30</span><span>(E) 40</span>
+          </div>
+          <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+            <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+            <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (B).</strong> Students studying at least one language = |F| + |S| − |F ∩ S| = 60 + 50 − 20 = 90. Neither = 100 − 90 = 10. Common trap: adding 60 + 50 = 110 and forgetting to subtract the overlap of 20 — this overestimates students studying at least one language.</p>
+          </details>
+        </div>
+
+        <div class="trap-box">
+          <div class="trap-label">Common Traps</div>
+          <ul class="trap-list">
+            <li>Adding all group sizes without subtracting the overlap — this double-counts students in both categories.</li>
+            <li>Confusing "only French" (French but not Spanish = 60 − 20 = 40) with "French" (all 60, including those also taking Spanish).</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-label">Key Takeaways</div>
+          <ul class="summary-list">
+            <li>|A ∪ B| = |A| + |B| − |A ∩ B|. Always subtract the overlap once.</li>
+            <li>Neither = Total − |A ∪ B|.</li>
+            <li>A 2×2 matrix keeps the four regions organised: only A, only B, both, neither.</li>
+          </ul>
+        </div>
+
+        <div class="quick-tip">
+          <div class="label">💡 Quick Tip</div>
+          <p>Draw the 2×2 table before writing any equation. Label rows "French / Not French" and columns "Spanish / Not Spanish." Fill in what you know, then the unknown cell falls out from the row or column total.</p>
+        </div>
+
+        <div class="chapter-nav">
+          <button class="nav-btn" onclick="goToChapter(2)">← Previous</button>
+          <button class="mark-btn" id="mark-3" onclick="markComplete(event,3)">Mark Complete</button>
+          <button class="nav-btn disabled" disabled>Next →</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const TOPIC_KEY = 'gmat_complete_statistics';
+    function markComplete(e, idx) {
+      e.stopPropagation();
+      const done = JSON.parse(localStorage.getItem(TOPIC_KEY) || '[]');
+      if (!done.includes(idx)) done.push(idx);
+      localStorage.setItem(TOPIC_KEY, JSON.stringify(done));
+      document.querySelectorAll('.ch-check').forEach(el => {
+        if (parseInt(el.dataset.ch) === idx) { el.textContent = '✓'; el.classList.add('done'); }
+      });
+      const btn = document.getElementById('mark-' + idx);
+      if (btn) btn.classList.add('done');
+    }
+    function loadCompletions() {
+      const done = JSON.parse(localStorage.getItem(TOPIC_KEY) || '[]');
+      done.forEach(idx => {
+        document.querySelectorAll('.ch-check').forEach(el => {
+          if (parseInt(el.dataset.ch) === idx) { el.textContent = '✓'; el.classList.add('done'); }
+        });
+        const btn = document.getElementById('mark-' + idx);
+        if (btn) btn.classList.add('done');
+      });
+    }
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const chapters = document.querySelectorAll('.chapter');
+    function goToChapter(index) {
+      chapters.forEach(c => c.classList.remove('active'));
+      sidebarLinks.forEach(l => l.classList.remove('active'));
+      chapters[index].classList.add('active');
+      sidebarLinks[index].classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', () => goToChapter(parseInt(link.dataset.chapter)));
+    });
+    loadCompletions();
+  </script>
+</body>
+</html>

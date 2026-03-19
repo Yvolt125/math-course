@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algebra — GMAT Quant</title>
+  <meta name="theme-color" content="#1a252f" />
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root { --accent: #16a085; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    /* ── Header ── */
+    header { background: #1a252f; color: white; padding: 16px 20px; display: flex; align-items: center; position: relative; }
+    .back { position: absolute; left: 16px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88em; transition: color .2s; }
+    .back:hover { color: white; }
+    .header-center { flex: 1; text-align: center; }
+    .header-center h1 { font-size: 1em; letter-spacing: 2px; text-transform: uppercase; }
+    .header-center p  { font-size: 0.75em; opacity: 0.6; margin-top: 3px; }
+
+    /* ── Tab bar ── */
+    .tab-bar { background: white; border-bottom: 2px solid #e1e8ed; display: flex; }
+    .tab { flex: 1; padding: 13px; text-align: center; font-size: 0.85em; font-weight: 600; text-decoration: none; color: #7f8c8d; transition: color .2s; }
+    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
+    .tab:not(.active):hover { color: #555; }
+
+    /* ── Body layout ── */
+    .layout { display: flex; min-height: calc(100vh - 108px); }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 220px; flex-shrink: 0; background: white; border-right: 1px solid #e1e8ed; padding: 16px 0; }
+    .sidebar-title { font-size: 0.7em; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #aab; padding: 0 16px 10px; }
+    .ch-item { display: flex; align-items: center; gap: 11px; padding: 11px 16px; cursor: pointer; border-left: 3px solid transparent; transition: background .15s; }
+    .ch-item:hover { background: #f7f9fb; }
+    .ch-item.active { border-left-color: var(--accent); background: #f0faf7; }
+    .ch-item.active .ch-num { background: var(--accent); color: white; }
+    .ch-item.active .ch-label { color: var(--accent); font-weight: 600; }
+    .ch-num { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 0.75em; font-weight: 700; color: #7f8c8d; flex-shrink: 0; transition: background .2s, color .2s; }
+    .ch-label { font-size: 0.82em; color: #555; line-height: 1.3; }
+
+    /* ── Main content ── */
+    .main { flex: 1; padding: 28px 32px; max-width: 760px; }
+    .chapter-panel { display: none; }
+    .chapter-panel.active { display: block; }
+
+    .ch-tag { display: inline-block; background: var(--accent); color: white; font-size: 0.7em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 10px; }
+    .ch-title { font-size: 1.6em; font-weight: 700; color: #1a252f; margin-bottom: 24px; line-height: 1.2; }
+
+    .concept-box { border-left: 4px solid var(--accent); background: #eafaf6; padding: 16px 20px; border-radius: 0 6px 6px 0; margin-bottom: 24px; }
+    .box-label { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .concept-box p { font-size: 0.9em; color: #2d4a3e; line-height: 1.65; }
+
+    .section-heading { font-size: 0.95em; font-weight: 700; color: #1a252f; margin-bottom: 14px; }
+    .steps { list-style: none; margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .steps li { display: flex; align-items: flex-start; gap: 13px; font-size: 0.88em; color: #444; line-height: 1.6; }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.75em; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    .example-card { background: white; border: 2px dashed #cbd5e0; border-radius: 8px; padding: 20px 22px; margin-bottom: 24px; }
+    .example-label { font-size: 0.78em; font-weight: 700; color: #888; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .example-card p { font-size: 0.88em; color: #999; font-style: italic; line-height: 1.5; }
+
+    .tip-box { border-left: 4px solid #f39c12; background: #fef9ec; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-bottom: 30px; }
+    .tip-box .box-label { color: #e67e22; }
+    .tip-box p { font-size: 0.88em; color: #7d5a10; line-height: 1.6; }
+
+    .ch-nav { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #e1e8ed; }
+    .nav-btn { background: none; border: 1px solid #cbd5e0; padding: 9px 18px; border-radius: 6px; font-size: 0.85em; font-weight: 600; cursor: pointer; color: #555; transition: background .2s, color .2s, border-color .2s; }
+    .nav-btn:hover:not(:disabled) { background: var(--accent); color: white; border-color: var(--accent); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    @media (max-width: 640px) { .sidebar { display: none; } .main { padding: 20px 16px; } }
+
+    .ch-time { font-size: 0.68em; color: #aab7c4; margin-left: auto; }
+    .ch-check { font-size: 0.9em; cursor: pointer; color: #bdc3c7; flex-shrink: 0; transition: color 0.15s; }
+    .ch-check.done { color: #27ae60; }
+    .sidebar-item { display: flex; align-items: center; gap: 8px; }
+    .obj-box { background: #eafaf1; border-left: 4px solid #16a085; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .obj-list { list-style: none; padding: 0; margin-top: 8px; }
+    .obj-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 16px; position: relative; line-height: 1.5; }
+    .obj-list li::before { content: '✓'; position: absolute; left: 0; color: #16a085; font-weight: 700; }
+    .trap-box { background: #fdf2f2; border-left: 4px solid #e74c3c; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .trap-list { list-style: none; padding: 0; margin-top: 8px; }
+    .trap-list li { font-size: 0.87em; color: #2c3e50; padding: 3px 0 3px 18px; position: relative; line-height: 1.5; }
+    .trap-list li::before { content: '✕'; position: absolute; left: 0; color: #e74c3c; font-weight: 700; }
+    .summary-box { background: #f9f9f9; border: 1px solid #e1e8ed; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .summary-list { list-style: none; padding: 0; margin-top: 8px; }
+    .summary-list li { font-size: 0.87em; color: #2c3e50; padding: 4px 0 4px 18px; position: relative; line-height: 1.5; border-bottom: 1px solid #f0f0f0; }
+    .summary-list li:last-child { border-bottom: none; }
+    .summary-list li::before { content: '→'; position: absolute; left: 0; color: #7f8c8d; }
+    .mark-btn { padding: 10px 16px; border-radius: 8px; border: 1.5px solid #27ae60; background: white; color: #27ae60; font-size: 0.84em; font-weight: 600; cursor: pointer; }
+    .mark-btn.done { background: #27ae60; color: white; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="gmat.html">← GMAT</a>
+  <div class="header-center">
+    <h1>Algebra</h1>
+    <p>Quantitative Reasoning · 4 chapters</p>
+  </div>
+</header>
+
+<nav class="tab-bar">
+  <span class="tab active">Lessons</span>
+  <a class="tab" href="gmat_algebra_ex.html">Practice</a>
+</nav>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-title">Lessons</div>
+    <div class="ch-item active" data-ch="0">
+      <span class="ch-check" data-ch="0" onclick="markComplete(event,0)">○</span>
+      <div class="ch-num">1</div>
+      <div class="ch-label">Linear Equations</div>
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="ch-item" data-ch="1">
+      <span class="ch-check" data-ch="1" onclick="markComplete(event,1)">○</span>
+      <div class="ch-num">2</div>
+      <div class="ch-label">Inequalities</div>
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="ch-item" data-ch="2">
+      <span class="ch-check" data-ch="2" onclick="markComplete(event,2)">○</span>
+      <div class="ch-num">3</div>
+      <div class="ch-label">Quadratics</div>
+      <span class="ch-time">~5 min</span>
+    </div>
+    <div class="ch-item" data-ch="3">
+      <span class="ch-check" data-ch="3" onclick="markComplete(event,3)">○</span>
+      <div class="ch-num">4</div>
+      <div class="ch-label">Functions</div>
+      <span class="ch-time">~5 min</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Chapter 1 -->
+    <div class="chapter-panel active" id="ch-0">
+      <div class="ch-tag">Lesson 1</div>
+      <h2 class="ch-title">Linear Equations</h2>
+
+      <div class="obj-box">
+        <div class="box-label">Learning Objectives</div>
+        <ul class="obj-list">
+          <li>Solve single-variable linear equations by isolating the variable.</li>
+          <li>Solve systems of two linear equations using substitution and elimination.</li>
+          <li>Recognise when a system has no solution, infinite solutions, or a unique solution.</li>
+        </ul>
+      </div>
+
+      <div class="concept-box">
+        <div class="box-label">📌 Core Concept</div>
+        <p>A linear equation has one or more variables each raised to the first power. Solving means isolating the variable on one side. Every valid operation performed on one side must be performed on the other to maintain equality.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span>Distribute and combine like terms on each side of the equation first.</li>
+        <li><span class="step-num">2</span>Move all variable terms to one side and all constant terms to the other.</li>
+        <li><span class="step-num">3</span>Divide both sides by the coefficient of the variable to isolate it.</li>
+        <li><span class="step-num">4</span>Verify your answer by substituting it back into the original equation.</li>
+      </ol>
+
+      <div class="example-card" style="text-align:left;">
+        <div class="example-label">Example</div>
+        <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">If 3x − 7 = 2x + 5, what is the value of 4x?</p>
+        <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+          <span>(A) 12</span><span>(B) 24</span><span>(C) 36</span><span>(D) 48</span><span>(E) 52</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (D).</strong> 3x − 7 = 2x + 5 → x = 12. The question asks for 4x, not x — so 4 × 12 = 48. Common trap: selecting (A) 12 after solving for x and forgetting to compute 4x.</p>
+        </details>
+      </div>
+
+      <div class="trap-box">
+        <div class="box-label">Common Traps</div>
+        <ul class="trap-list">
+          <li>In systems of equations, multiplying both sides of an equation by a variable without checking whether that variable could be zero — this can create extraneous solutions.</li>
+          <li>Solving for x when the question asks for an expression like 2x + 1 — compute the full expression, not just x.</li>
+        </ul>
+      </div>
+
+      <div class="summary-box">
+        <div class="box-label">Key Takeaways</div>
+        <ul class="summary-list">
+          <li>For elimination: multiply equations to match coefficients, then add or subtract to eliminate one variable.</li>
+          <li>If two equations are multiples of each other, there are infinite solutions. If they are parallel (same slope, different intercept), there is no solution.</li>
+          <li>Always verify the solution satisfies both original equations.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 Quick Tip</div>
+        <p>For two equations with two unknowns, use substitution if one equation is already solved for a variable. Otherwise use elimination — multiply one or both equations so a variable cancels when you add them.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="nav-btn" id="prev-0" disabled>← Previous</button>
+        <button class="mark-btn" id="mark-0" onclick="markComplete(event,0)">Mark Complete</button>
+        <button class="nav-btn" id="next-0">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div class="chapter-panel" id="ch-1">
+      <div class="ch-tag">Chapter 2</div>
+      <h2 class="ch-title">Inequalities</h2>
+
+      <div class="concept-box">
+        <div class="box-label">📌 Core Concept</div>
+        <p>Inequalities work like equations except the direction of the inequality sign flips when you multiply or divide both sides by a negative number. This single rule is the source of most inequality errors on the GMAT.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span>Solve like an equation: isolate the variable using addition, subtraction, multiplication, and division.</li>
+        <li><span class="step-num">2</span>Flip the inequality sign whenever you multiply or divide both sides by a negative number.</li>
+        <li><span class="step-num">3</span>Express the solution as a range (e.g., x &gt; 3) and verify by checking a value in that range.</li>
+        <li><span class="step-num">4</span>For compound inequalities, perform operations on all three parts simultaneously.</li>
+      </ol>
+
+      <div class="example-card" style="text-align:left;">
+        <div class="example-label">Example</div>
+        <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">If −2x + 3 &gt; 7, which of the following must be true?</p>
+        <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+          <span>(A) x &gt; 2</span><span>(B) x &gt; −2</span><span>(C) x &lt; −2</span><span>(D) x &lt; 2</span><span>(E) x = −2</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (C).</strong> −2x + 3 &gt; 7 → −2x &gt; 4 → x &lt; −2 (flip the sign when dividing by −2). Common trap: forgetting to flip the inequality sign when dividing by a negative number, giving x &gt; −2.</p>
+        </details>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 Quick Tip</div>
+        <p>When the variable could be positive or negative — for example, in absolute value problems — split into two cases: one where the expression inside is positive, and one where it is negative.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="nav-btn" id="prev-1">← Previous</button>
+        <button class="nav-btn" id="next-1">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div class="chapter-panel" id="ch-2">
+      <div class="ch-tag">Chapter 3</div>
+      <h2 class="ch-title">Quadratics</h2>
+
+      <div class="concept-box">
+        <div class="box-label">📌 Core Concept</div>
+        <p>A quadratic equation has the form ax² + bx + c = 0. Solutions are found by factoring, completing the square, or the quadratic formula. Factoring is always the fastest approach — try it first before reaching for the formula.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span>Rearrange all terms to one side so the equation is in standard form: ax² + bx + c = 0.</li>
+        <li><span class="step-num">2</span>Try factoring first: find two numbers that multiply to ac and add to b, then split the middle term.</li>
+        <li><span class="step-num">3</span>If factoring fails, use the quadratic formula: x = (−b ± √(b²−4ac)) / 2a.</li>
+        <li><span class="step-num">4</span>Set each factor equal to zero and solve for both roots.</li>
+      </ol>
+
+      <div class="example-card" style="text-align:left;">
+        <div class="example-label">Example</div>
+        <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">What are the solutions to x² − 5x + 6 = 0?</p>
+        <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+          <span>(A) x = 1 and x = 6</span><span>(B) x = 2 and x = 3</span><span>(C) x = −2 and x = −3</span><span>(D) x = −1 and x = 6</span><span>(E) x = 2 and x = −3</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (B).</strong> Find two numbers that multiply to 6 and add to −5: that is −2 and −3. So (x − 2)(x − 3) = 0, giving x = 2 and x = 3. Common trap: choosing (C) because −2 × −3 = 6, but −2 + −3 = −5 ✓ — both signs must be checked together.</p>
+        </details>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 Quick Tip</div>
+        <p>The discriminant b²−4ac tells you the number of real solutions before you solve: greater than 0 means two solutions, equal to 0 means one, and less than 0 means none (no real roots).</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="nav-btn" id="prev-2">← Previous</button>
+        <button class="nav-btn" id="next-2">Next →</button>
+      </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div class="chapter-panel" id="ch-3">
+      <div class="ch-tag">Chapter 4</div>
+      <h2 class="ch-title">Functions</h2>
+
+      <div class="concept-box">
+        <div class="box-label">📌 Core Concept</div>
+        <p>A function f(x) takes an input x and returns a unique output. On the GMAT, function questions often use unusual notation like f★g or ask you to evaluate composite functions. The key is always treating the notation as a pure substitution rule.</p>
+      </div>
+
+      <div class="section-heading">How to Approach It</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span>Substitute the given input directly into the function rule, replacing every instance of the variable.</li>
+        <li><span class="step-num">2</span>For composite functions f(g(x)), evaluate the inner function g(x) first, then pass the result to f.</li>
+        <li><span class="step-num">3</span>For "which value satisfies f(x) = k" questions, set the expression equal to k and solve algebraically.</li>
+        <li><span class="step-num">4</span>For custom-symbol functions (e.g., a★b = 2a − b), apply the definition exactly as given.</li>
+      </ol>
+
+      <div class="example-card" style="text-align:left;">
+        <div class="example-label">Example</div>
+        <p style="font-size:0.92em;color:#2c3e50;line-height:1.65;margin-bottom:12px;font-weight:600;">If f(x) = 3x² − 2, what is the value of f(f(1))?</p>
+        <div style="font-size:0.88em;color:#444;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+          <span>(A) 1</span><span>(B) 3</span><span>(C) 7</span><span>(D) 25</span><span>(E) 73</span>
+        </div>
+        <details style="margin-top:12px;border-top:1px dashed #e1e8ed;padding-top:10px;">
+          <summary style="font-size:0.82em;font-weight:600;color:#95a5a6;cursor:pointer;user-select:none;list-style:none;">▶ Show Answer</summary>
+          <p style="margin-top:8px;font-size:0.88em;color:#2c3e50;line-height:1.65;"><strong>Answer: (A).</strong> First evaluate the inner function: f(1) = 3(1)² − 2 = 3 − 2 = 1. Then f(f(1)) = f(1) = 1. Common trap: computing f(1) = 1 and then attempting f(1) a second time without realising the output feeds back in — here it loops to the same value.</p>
+        </details>
+      </div>
+
+      <div class="tip-box">
+        <div class="box-label">💡 Quick Tip</div>
+        <p>Treat function notation as a substitution machine — f(3) simply means replace every x in the rule with 3. Do not overthink the notation; the mechanics are always the same.</p>
+      </div>
+
+      <div class="ch-nav">
+        <button class="nav-btn" id="prev-3">← Previous</button>
+        <button class="nav-btn" id="next-3" disabled>Next →</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const TOTAL = 4;
+  let current = 0;
+
+  const panels = Array.from(document.querySelectorAll('.chapter-panel'));
+  const items  = Array.from(document.querySelectorAll('.ch-item'));
+
+  function goTo(n) {
+    panels[current].classList.remove('active');
+    items[current].classList.remove('active');
+    current = n;
+    panels[current].classList.add('active');
+    items[current].classList.add('active');
+    const prevBtn = document.getElementById('prev-' + current);
+    const nextBtn = document.getElementById('next-' + current);
+    if (prevBtn) prevBtn.disabled = (current === 0);
+    if (nextBtn) nextBtn.disabled = (current === TOTAL - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  items.forEach((item, i) => item.addEventListener('click', () => goTo(i)));
+
+  document.querySelector('.main').addEventListener('click', e => {
+    const btn = e.target.closest('.nav-btn');
+    if (!btn || btn.disabled) return;
+    if (btn.id.startsWith('prev-')) goTo(current - 1);
+    if (btn.id.startsWith('next-')) goTo(current + 1);
+  });
+</script>
+
+</body>
+</html>

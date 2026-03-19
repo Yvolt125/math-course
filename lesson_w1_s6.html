@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Gaussian Elimination</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w1s6',
+    title: 'Gaussian Elimination',
+    subtitle: 'Row ops · REF · RREF · Pivots',
+    color: '#27ae60',
+    questions: [
+        {
+            type: 'type',
+            prompt: 'The goal of Gaussian Elimination is to reach ___ Row Echelon Form, where the solution is directly readable.',
+            answer: ['reduced', 'rref'],
+            explanation: 'RREF (Reduced Row Echelon Form) is the target: the coefficient side becomes the identity matrix, and the solution values appear directly on the right-hand side — no back-substitution needed.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Which of these is NOT a legal elementary row operation?',
+            options: [
+                'Swap two rows',
+                'Scale a row by 0',
+                'Add a multiple of one row to another',
+                'Scale a row by a non-zero number'
+            ],
+            answer: 1,
+            explanation: 'Scaling by 0 destroys the equation entirely — that row becomes all zeros and loses its constraint. The three legal operations are: Swap, Scale by non-zero, and Combine (add/subtract multiples).'
+        },
+        {
+            type: 'visual',
+            visual: '<svg width="240" height="145" viewBox="0 0 240 145" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border-radius:10px;border:1.5px solid #e1e8ed"><text x="120" y="18" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">Elimination Step: R₂ ← R₂ − ½R₁</text><text x="15" y="38" font-size="10" fill="#7f8c8d" font-family="sans-serif">Before:</text><text x="15" y="62" font-size="13" fill="#2c3e50" font-family="monospace">[ 2  4 | 8 ]</text><text x="15" y="85" font-size="13" fill="#2c3e50" font-family="monospace">[ 1  3 | 6 ]</text><text x="115" y="72" font-size="22" fill="#27ae60" font-family="sans-serif">→</text><text x="145" y="38" font-size="10" fill="#27ae60" font-family="sans-serif">After:</text><text x="145" y="62" font-size="13" fill="#2c3e50" font-family="monospace">[ 2  4 | 8 ]</text><rect x="145" y="70" width="80" height="20" fill="rgba(39,174,96,0.15)" rx="3"/><text x="145" y="85" font-size="13" fill="#27ae60" font-family="monospace" font-weight="bold">[ 0  1 | 2 ]</text><text x="120" y="120" font-size="10" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">Zero created below pivot!</text></svg>',
+            type: 'mc',
+            prompt: 'The diagram shows the first elimination step. What is the purpose of creating a 0 in row 2, column 1?',
+            options: [
+                'To make the matrix symmetric',
+                'To eliminate x from equation 2 — isolating y in that row',
+                'To increase the rank of the matrix',
+                'To compute the determinant'
+            ],
+            answer: 1,
+            explanation: 'By zeroing the coefficient of x in row 2, we remove x from that equation entirely. Row 2 now only contains y, which we can solve directly. This "staircase" pattern is what Gaussian Elimination builds.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Elementary row operations change the solution of the system.',
+            answer: false,
+            explanation: 'This is the key insight that makes Gaussian Elimination valid. Row operations change the appearance of the equations but never change the underlying intersection point. It\'s like translating a legal contract — the words change, the agreement doesn\'t.'
+        },
+        {
+            type: 'type',
+            prompt: 'The first non-zero entry in a row — the anchor of each elimination step — is called the ___.',
+            answer: 'pivot',
+            explanation: 'The pivot is used to zero out all other entries in its column. We march down the matrix, using each pivot in turn, until we reach the staircase pattern (REF) or the identity pattern (RREF).'
+        },
+        {
+            type: 'calc',
+            prompt: 'System in REF: [[1, 2 | 7], [0, 1 | 3]]. Back-substitute to find x.',
+            answer: 1,
+            hint: 'Row 2 gives y = 3. Substitute into row 1: x + 2(3) = 7',
+            explanation: 'y = 3 from row 2. Then x + 2(3) = 7 → x + 6 = 7 → x = 1. Back-substitution works bottom-up: solve the last row first, then substitute upward.'
+        },
+        {
+            type: 'mc',
+            prompt: 'When RREF is reached, the coefficient side of the augmented matrix looks like…',
+            options: [
+                'A triangular matrix with 1s on the diagonal',
+                'A zero matrix',
+                'The identity matrix (1s on diagonal, 0s everywhere else)',
+                'A diagonal matrix with any values'
+            ],
+            answer: 2,
+            explanation: 'The identity matrix is the target: [[1,0|x₁],[0,1|x₂]]. When you reach it, the right-hand side directly gives you the solution. No back-substitution needed.'
+        },
+        {
+            type: 'mc',
+            prompt: 'In RREF, a system gives: [[1, 0 | 4], [0, 1 | 7]]. What is y?',
+            options: ['4', '7', '1', '0'],
+            answer: 1,
+            explanation: 'Row 2 says 0·x + 1·y = 7, so y = 7. Row 1 says x = 4. RREF makes the solution directly readable — that\'s the whole point of reaching the identity pattern.'
+        },
+        {
+            type: 'tf',
+            prompt: 'REF has zeros only below each pivot, while RREF has zeros both above and below each pivot.',
+            answer: true,
+            explanation: 'REF = staircase (zeros below pivots only) — good for back-substitution. RREF = full identity pattern (zeros above AND below, pivots = 1) — solution is immediately visible without any further steps.'
+        },
+        {
+            type: 'fill',
+            before: 'Gaussian Elimination creates zeros ',
+            after: ' each pivot to form the staircase (REF) pattern.',
+            answer: 'below',
+            explanation: 'Forward elimination works top-down: use each pivot to zero out all entries below it in the same column. This creates the upper triangular (staircase) structure called REF.'
+        },
+        {
+            type: 'calc',
+            prompt: 'In RREF: [[1, 0, 0 | 3], [0, 1, 0 | −2], [0, 0, 1 | 5]]. What is the value of z?',
+            answer: 5,
+            hint: 'Read directly from row 3',
+            explanation: 'Row 3 says 1·z = 5 → z = 5. RREF makes 3-variable solutions just as easy: x = 3, y = −2, z = 5, all readable directly without any substitution.'
+        },
+        {
+            type: 'mc',
+            prompt: 'During elimination, what does a row of all zeros in the coefficient part of the augmented matrix indicate?',
+            options: [
+                'The system has no solution',
+                'A redundant equation — that row was linearly dependent on others',
+                'The pivot is zero in this row',
+                'The system has exactly two solutions'
+            ],
+            answer: 1,
+            explanation: 'An all-zero coefficient row means that equation was a linear combination of the others — redundant. It contributed no independent constraint. The system may have infinite solutions (if consistent) or no solution (if the constant is non-zero).'
+        },
+        {
+            type: 'tf',
+            prompt: 'Gaussian Elimination always finds a unique solution.',
+            answer: false,
+            explanation: 'Gaussian Elimination will find the solution if it exists, but it also diagnoses failures: a zero row with a non-zero right-hand side means no solution, and a zero row throughout means infinite solutions. It handles all three outcomes.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

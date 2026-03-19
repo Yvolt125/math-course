@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Math for ML">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>Interactive Quiz — Calculus &amp; Optimisation for ML, Week 3</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary:   #2c3e50;
+            --secondary: #e74c3c;
+            --accent:    #e67e22;
+            --warning:   #f39c12;
+            --danger:    #e74c3c;
+            --success:   #27ae60;
+            --light:     #fff8f8;
+            --bg:        #f5eeee;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+            line-height: 1.7;
+            padding: 30px 20px 80px;
+        }
+
+        .quiz-shell { max-width: 860px; margin: 0 auto; }
+
+        .quiz-header {
+            background: var(--primary);
+            color: white;
+            border-radius: 14px 14px 0 0;
+            padding: 36px 44px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .quiz-header h1 { font-size: 1.7em; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+        .quiz-header p  { opacity: 0.75; font-size: 0.95em; }
+
+        .meta-strip { display: flex; justify-content: center; gap: 30px; margin-top: 18px; font-size: 0.88em; }
+        .meta-strip span { background: rgba(255,255,255,0.12); padding: 5px 16px; border-radius: 20px; }
+
+        .progress-wrap {
+            background: white;
+            padding: 14px 44px;
+            border-bottom: 1px solid #dde4ed;
+            display: flex; align-items: center; gap: 14px;
+            font-size: 0.85em; color: #666;
+        }
+
+        .progress-bar-bg { flex: 1; background: #e0e7f0; border-radius: 20px; height: 8px; overflow: hidden; }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            border-radius: 20px; width: 0%; transition: width 0.4s ease;
+        }
+
+        .quiz-body { background: white; padding: 10px 44px 44px; border-radius: 0 0 14px 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+
+        .section-block { margin-top: 50px; }
+
+        .section-label {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px; border-radius: 10px; margin-bottom: 28px;
+            color: white; font-weight: 700; font-size: 0.95em; letter-spacing: 0.5px;
+        }
+
+        .section-label .sec-num {
+            background: rgba(255,255,255,0.25); border-radius: 50%;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9em; flex-shrink: 0;
+        }
+
+        .sec-color-1 { background: #e74c3c; }
+        .sec-color-2 { background: #e67e22; }
+        .sec-color-3 { background: #2980b9; }
+        .sec-color-4 { background: #8e44ad; }
+        .sec-color-5 { background: #16a085; }
+        .sec-color-6 { background: #27ae60; }
+        .sec-color-7 { background: #c0392b; }
+        .sec-color-8 { background: #2c3e50; }
+
+        .q-card {
+            border: 1px solid #e3eaf3; border-radius: 10px;
+            padding: 22px 26px; margin-bottom: 18px;
+            background: #fafcff; transition: border-color 0.2s;
+        }
+        .q-card:focus-within { border-color: var(--secondary); }
+
+        .q-number { font-size: 0.78em; font-weight: 700; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+
+        .q-type-badge { display: inline-block; font-size: 0.7em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; background: #fdf0ef; color: var(--secondary); font-weight: 600; }
+
+        .q-text { font-size: 1.02em; font-weight: 600; color: var(--primary); margin-bottom: 16px; line-height: 1.5; }
+
+        .q-context { background: #f0f4f8; border-left: 4px solid var(--secondary); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 12px 0 16px; font-size: 0.93em; }
+
+        .fill-blank {
+            border: none; border-bottom: 2px solid var(--primary);
+            background: transparent; padding: 4px 10px; font-size: 1em;
+            width: 180px; text-align: center; color: var(--secondary);
+            font-weight: 600; border-radius: 0;
+        }
+        .fill-blank:focus { outline: none; border-bottom-color: var(--accent); }
+
+        input[type="number"].num-input {
+            padding: 8px 14px; border: 1px solid #ccd6e0; border-radius: 6px;
+            font-size: 1em; width: 120px; text-align: center;
+        }
+        input[type="number"].num-input:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(231,76,60,0.15); }
+
+        .mc-options { display: flex; flex-direction: column; gap: 9px; }
+
+        .mc-opt {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 11px 15px; border: 1.5px solid #dde4ef; border-radius: 8px;
+            cursor: pointer; transition: background 0.15s, border-color 0.15s; font-size: 0.96em;
+        }
+        .mc-opt:hover { background: #fdf0ef; border-color: #f0a09a; }
+        .mc-opt input[type="radio"] { margin-top: 3px; flex-shrink: 0; accent-color: var(--secondary); width: 16px; height: 16px; }
+
+        .tf-row { display: flex; gap: 12px; }
+        .tf-btn { flex: 1; padding: 11px; border: 1.5px solid #dde4ef; border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; font-size: 0.95em; transition: background 0.15s, border-color 0.15s; }
+        .tf-btn:hover { background: #fdf0ef; border-color: #f0a09a; }
+        .tf-btn input { display: none; }
+        .tf-btn.selected-true  { background: #e8f8f2; border-color: var(--success); color: var(--success); }
+        .tf-btn.selected-false { background: #fde8e8; border-color: var(--danger);  color: var(--danger); }
+
+        .math-box { background: #f5f8fb; border: 1px solid #dde4ef; border-radius: 8px; padding: 14px; text-align: center; margin: 12px 0; }
+
+        .feedback { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 7px; font-size: 0.92em; line-height: 1.5; }
+        .feedback.correct   { background: #d4edda; color: #155724; border-left: 4px solid var(--success); }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border-left: 4px solid var(--danger); }
+        .feedback.correct::before   { content: "✓  "; font-weight: bold; }
+        .feedback.incorrect::before { content: "✗  "; font-weight: bold; }
+
+        .q-card.is-correct   { border-color: var(--success); background: #f6fffa; }
+        .q-card.is-incorrect { border-color: var(--danger);  background: #fff8f8; }
+
+        .submit-area { text-align: center; padding: 44px 0 10px; border-top: 2px solid #e3eaf3; margin-top: 50px; }
+
+        .btn-submit {
+            background: var(--primary); color: white; border: none;
+            padding: 16px 52px; font-size: 1.15em; font-weight: 700;
+            border-radius: 8px; cursor: pointer; letter-spacing: 0.5px;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-submit:hover { background: var(--secondary); transform: translateY(-2px); }
+        .btn-submit:disabled { background: #aaa; cursor: default; transform: none; }
+
+        .results-panel { display: none; margin-top: 44px; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+
+        .results-top { background: var(--primary); color: white; text-align: center; padding: 40px; }
+
+        .score-circle { width: 130px; height: 130px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .score-big   { font-size: 2.6em; font-weight: 800; line-height: 1; color: var(--warning); }
+        .score-denom { font-size: 0.85em; opacity: 0.7; }
+        .grade-badge { font-size: 1.8em; font-weight: 700; margin-bottom: 6px; }
+        .grade-msg   { opacity: 0.8; font-size: 0.95em; }
+
+        .results-body { background: white; padding: 30px 36px 36px; }
+        .results-body h3 { color: var(--primary); margin-bottom: 18px; font-size: 1.1em; }
+
+        .section-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .sec-score-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--light); border-radius: 8px; font-size: 0.9em; }
+        .sec-score-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .sec-score-label { flex: 1; font-weight: 600; color: var(--primary); }
+        .sec-score-val   { font-weight: 700; color: var(--secondary); }
+
+        .btn-retry { display: block; margin: 26px auto 0; background: var(--accent); color: white; border: none; padding: 13px 40px; border-radius: 8px; font-size: 1em; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-retry:hover { background: #ca6f1e; }
+
+        code { background: #f1f3f5; padding: 2px 7px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.92em; color: #c0392b; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px 8px 60px; }
+            .quiz-body { padding: 10px 16px 30px; }
+            .progress-wrap { padding: 12px 16px; }
+            .quiz-header { padding: 28px 20px 22px; }
+            .section-scores { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-shell">
+
+    <!-- HEADER -->
+    <div class="quiz-header">
+        <a href="#" onclick="confirmExit(event)" style="position:absolute; left:18px; top:18px; color:rgba(255,255,255,0.75); font-size:0.82em; font-weight:700; text-decoration:none; letter-spacing:0.5px;">← Menu</a>
+        <h1>Calculus &amp; Optimisation for ML · Week 3 Quiz</h1>
+        <p>Derivatives · Gradient Descent · Chain Rule · Loss Functions · Neural Nets</p>
+        <div class="meta-strip">
+            <span>40 Questions</span>
+            <span>8 Sections</span>
+            <span>All question types</span>
+        </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-wrap">
+        <span id="progress-label">0 / 40 answered</span>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span id="progress-pct">0%</span>
+    </div>
+
+    <!-- QUIZ BODY -->
+    <div class="quiz-body">
+    <form id="quiz-form">
+
+
+        <!-- ════════════════════════════════════
+             SECTION 1: DERIVATIVES
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-1">
+                <div class="sec-num">1</div>
+                <div>Derivatives</div>
+            </div>
+
+            <!-- Q1 fill -->
+            <div class="q-card" id="card-q1">
+                <div class="q-number">Question 1 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">The derivative f′(x) measures the <input type="text" class="fill-blank" id="q1" placeholder="___"> of change of f with respect to x — the slope of the tangent line at x.</div>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+
+            <!-- Q2 MC -->
+            <div class="q-card" id="card-q2">
+                <div class="q-number">Question 2 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Using the power rule, what is d/dx [x⁵]?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q2" value="a"> x⁴</label>
+                    <label class="mc-opt"><input type="radio" name="q2" value="b"> 5x⁴</label>
+                    <label class="mc-opt"><input type="radio" name="q2" value="c"> 5x⁵</label>
+                </div>
+                <div class="feedback" id="fb-q2"></div>
+            </div>
+
+            <!-- Q3 numeric -->
+            <div class="q-card" id="card-q3">
+                <div class="q-number">Question 3 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">Given f(x) = 3x² − 4x + 1, compute f′(2). Use f′(x) = 6x − 4.</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q3"></div>
+                <div class="feedback" id="fb-q3"></div>
+            </div>
+
+            <!-- Q4 MC -->
+            <div class="q-card" id="card-q4">
+                <div class="q-number">Question 4 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">What is d/dx [eˣ]?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q4" value="a"> xeˣ⁻¹</label>
+                    <label class="mc-opt"><input type="radio" name="q4" value="b"> eˣ</label>
+                    <label class="mc-opt"><input type="radio" name="q4" value="c"> e</label>
+                </div>
+                <div class="feedback" id="fb-q4"></div>
+            </div>
+
+            <!-- Q5 TF -->
+            <div class="q-card" id="card-q5">
+                <div class="q-number">Question 5 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: A critical point occurs where f′(x) = 0. At a minimum, f″(x) > 0.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf5-true"><input type="radio" name="q5" value="true" onchange="styleTF(5,'true')"> True</label>
+                    <label class="tf-btn" id="tf5-false"><input type="radio" name="q5" value="false" onchange="styleTF(5,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q5"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 2: GRADIENT DESCENT
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-2">
+                <div class="sec-num">2</div>
+                <div>Gradient Descent</div>
+            </div>
+
+            <!-- Q6 fill -->
+            <div class="q-card" id="card-q6">
+                <div class="q-number">Question 6 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">In the gradient descent update rule w ← w − α · f′(w), the symbol α (alpha) is called the <input type="text" class="fill-blank" id="q6" placeholder="___"> and controls the step size.</div>
+                <div class="feedback" id="fb-q6"></div>
+            </div>
+
+            <!-- Q7 numeric -->
+            <div class="q-card" id="card-q7">
+                <div class="q-number">Question 7 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">Starting at w₀ = 6, learning rate α = 0.1, loss L(w) = w². One gradient descent step: w₁ = w₀ − α · L′(w₀). What is w₁? (L′(w) = 2w)</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q7" step="0.1"></div>
+                <div class="feedback" id="fb-q7"></div>
+            </div>
+
+            <!-- Q8 MC -->
+            <div class="q-card" id="card-q8">
+                <div class="q-number">Question 8 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">What happens if the learning rate α is set too high in gradient descent?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q8" value="a"> Training converges faster and always finds the global minimum</label>
+                    <label class="mc-opt"><input type="radio" name="q8" value="b"> The updates overshoot — the loss may oscillate or diverge instead of converging</label>
+                    <label class="mc-opt"><input type="radio" name="q8" value="c"> The model becomes stuck at the starting point</label>
+                </div>
+                <div class="feedback" id="fb-q8"></div>
+            </div>
+
+            <!-- Q9 MC -->
+            <div class="q-card" id="card-q9">
+                <div class="q-number">Question 9 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Stochastic Gradient Descent (SGD) differs from batch gradient descent because:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q9" value="a"> It never uses derivatives</label>
+                    <label class="mc-opt"><input type="radio" name="q9" value="b"> It updates weights using the gradient from one (or a mini-batch of) training example(s), making it much faster per step but noisier</label>
+                    <label class="mc-opt"><input type="radio" name="q9" value="c"> It requires a second-order derivative</label>
+                </div>
+                <div class="feedback" id="fb-q9"></div>
+            </div>
+
+            <!-- Q10 TF -->
+            <div class="q-card" id="card-q10">
+                <div class="q-number">Question 10 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: Gradient descent always finds the global minimum of the loss function, regardless of the starting point.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf10-true"><input type="radio" name="q10" value="true" onchange="styleTF(10,'true')"> True</label>
+                    <label class="tf-btn" id="tf10-false"><input type="radio" name="q10" value="false" onchange="styleTF(10,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q10"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 3: PARTIAL DERIVATIVES & GRADIENT
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-3">
+                <div class="sec-num">3</div>
+                <div>Partial Derivatives &amp; Gradient</div>
+            </div>
+
+            <!-- Q11 fill -->
+            <div class="q-card" id="card-q11">
+                <div class="q-number">Question 11 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">The gradient ∇f of a multivariable function is a <input type="text" class="fill-blank" id="q11" placeholder="___"> that contains all of f's partial derivatives and points in the direction of steepest ascent.</div>
+                <div class="feedback" id="fb-q11"></div>
+            </div>
+
+            <!-- Q12 MC -->
+            <div class="q-card" id="card-q12">
+                <div class="q-number">Question 12 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">For f(x, y) = x²y + 3y, what is ∂f/∂x?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q12" value="a"> x² + 3</label>
+                    <label class="mc-opt"><input type="radio" name="q12" value="b"> 2xy</label>
+                    <label class="mc-opt"><input type="radio" name="q12" value="c"> 2x + 3</label>
+                </div>
+                <div class="feedback" id="fb-q12"></div>
+            </div>
+
+            <!-- Q13 numeric -->
+            <div class="q-card" id="card-q13">
+                <div class="q-number">Question 13 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">For f(w₁, w₂) = w₁² + 4w₂, compute ∂f/∂w₂ at (w₁=3, w₂=5). (Treat w₁ as constant.)</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q13"></div>
+                <div class="feedback" id="fb-q13"></div>
+            </div>
+
+            <!-- Q14 MC -->
+            <div class="q-card" id="card-q14">
+                <div class="q-number">Question 14 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">In gradient descent for a neural network with thousands of weights, we move in the direction of the <strong>negative</strong> gradient because:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q14" value="a"> The gradient points toward higher loss, so we negate it to move toward lower loss</label>
+                    <label class="mc-opt"><input type="radio" name="q14" value="b"> The gradient is always negative for loss functions</label>
+                    <label class="mc-opt"><input type="radio" name="q14" value="c"> We want to maximise the loss function</label>
+                </div>
+                <div class="feedback" id="fb-q14"></div>
+            </div>
+
+            <!-- Q15 TF -->
+            <div class="q-card" id="card-q15">
+                <div class="q-number">Question 15 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: When computing ∂f/∂x for f(x, y), we treat y as a constant and differentiate with respect to x only.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf15-true"><input type="radio" name="q15" value="true" onchange="styleTF(15,'true')"> True</label>
+                    <label class="tf-btn" id="tf15-false"><input type="radio" name="q15" value="false" onchange="styleTF(15,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q15"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 4: CHAIN RULE
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-4">
+                <div class="sec-num">4</div>
+                <div>Chain Rule &amp; Backpropagation</div>
+            </div>
+
+            <!-- Q16 fill -->
+            <div class="q-card" id="card-q16">
+                <div class="q-number">Question 16 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">The chain rule states: if y = f(g(x)), then dy/dx = f′(g(x)) · <input type="text" class="fill-blank" id="q16" placeholder="___">.</div>
+                <div class="feedback" id="fb-q16"></div>
+            </div>
+
+            <!-- Q17 MC -->
+            <div class="q-card" id="card-q17">
+                <div class="q-number">Question 17 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Backpropagation in neural networks is essentially:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q17" value="a"> A brute-force numerical approximation of each weight's gradient</label>
+                    <label class="mc-opt"><input type="radio" name="q17" value="b"> Repeated application of the chain rule to efficiently compute gradients layer by layer from output back to input</label>
+                    <label class="mc-opt"><input type="radio" name="q17" value="c"> A method for initialising weights before training</label>
+                </div>
+                <div class="feedback" id="fb-q17"></div>
+            </div>
+
+            <!-- Q18 numeric -->
+            <div class="q-card" id="card-q18">
+                <div class="q-number">Question 18 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">The sigmoid function σ(x) = 1/(1+e⁻ˣ) has derivative σ′(x) = σ(x)(1 − σ(x)). Compute σ′(0). (Recall σ(0) = 0.5)</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q18" step="0.01"></div>
+                <div class="feedback" id="fb-q18"></div>
+            </div>
+
+            <!-- Q19 MC -->
+            <div class="q-card" id="card-q19">
+                <div class="q-number">Question 19 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">If h(x) = sin(x²), then h′(x) = ?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q19" value="a"> cos(x²)</label>
+                    <label class="mc-opt"><input type="radio" name="q19" value="b"> 2x · cos(x²)</label>
+                    <label class="mc-opt"><input type="radio" name="q19" value="c"> sin(2x)</label>
+                </div>
+                <div class="feedback" id="fb-q19"></div>
+            </div>
+
+            <!-- Q20 TF -->
+            <div class="q-card" id="card-q20">
+                <div class="q-number">Question 20 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: Backpropagation computes all weight gradients in a single backwards pass by reusing intermediate computations stored during the forward pass.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf20-true"><input type="radio" name="q20" value="true" onchange="styleTF(20,'true')"> True</label>
+                    <label class="tf-btn" id="tf20-false"><input type="radio" name="q20" value="false" onchange="styleTF(20,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q20"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 5: LOSS FUNCTIONS
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-5">
+                <div class="sec-num">5</div>
+                <div>Loss Functions</div>
+            </div>
+
+            <!-- Q21 MC -->
+            <div class="q-card" id="card-q21">
+                <div class="q-number">Question 21 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Mean Squared Error (MSE) for n predictions is defined as:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q21" value="a"> (1/n) Σ |yᵢ − ŷᵢ|</label>
+                    <label class="mc-opt"><input type="radio" name="q21" value="b"> (1/n) Σ (yᵢ − ŷᵢ)²</label>
+                    <label class="mc-opt"><input type="radio" name="q21" value="c"> Σ log(yᵢ) · ŷᵢ</label>
+                </div>
+                <div class="feedback" id="fb-q21"></div>
+            </div>
+
+            <!-- Q22 numeric -->
+            <div class="q-card" id="card-q22">
+                <div class="q-number">Question 22 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">Predictions ŷ = [3, 5], true values y = [1, 3]. Compute MSE = (1/2) Σ (yᵢ − ŷᵢ)².</div>
+                <div style="margin-top:10px;">MSE = <input type="number" class="num-input" id="q22" step="0.1"></div>
+                <div class="feedback" id="fb-q22"></div>
+            </div>
+
+            <!-- Q23 fill -->
+            <div class="q-card" id="card-q23">
+                <div class="q-number">Question 23 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">Cross-entropy loss for a binary classifier uses the <input type="text" class="fill-blank" id="q23" placeholder="___"> function, because probabilities are outputs and the log heavily penalises confident wrong predictions.</div>
+                <div class="feedback" id="fb-q23"></div>
+            </div>
+
+            <!-- Q24 MC -->
+            <div class="q-card" id="card-q24">
+                <div class="q-number">Question 24 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Compared to MSE, Mean Absolute Error (MAE) is:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q24" value="a"> More sensitive to outliers because it squares the errors</label>
+                    <label class="mc-opt"><input type="radio" name="q24" value="b"> More robust to outliers because large errors are not squared — it treats all errors linearly</label>
+                    <label class="mc-opt"><input type="radio" name="q24" value="c"> Always smaller in value than MSE</label>
+                </div>
+                <div class="feedback" id="fb-q24"></div>
+            </div>
+
+            <!-- Q25 TF -->
+            <div class="q-card" id="card-q25">
+                <div class="q-number">Question 25 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: A differentiable loss function is required for gradient descent to compute weight updates.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf25-true"><input type="radio" name="q25" value="true" onchange="styleTF(25,'true')"> True</label>
+                    <label class="tf-btn" id="tf25-false"><input type="radio" name="q25" value="false" onchange="styleTF(25,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q25"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 6: REGRESSION AS OPTIMISATION
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-6">
+                <div class="sec-num">6</div>
+                <div>Regression as Optimisation</div>
+            </div>
+
+            <!-- Q26 MC -->
+            <div class="q-card" id="card-q26">
+                <div class="q-number">Question 26 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">The Normal Equations give the analytic solution to linear regression as:</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q26" value="a"> w* = (XᵀX)⁻¹ Xᵀy</label>
+                    <label class="mc-opt"><input type="radio" name="q26" value="b"> w* = Xᵀ(XXᵀ)⁻¹ y</label>
+                    <label class="mc-opt"><input type="radio" name="q26" value="c"> w* = X⁻¹y</label>
+                </div>
+                <div class="feedback" id="fb-q26"></div>
+            </div>
+
+            <!-- Q27 fill -->
+            <div class="q-card" id="card-q27">
+                <div class="q-number">Question 27 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">Ridge regression adds an L2 <input type="text" class="fill-blank" id="q27" placeholder="___"> term λ‖w‖² to the MSE loss, which shrinks large weights and reduces overfitting.</div>
+                <div class="feedback" id="fb-q27"></div>
+            </div>
+
+            <!-- Q28 MC -->
+            <div class="q-card" id="card-q28">
+                <div class="q-number">Question 28 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">Why prefer gradient descent over the Normal Equations for large datasets?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q28" value="a"> The Normal Equations are always inaccurate</label>
+                    <label class="mc-opt"><input type="radio" name="q28" value="b"> Inverting XᵀX is O(p³) in the number of features p — prohibitively expensive when p is large (millions of features), while GD scales much better</label>
+                    <label class="mc-opt"><input type="radio" name="q28" value="c"> Gradient descent always converges in fewer iterations than computing XᵀX</label>
+                </div>
+                <div class="feedback" id="fb-q28"></div>
+            </div>
+
+            <!-- Q29 numeric -->
+            <div class="q-card" id="card-q29">
+                <div class="q-number">Question 29 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">A linear model predicts ŷ = 5 but the true value is y = 2. What is the squared error (y − ŷ)²?</div>
+                <div style="margin-top:10px;">Answer: <input type="number" class="num-input" id="q29"></div>
+                <div class="feedback" id="fb-q29"></div>
+            </div>
+
+            <!-- Q30 TF -->
+            <div class="q-card" id="card-q30">
+                <div class="q-number">Question 30 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: The MSE loss surface for linear regression is a convex bowl — gradient descent is guaranteed to find the global minimum.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf30-true"><input type="radio" name="q30" value="true" onchange="styleTF(30,'true')"> True</label>
+                    <label class="tf-btn" id="tf30-false"><input type="radio" name="q30" value="false" onchange="styleTF(30,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q30"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 7: NEURAL NETWORK BASICS
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-7">
+                <div class="sec-num">7</div>
+                <div>Neural Network Basics</div>
+            </div>
+
+            <!-- Q31 MC -->
+            <div class="q-card" id="card-q31">
+                <div class="q-number">Question 31 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">A single neuron computes z = w·x + b, then applies activation a = σ(z). What role does the activation function serve?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q31" value="a"> It normalises the weights to prevent overflow</label>
+                    <label class="mc-opt"><input type="radio" name="q31" value="b"> It introduces non-linearity, allowing the network to learn curved decision boundaries that a purely linear stack could never approximate</label>
+                    <label class="mc-opt"><input type="radio" name="q31" value="c"> It computes the loss for backpropagation</label>
+                </div>
+                <div class="feedback" id="fb-q31"></div>
+            </div>
+
+            <!-- Q32 numeric -->
+            <div class="q-card" id="card-q32">
+                <div class="q-number">Question 32 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">Compute σ(0) where σ(x) = 1/(1 + e⁻ˣ). Give a decimal answer.</div>
+                <div style="margin-top:10px;">σ(0) = <input type="number" class="num-input" id="q32" step="0.1"></div>
+                <div class="feedback" id="fb-q32"></div>
+            </div>
+
+            <!-- Q33 MC -->
+            <div class="q-card" id="card-q33">
+                <div class="q-number">Question 33 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">The ReLU activation function is defined as ReLU(x) = max(0, x). What is ReLU(−3)?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q33" value="a"> −3</label>
+                    <label class="mc-opt"><input type="radio" name="q33" value="b"> 0</label>
+                    <label class="mc-opt"><input type="radio" name="q33" value="c"> 3</label>
+                </div>
+                <div class="feedback" id="fb-q33"></div>
+            </div>
+
+            <!-- Q34 fill -->
+            <div class="q-card" id="card-q34">
+                <div class="q-number">Question 34 <span class="q-type-badge">Fill in the blank</span></div>
+                <div class="q-text">In a neural network, computing the output layer's prediction from the input through all layers in sequence is called the <input type="text" class="fill-blank" id="q34" placeholder="___"> pass.</div>
+                <div class="feedback" id="fb-q34"></div>
+            </div>
+
+            <!-- Q35 numeric -->
+            <div class="q-card" id="card-q35">
+                <div class="q-number">Question 35 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">A neuron receives input x = 3, weight w = 2, bias b = 1. Compute the pre-activation value z = wx + b.</div>
+                <div style="margin-top:10px;">z = <input type="number" class="num-input" id="q35"></div>
+                <div class="feedback" id="fb-q35"></div>
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════
+             SECTION 8: PYTHON FOR OPTIMISATION
+             ════════════════════════════════════ -->
+        <div class="section-block">
+            <div class="section-label sec-color-8">
+                <div class="sec-num">8</div>
+                <div>Python for Optimisation</div>
+            </div>
+
+            <!-- Q36 MC (code) -->
+            <div class="q-card" id="card-q36">
+                <div class="q-number">Question 36 <span class="q-type-badge">Multiple choice — code</span></div>
+                <div class="q-text">Which NumPy expression correctly computes the gradient of MSE = (1/n)‖Xw − y‖² with respect to w?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q36" value="a"> <code>grad = X.T @ (X @ w - y)</code></label>
+                    <label class="mc-opt"><input type="radio" name="q36" value="b"> <code>grad = (2/n) * X.T @ (X @ w - y)</code></label>
+                    <label class="mc-opt"><input type="radio" name="q36" value="c"> <code>grad = np.linalg.inv(X.T @ X) @ X.T @ y</code></label>
+                </div>
+                <div class="feedback" id="fb-q36"></div>
+            </div>
+
+            <!-- Q37 fill (code) -->
+            <div class="q-card" id="card-q37">
+                <div class="q-number">Question 37 <span class="q-type-badge">Fill in the blank — code</span></div>
+                <div class="q-text">In PyTorch, after computing the loss, you call <code>loss.<input type="text" class="fill-blank" id="q37" placeholder="___">()</code> to compute all gradients via automatic differentiation (backprop).</div>
+                <div class="feedback" id="fb-q37"></div>
+            </div>
+
+            <!-- Q38 MC -->
+            <div class="q-card" id="card-q38">
+                <div class="q-number">Question 38 <span class="q-type-badge">Multiple choice</span></div>
+                <div class="q-text">What does <code>scipy.optimize.minimize(f, x0)</code> do?</div>
+                <div class="mc-options">
+                    <label class="mc-opt"><input type="radio" name="q38" value="a"> Plots the function f around the starting point x0</label>
+                    <label class="mc-opt"><input type="radio" name="q38" value="b"> Finds the value of x that minimises f, starting from initial guess x0, using gradient-based optimisation internally</label>
+                    <label class="mc-opt"><input type="radio" name="q38" value="c"> Computes the symbolic derivative of f at x0</label>
+                </div>
+                <div class="feedback" id="fb-q38"></div>
+            </div>
+
+            <!-- Q39 numeric -->
+            <div class="q-card" id="card-q39">
+                <div class="q-number">Question 39 <span class="q-type-badge">Numeric</span></div>
+                <div class="q-text">Implement one gradient descent step manually: L(w) = (w − 3)², starting at w₀ = 5, α = 0.2. L′(w) = 2(w − 3). What is w₁?</div>
+                <div style="margin-top:10px;">w₁ = <input type="number" class="num-input" id="q39" step="0.1"></div>
+                <div class="feedback" id="fb-q39"></div>
+            </div>
+
+            <!-- Q40 TF -->
+            <div class="q-card" id="card-q40">
+                <div class="q-number">Question 40 <span class="q-type-badge">True / False</span></div>
+                <div class="q-text">True or False: PyTorch's autograd engine builds a computational graph during the forward pass and traverses it in reverse during <code>.backward()</code> to compute gradients.</div>
+                <div class="tf-row">
+                    <label class="tf-btn" id="tf40-true"><input type="radio" name="q40" value="true" onchange="styleTF(40,'true')"> True</label>
+                    <label class="tf-btn" id="tf40-false"><input type="radio" name="q40" value="false" onchange="styleTF(40,'false')"> False</label>
+                </div>
+                <div class="feedback" id="fb-q40"></div>
+            </div>
+        </div>
+
+
+        <!-- SUBMIT -->
+        <div class="submit-area">
+            <p style="color:#888; font-size:0.9em; margin-bottom:18px;">Answer all 40 questions, then submit to see your results and explanations.</p>
+            <button type="button" class="btn-submit" id="btn-submit">Submit Quiz</button>
+        </div>
+
+    </form>
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel" id="results-panel">
+        <div class="results-top">
+            <div class="score-circle">
+                <div class="score-big" id="res-score">0</div>
+                <div class="score-denom">/ 40</div>
+            </div>
+            <div class="grade-badge" id="res-grade">—</div>
+            <div class="grade-msg" id="res-msg"></div>
+        </div>
+        <div class="results-body">
+            <h3>Score by Section</h3>
+            <div class="section-scores" id="section-scores-grid"></div>
+            <div style="display:flex; gap:12px; margin-top:26px; flex-wrap:wrap;">
+                <button class="btn-retry" onclick="window.location.reload()">Retake Quiz</button>
+                <button class="btn-retry" style="background:#16a085;" onclick="exportQuizResults()">Export Results ↓</button>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- end quiz-body -->
+</div><!-- end quiz-shell -->
+
+
+<script>
+// ── Answer key ────────────────────────────────────────────────────────────────
+const QUESTIONS = [
+    // Section s1 — Derivatives
+    { id:'q1',  type:'text',   answer:'rate',        section:'s1' },
+    { id:'q2',  type:'radio',  answer:'b',           section:'s1' },
+    { id:'q3',  type:'number', answer:8,             section:'s1' },
+    { id:'q4',  type:'radio',  answer:'b',           section:'s1' },
+    { id:'q5',  type:'tf',     answer:'true',        section:'s1' },
+    // Section s2 — Gradient Descent
+    { id:'q6',  type:'text',   answer:'learning rate', section:'s2' },
+    { id:'q7',  type:'number', answer:4.8,           section:'s2' },
+    { id:'q8',  type:'radio',  answer:'b',           section:'s2' },
+    { id:'q9',  type:'radio',  answer:'b',           section:'s2' },
+    { id:'q10', type:'tf',     answer:'false',       section:'s2' },
+    // Section s3 — Partial Derivatives & Gradient
+    { id:'q11', type:'text',   answer:'vector',      section:'s3' },
+    { id:'q12', type:'radio',  answer:'b',           section:'s3' },
+    { id:'q13', type:'number', answer:4,             section:'s3' },
+    { id:'q14', type:'radio',  answer:'a',           section:'s3' },
+    { id:'q15', type:'tf',     answer:'true',        section:'s3' },
+    // Section s4 — Chain Rule & Backpropagation
+    { id:'q16', type:'text',   answer:"g'(x)",       section:'s4' },
+    { id:'q17', type:'radio',  answer:'b',           section:'s4' },
+    { id:'q18', type:'number', answer:0.25,          section:'s4' },
+    { id:'q19', type:'radio',  answer:'b',           section:'s4' },
+    { id:'q20', type:'tf',     answer:'true',        section:'s4' },
+    // Section s5 — Loss Functions
+    { id:'q21', type:'radio',  answer:'b',           section:'s5' },
+    { id:'q22', type:'number', answer:4,             section:'s5' },
+    { id:'q23', type:'text',   answer:'log',         section:'s5' },
+    { id:'q24', type:'radio',  answer:'b',           section:'s5' },
+    { id:'q25', type:'tf',     answer:'true',        section:'s5' },
+    // Section s6 — Regression as Optimisation
+    { id:'q26', type:'radio',  answer:'a',           section:'s6' },
+    { id:'q27', type:'text',   answer:'regularization', section:'s6' },
+    { id:'q28', type:'radio',  answer:'b',           section:'s6' },
+    { id:'q29', type:'number', answer:9,             section:'s6' },
+    { id:'q30', type:'tf',     answer:'true',        section:'s6' },
+    // Section s7 — Neural Network Basics
+    { id:'q31', type:'radio',  answer:'b',           section:'s7' },
+    { id:'q32', type:'number', answer:0.5,           section:'s7' },
+    { id:'q33', type:'radio',  answer:'b',           section:'s7' },
+    { id:'q34', type:'text',   answer:'forward',     section:'s7' },
+    { id:'q35', type:'number', answer:7,             section:'s7' },
+    // Section s8 — Python for Optimisation
+    { id:'q36', type:'radio',  answer:'b',           section:'s8' },
+    { id:'q37', type:'text',   answer:'backward',    section:'s8' },
+    { id:'q38', type:'radio',  answer:'b',           section:'s8' },
+    { id:'q39', type:'number', answer:4.2,           section:'s8' },
+    { id:'q40', type:'tf',     answer:'true',        section:'s8' },
+];
+
+// ── Explanations ─────────────────────────────────────────────────────────────
+const EXPLAIN = {
+    q1:  'The derivative f′(x) is the instantaneous rate of change — the slope of the function at a single point. In ML, it tells us how much the loss changes per unit change in a parameter.',
+    q2:  'Power rule: d/dx[xⁿ] = n·xⁿ⁻¹. So d/dx[x⁵] = 5x⁴.',
+    q3:  'f′(x) = 6x − 4. At x = 2: f′(2) = 12 − 4 = 8.',
+    q4:  'The exponential function eˣ is its own derivative — one of the most important results in calculus. This is why it appears everywhere in ML (softmax, sigmoid, etc.).',
+    q5:  'At a critical point f′(x) = 0. The second derivative test: f″ > 0 means the function curves upward (minimum), f″ < 0 means it curves downward (maximum).',
+    q6:  'The learning rate α controls how large each gradient descent step is. Too high and you overshoot; too low and training is painfully slow.',
+    q7:  'L′(w) = 2w. At w₀ = 6: L′(6) = 12. w₁ = 6 − 0.1 × 12 = 6 − 1.2 = 4.8.',
+    q8:  'A large learning rate causes the parameter to jump past the minimum and up the other side of the loss bowl. The loss oscillates or diverges — a common training failure mode.',
+    q9:  'SGD approximates the full gradient using one or a few examples, giving a noisy but computationally cheap update. The noise can even help escape sharp local minima.',
+    q10: 'GD can get trapped in local minima or saddle points, especially for non-convex loss surfaces like those of deep neural networks. Only for convex losses (e.g., linear regression MSE) is the global minimum guaranteed.',
+    q11: 'The gradient ∇f = [∂f/∂x₁, ∂f/∂x₂, …] is a vector. Each component is a partial derivative. It points in the direction of steepest increase, so −∇f points toward steepest decrease.',
+    q12: '∂f/∂x treats y as a constant. Differentiating x²y + 3y with respect to x gives 2xy. (3y is a constant in x, so its x-derivative is 0.)',
+    q13: 'f = w₁² + 4w₂. ∂f/∂w₂ = 4 (constant w.r.t. w₂ differentiation of the first term gives 0, second term gives 4). The specific values of w₁ and w₂ don\'t affect this constant partial derivative.',
+    q14: 'The gradient ∇f points uphill. To minimise loss, we want to go downhill: w ← w − α∇f. The negative sign is essential — we\'re descending, not ascending.',
+    q15: 'This is the definition of a partial derivative. We "freeze" all other variables and differentiate with respect to one variable at a time.',
+    q16: 'Chain rule: d/dx[f(g(x))] = f′(g(x)) · g′(x). You differentiate the outer function, evaluated at the inner function, then multiply by the derivative of the inner function.',
+    q17: 'Backpropagation is the chain rule applied layer by layer from the output loss back to the first layer. It efficiently computes ∂L/∂wᵢ for every weight by reusing intermediate gradient computations.',
+    q18: 'σ′(x) = σ(x)(1 − σ(x)). At x = 0: σ(0) = 0.5. So σ′(0) = 0.5 × 0.5 = 0.25.',
+    q19: 'h(x) = sin(x²). Outer function: sin(u), derivative cos(u). Inner function: u = x², derivative 2x. Chain rule: cos(x²) · 2x = 2x·cos(x²).',
+    q20: 'During the forward pass, intermediate activations are cached. The backward pass traverses the computation graph in reverse, applying the chain rule at each node to compute gradients without redundant recomputation.',
+    q21: 'MSE = (1/n)Σ(yᵢ−ŷᵢ)². The squaring penalises large errors more heavily than small ones, making MSE sensitive to outliers.',
+    q22: 'Errors: (1−3)²=4 and (3−5)²=4. MSE = (4+4)/2 = 4.',
+    q23: 'Cross-entropy uses the logarithm (log). It assigns infinite loss to a prediction of 0 probability for the true class — the log function strongly penalises confident but wrong predictions.',
+    q24: 'MAE = (1/n)Σ|yᵢ−ŷᵢ|. Without squaring, large errors don\'t dominate the loss as severely. MAE is preferred when outliers should not disproportionately influence training.',
+    q25: 'Gradient descent requires ∂L/∂w to update weights. If the loss is not differentiable at a point, the gradient is undefined there and the update cannot be computed. Smooth, differentiable losses (MSE, cross-entropy) are preferred for this reason.',
+    q26: 'The Normal Equations w* = (XᵀX)⁻¹Xᵀy are derived by setting the gradient of MSE to zero and solving analytically. This is the closed-form, exact solution for linear regression.',
+    q27: 'Ridge regression adds a regularisation term λ‖w‖² to the loss. This penalises large weights, shrinking them toward zero and reducing overfitting — especially important when features are highly correlated.',
+    q28: 'Computing (XᵀX)⁻¹ requires O(p³) operations. With p = 10⁶ features this is computationally infeasible. Gradient descent scales linearly with p per step, making it the practical choice for large-scale ML.',
+    q29: '(y − ŷ)² = (2 − 5)² = (−3)² = 9.',
+    q30: 'MSE for linear regression is a strictly convex quadratic function of w. Any convex function has exactly one global minimum, so GD (with appropriate learning rate) always converges to the optimal weights.',
+    q31: 'Without non-linearity, stacking linear transformations is equivalent to a single linear transformation — no matter how many layers. Activation functions like ReLU or sigmoid break this linearity, enabling the network to approximate complex functions.',
+    q32: 'σ(0) = 1/(1 + e⁰) = 1/(1 + 1) = 1/2 = 0.5. Sigmoid outputs 0.5 at zero — it is symmetric around the origin.',
+    q33: 'ReLU(x) = max(0, x). For negative inputs, ReLU returns 0. ReLU(−3) = max(0, −3) = 0.',
+    q34: 'The forward pass computes the prediction: input → hidden layers → output. Activations are stored for use during backpropagation.',
+    q35: 'z = wx + b = 2 × 3 + 1 = 6 + 1 = 7.',
+    q36: '∂MSE/∂w = (2/n) Xᵀ(Xw − y). The factor 2/n arises from differentiating the squared loss and dividing by n. Option (a) is missing the 2/n factor; option (c) is the Normal Equations solution, not the gradient.',
+    q37: 'After computing the scalar loss, loss.backward() traverses the autograd graph in reverse, computing and accumulating gradients into each tensor\'s .grad attribute.',
+    q38: 'scipy.optimize.minimize is a general-purpose numerical optimiser. It internally uses gradient-based methods (like L-BFGS) to find the x that minimises f, starting from the given initial guess.',
+    q39: 'L′(w) = 2(w − 3). At w₀ = 5: L′(5) = 2(5−3) = 4. w₁ = 5 − 0.2 × 4 = 5 − 0.8 = 4.2.',
+    q40: 'PyTorch builds a dynamic computation graph on the fly during the forward pass. .backward() then traverses this graph in reverse, applying the chain rule at each operation to compute gradients.'
+};
+
+// ── Section metadata ──────────────────────────────────────────────────────────
+const SECTION_META = {
+    's1': { label: 'Derivatives',                  color: '#e74c3c', total: 5 },
+    's2': { label: 'Gradient Descent',             color: '#e67e22', total: 5 },
+    's3': { label: 'Partial Derivatives & Gradient', color: '#2980b9', total: 5 },
+    's4': { label: 'Chain Rule & Backprop',        color: '#8e44ad', total: 5 },
+    's5': { label: 'Loss Functions',               color: '#16a085', total: 5 },
+    's6': { label: 'Regression as Optimisation',   color: '#27ae60', total: 5 },
+    's7': { label: 'Neural Network Basics',        color: '#c0392b', total: 5 },
+    's8': { label: 'Python for Optimisation',      color: '#2c3e50', total: 5 },
+};
+
+// ── Progress tracking ─────────────────────────────────────────────────────────
+const answered = new Set();
+
+function markAnswered(qid) {
+    answered.add(qid);
+    const pct = Math.round((answered.size / QUESTIONS.length) * 100);
+    document.getElementById('progress-label').textContent = answered.size + ' / ' + QUESTIONS.length + ' answered';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+// Attach listeners to all inputs
+QUESTIONS.forEach(q => {
+    if (q.type === 'text' || q.type === 'number') {
+        document.getElementById(q.id).addEventListener('input', () => markAnswered(q.id));
+    } else if (q.type === 'radio' || q.type === 'tf') {
+        document.querySelectorAll(`input[name="${q.id}"]`).forEach(r => {
+            r.addEventListener('change', () => markAnswered(q.id));
+        });
+    }
+});
+
+// ── True/False button styling ──────────────────────────────────────────────────
+function styleTF(n, val) {
+    document.getElementById('tf' + n + '-true').className  = 'tf-btn' + (val === 'true'  ? ' selected-true'  : '');
+    document.getElementById('tf' + n + '-false').className = 'tf-btn' + (val === 'false' ? ' selected-false' : '');
+}
+
+// ── Menu navigation ───────────────────────────────────────────────────────────
+function confirmExit(e) {
+    e.preventDefault();
+    const submitted = document.getElementById('btn-submit').disabled;
+    if (submitted || confirm('Leave the quiz? Your current answers will be lost.')) {
+        window.location.href = 'index.html';
+    }
+}
+
+// ── Results export ────────────────────────────────────────────────────────────
+function exportQuizResults() {
+    const data = localStorage.getItem('mathCourse_quizResults') || '[]';
+    const blob = new Blob([data], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'quiz_results.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ── Grading ───────────────────────────────────────────────────────────────────
+document.getElementById('btn-submit').addEventListener('click', function () {
+
+    let totalScore = 0;
+    const sectionScores = { s1:0, s2:0, s3:0, s4:0, s5:0, s6:0, s7:0, s8:0 };
+    const questionResults = [];
+
+    QUESTIONS.forEach(q => {
+        let correct = false;
+        let userVal = '';
+
+        if (q.type === 'text') {
+            userVal = (document.getElementById(q.id).value || '').toLowerCase().trim();
+            correct = userVal.includes(q.answer.toLowerCase());
+        } else if (q.type === 'number') {
+            userVal = document.getElementById(q.id).value;
+            correct = Math.abs(parseFloat(userVal) - q.answer) < 0.01;
+        } else if (q.type === 'radio' || q.type === 'tf') {
+            const sel = document.querySelector(`input[name="${q.id}"]:checked`);
+            if (sel) { userVal = sel.value; correct = userVal === q.answer; }
+        }
+
+        questionResults.push({ id: q.id, section: q.section, correct, userAnswer: userVal });
+
+        const card = document.getElementById('card-' + q.id);
+        const fb   = document.getElementById('fb-' + q.id);
+        fb.style.display = 'block';
+
+        if (correct) {
+            totalScore++;
+            sectionScores[q.section]++;
+            card.classList.add('is-correct');
+            fb.className = 'feedback correct';
+            fb.textContent = EXPLAIN[q.id];
+        } else {
+            card.classList.add('is-incorrect');
+            fb.className = 'feedback incorrect';
+            const correctLabel = q.type === 'text'   ? '"' + q.answer + '"' :
+                                 q.type === 'number'  ? q.answer :
+                                 q.type === 'tf'      ? (q.answer === 'true' ? 'True' : 'False') :
+                                                        'Option ' + q.answer.toUpperCase();
+            fb.textContent = 'Correct answer: ' + correctLabel + '. ' + EXPLAIN[q.id];
+        }
+    });
+
+    // Display results
+    const pct = Math.round((totalScore / QUESTIONS.length) * 100);
+    document.getElementById('res-score').textContent = totalScore;
+
+    let grade, msg;
+    if (pct >= 93)      { grade = 'A+'; msg = 'Outstanding — you have genuinely mastered Week 3 calculus.'; }
+    else if (pct >= 83) { grade = 'A';  msg = 'Excellent. Strong command of the optimisation material.'; }
+    else if (pct >= 73) { grade = 'B';  msg = 'Good grasp of the fundamentals. Review incorrect answers.'; }
+    else if (pct >= 60) { grade = 'C';  msg = 'Passing, but some key concepts need revisiting.'; }
+    else                { grade = 'F';  msg = 'Go back through the Mastery Guide and retake this quiz.'; }
+
+    document.getElementById('res-grade').textContent = grade + ' · ' + pct + '%';
+    document.getElementById('res-msg').textContent   = msg;
+
+    // Section breakdown
+    const grid = document.getElementById('section-scores-grid');
+    grid.innerHTML = '';
+    Object.entries(SECTION_META).forEach(([secKey, meta]) => {
+        const row = document.createElement('div');
+        row.className = 'sec-score-row';
+        row.innerHTML = `
+            <div class="sec-score-dot" style="background:${meta.color}"></div>
+            <div class="sec-score-label">${meta.label}</div>
+            <div class="sec-score-val">${sectionScores[secKey]} / ${meta.total}</div>`;
+        grid.appendChild(row);
+    });
+
+    document.getElementById('results-panel').style.display = 'block';
+    this.disabled = true;
+    document.getElementById('results-panel').scrollIntoView({ behavior:'smooth' });
+
+    // Save to localStorage
+    const resultData = {
+        date: new Date().toISOString(),
+        quiz: 'Week 3',
+        score: totalScore,
+        total: QUESTIONS.length,
+        percentage: pct,
+        grade,
+        sectionScores: { ...sectionScores },
+        questions: questionResults
+    };
+    const stored = JSON.parse(localStorage.getItem('mathCourse_quizResults') || '[]');
+    stored.push(resultData);
+    localStorage.setItem('mathCourse_quizResults', JSON.stringify(stored));
+});
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>

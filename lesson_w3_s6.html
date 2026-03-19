@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Lesson: Regression as Optimisation</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+    id: 'w3s6',
+    title: 'Regression as Optimisation',
+    subtitle: 'Normal equations · Ridge · Gradient of MSE',
+    color: '#27ae60',
+    questions: [
+        {
+            type: 'mc',
+            prompt: 'Linear regression is solved by minimising which loss function?',
+            options: ['Cross-entropy', 'Mean Squared Error (MSE)', 'MAE', 'Log-likelihood directly'],
+            answer: 1,
+            explanation: 'Linear regression finds weights w that minimise L(w) = (1/n)‖Xw − y‖². This is MSE written in matrix form. Minimising MSE under Gaussian noise is also maximum likelihood estimation.'
+        },
+        {
+            type: 'fill',
+            before: 'The closed-form solution to linear regression is: w* = (XᵀX)⁻¹Xᵀ',
+            after: '',
+            answer: 'y',
+            explanation: 'The normal equations: w* = (XᵀX)⁻¹Xᵀy. Derived by setting ∇L = (2/n)Xᵀ(Xw − y) = 0 and solving for w. This connects to Week 2: it is the projection of y onto the column space of X.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Setting the gradient of MSE to zero and solving always gives a unique solution w*.',
+            answer: false,
+            explanation: 'The normal equations require (XᵀX)⁻¹ to exist. If X has linearly dependent columns (multicollinearity), XᵀX is singular — no unique inverse exists and no unique solution. Ridge regression fixes this by adding λI.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Ridge regression modifies the loss to L(w) = MSE + λ‖w‖². The closed-form solution becomes…',
+            options: [
+                '(XᵀX)⁻¹Xᵀy',
+                '(XᵀX + λI)⁻¹Xᵀy',
+                '(XᵀX − λI)⁻¹Xᵀy',
+                'Xᵀ(XXᵀ + λI)⁻¹y'
+            ],
+            answer: 1,
+            explanation: '(XᵀX + λI)⁻¹Xᵀy. Adding λI to XᵀX guarantees invertibility (all eigenvalues become at least λ > 0). This is the key insight: regularisation doesn\'t just prevent overfitting — it stabilises the matrix inverse.'
+        },
+        {
+            type: 'calc',
+            prompt: 'One sample: ŷ = wx = 2×2 = 4, y = 3. Squared error L = (ŷ − y)² = ?',
+            answer: 1,
+            hint: '(4 − 3)²',
+            explanation: 'L = (4 − 3)² = 1² = 1. The gradient of this w.r.t. w is ∂L/∂w = 2(ŷ − y)·x = 2×1×2 = 4. Gradient descent would update: w ← 2 − α·4.'
+        },
+        {
+            type: 'type',
+            prompt: 'Adding a penalty term λ‖w‖² to the loss to keep weights small is called ___.',
+            answer: ['regularisation', 'regularization', 'ridge'],
+            explanation: 'Regularisation prevents overfitting by penalising large weights. The λ parameter controls the strength: λ=0 → ordinary least squares; large λ → weights shrink toward zero. Ridge (L2) keeps all features; Lasso (L1) zeroes some out.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Why is gradient descent preferred over the normal equations when the dataset is very large (millions of samples)?',
+            options: [
+                'Gradient descent gives more accurate weights',
+                'Inverting XᵀX requires O(p³) operations where p is the number of features — too expensive for large p',
+                'The normal equations require labelled data',
+                'Gradient descent doesn\'t require matrix multiplication'
+            ],
+            answer: 1,
+            explanation: 'Matrix inversion is O(p³) in the number of features p. With p = 1,000,000 features, this is 10¹⁸ operations — computationally infeasible. GD is O(n·p) per step — much cheaper, and can be run in mini-batches.'
+        },
+        {
+            type: 'tf',
+            prompt: 'The normal equations solution w* = (XᵀX)⁻¹Xᵀy is exactly the least-squares projection from Week 2.',
+            answer: true,
+            explanation: 'Yes! (XᵀX)⁻¹Xᵀy projects y onto the column space of X. The connection: minimising ‖Xw − y‖² (regression) is the same as projecting y onto the column space of X (linear algebra). Weeks 2 and 3 are the same idea from different angles.'
+        },
+        {
+            type: 'fill',
+            before: 'Ridge regression modifies the normal equations to: w* = (XᵀX + ',
+            after: 'I)⁻¹Xᵀy',
+            answer: 'λ',
+            explanation: 'The λI term ensures the matrix XᵀX + λI is always positive definite and invertible (since λ > 0 adds to every eigenvalue). This is the mathematical reason Ridge always has a unique solution.'
+        },
+        {
+            type: 'mc',
+            prompt: 'The gradient of MSE with respect to w is: ∇L = ?',
+            options: [
+                '(2/n)Xᵀy',
+                '(2/n)Xᵀ(Xw − y)',
+                '(2/n)(Xw − y)',
+                '(1/n)‖Xw − y‖'
+            ],
+            answer: 1,
+            explanation: '∇L = (2/n)Xᵀ(Xw − y). This is the matrix form of the chain rule: outer derivative 2(ŷ − y)/n, inner derivative X (since ŷ = Xw, d/dw[Xw] = X). Setting this to zero gives the normal equations.'
+        },
+        {
+            type: 'mc',
+            prompt: 'Lasso regression uses an L1 penalty: L = MSE + λ‖w‖₁. What is the key difference from Ridge (L2)?',
+            options: [
+                'Lasso is faster to compute',
+                'Lasso promotes sparsity — it can drive some weights to exactly zero, performing feature selection',
+                'Lasso always gives a higher accuracy',
+                'Lasso avoids the need for a learning rate'
+            ],
+            answer: 1,
+            explanation: 'L1 penalises the sum of absolute values. Geometrically, the L1 ball has corners aligned with axes — the optimal solution tends to land on a corner where some weights = 0. Lasso = regularisation + automatic feature selection.'
+        },
+        {
+            type: 'tf',
+            prompt: 'Minimising MSE in linear regression is equivalent to finding the Maximum Likelihood Estimate (MLE) under a Gaussian noise assumption.',
+            answer: true,
+            explanation: 'Assuming y = Xw + ε where ε ~ N(0,σ²), the log-likelihood is ∝ −‖y − Xw‖². Maximising this is identical to minimising ‖y − Xw‖² = MSE. MSE has a rigorous probabilistic foundation, not just an intuitive one.'
+        }
+    ]
+};
+</script>
+<script src="lesson_engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

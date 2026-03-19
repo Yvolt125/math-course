@@ -611,6 +611,15 @@
         </div>
         <p>Add the three "down-right" diagonal products, subtract the three "down-left" diagonal products. The result is the signed volume of the parallelepiped formed by the three column vectors.</p>
 
+        <div class="deep-dive">
+            <strong>Shortcut — Upper Triangular Matrices:</strong>
+            <p>When all entries <em>below</em> the main diagonal are zero, the matrix is called <span class="term">upper triangular</span>. In this special case, you do not need to apply the full Sarrus rule — the determinant is simply the <strong>product of the main diagonal entries</strong>:</p>
+            <div class="math-box" style="font-size:0.95em;">
+                \[ \det\!\begin{pmatrix} a & b & c \\ 0 & e & f \\ 0 & 0 & i \end{pmatrix} = a \times e \times i \]
+            </div>
+            <p>This shortcut is important because Gaussian Elimination reduces every matrix to an upper triangular form as an intermediate step — so the determinant is recoverable by simply multiplying the pivot values along the diagonal. This is exactly how <span class="inline-code">np.linalg.det</span> works internally.</p>
+        </div>
+
         <div class="info-box">
             <strong>The Critical Connection:</strong>
             <p>A matrix is <strong>singular</strong> (no unique solution, non-invertible, rank-deficient) <em>if and only if</em> its determinant equals zero. Singularity, Rank, and the Determinant are three different ways of describing the same underlying collapse:</p>
@@ -767,6 +776,114 @@ else:
 # § 4 — Confirm the true dimensionality (Rank)
 rank = np.linalg.matrix_rank(A)
 print(f"Rank: {rank} / {A.shape[0]}  ({'full rank' if rank == A.shape[0] else 'rank-deficient'})")</code></pre>
+
+        <!-- NUMPY FUNDAMENTALS -->
+        <h3>NumPy Fundamentals — Arrays, Operations &amp; Linear Algebra</h3>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Why NumPy Over Python Lists?</h4>
+        <p>NumPy arrays (<span class="term">ndarray</span> — n-dimensional array) are faster and more memory-efficient than Python lists. They support element-wise mathematical operations natively, whereas lists require slow Python loops. For numerical work, always prefer NumPy.</p>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Creating Arrays</h4>
+        <p>There are several ways to create a NumPy array:</p>
+        <pre><code class="language-python">import numpy as np
+
+# From a Python list — the standard way
+one_dimensional_arr = np.array([10, 12])
+
+# np.arange(start, stop, step) — like Python range() but returns an array
+c = np.arange(1, 20, 3)          # [1, 4, 7, 10, 13, 16, 19]
+
+# np.linspace(start, stop, num) — num evenly spaced values between start and stop
+# Default output is float; change with the dtype parameter
+lin_spaced_arr = np.linspace(0, 100, 5)           # [0., 25., 50., 75., 100.]
+lin_spaced_int = np.linspace(0, 100, 5, dtype=int) # [0, 25, 50, 75, 100]
+
+# Convenience constructors
+np.ones(4)          # [1. 1. 1. 1.]
+np.zeros(4)         # [0. 0. 0. 0.]
+np.empty(4)         # Uninitialized — contains whatever was in memory (faster than zeros)
+np.random.rand(4)   # Four random values between 0 and 1</code></pre>
+
+        <div class="info-box" style="margin-top:1em;">
+            <strong>np.zeros vs np.empty:</strong> Both create an array of a given size, but <span class="inline-code">np.empty</span> skips the initialisation step — the array contains random leftover memory data. This makes it marginally faster when you know you will overwrite every value immediately. Use <span class="inline-code">np.zeros</span> when you need a guaranteed clean slate.
+        </div>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">2D Arrays and Reshaping</h4>
+        <pre><code class="language-python"># Create a 2D array directly
+two_dim_arr = np.array([[1, 2, 3],
+                        [4, 5, 6]])   # shape: (2, 3)
+
+# Reshape a 1D array into a 2D array
+one_dim_arr = np.array([1, 2, 3, 4, 5, 6])
+multi_dim_arr = np.reshape(one_dim_arr, (2, 3))  # 2 rows, 3 columns
+print(multi_dim_arr)
+# [[1 2 3]
+#  [4 5 6]]</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Array Properties</h4>
+        <pre><code class="language-python">arr = np.array([[1, 2, 3], [4, 5, 6]])
+
+arr.ndim   # 2          — number of dimensions
+arr.shape  # (2, 3)     — length of each dimension
+arr.size   # 6          — total number of elements</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Arithmetic and Broadcasting</h4>
+        <p>NumPy performs <strong>element-wise</strong> arithmetic using standard operators. Multiplying an array by a scalar is called <span class="term">broadcasting</span> — the scalar is applied to every element automatically.</p>
+        <pre><code class="language-python">arr_1 = np.array([2, 4, 6])
+arr_2 = np.array([1, 3, 5])
+
+addition       = arr_1 + arr_2   # [3, 7, 11]
+subtraction    = arr_1 - arr_2   # [1, 1, 1]
+multiplication = arr_1 * arr_2   # [2, 12, 30]  (element-wise, NOT dot product)
+
+# Broadcasting example: convert km to miles
+km_distances = np.array([1, 5, 10, 42])
+miles = km_distances * 0.621371   # each element multiplied by the scalar</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Indexing and Slicing</h4>
+        <pre><code class="language-python"># 2D indexing: array[row][col]  (zero-based)
+two_dim = np.array([[1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9]])
+print(two_dim[2][1])   # 8  (row index 2, column index 1)
+
+# Slicing: array[start : end : step]
+# Omit start → 0,  omit end → length,  omit step → 1
+arr = np.array([10, 20, 30, 40, 50])
+print(arr[1:4])    # [20 30 40]
+print(arr[::2])    # [10 30 50] (every other element)</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Stacking and Splitting</h4>
+        <pre><code class="language-python">a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+np.vstack([a, b])   # Stack vertically → [[1,2,3],[4,5,6]]
+np.hstack([a, b])   # Stack horizontally → [1,2,3,4,5,6]
+
+m = np.array([[1,2,3,4], [5,6,7,8]])
+np.hsplit(m, 2)     # Split into 2 equal arrays along columns</code></pre>
+
+        <h4 style="color:var(--secondary); margin-top:1.4em;">Solving Systems and Visualising</h4>
+        <pre><code class="language-python">import numpy as np
+
+A = np.array([[2, 1], [1, 3]])   # Coefficient matrix
+b = np.array([8, 13])            # Constant vector
+
+# Solve Ax = b (throws an error if A is singular)
+x = np.linalg.solve(A, b)
+
+# Compute the determinant
+d = np.linalg.det(A)
+
+# To visualise: build the augmented matrix [A | b]
+augmented_matrix = np.hstack([A, b.reshape(-1, 1)])
+# Then plot with the utility helper (if available):
+# from utils import plot_lines
+# plot_lines(augmented_matrix)</code></pre>
+
+        <div class="info-box" style="margin-top:1em;">
+            <strong>Singular Systems:</strong> <span class="inline-code">np.linalg.solve()</span> will raise a <span class="inline-code">LinAlgError</span> if the matrix is singular. Always check <span class="inline-code">np.linalg.det(A)</span> first — if it is zero (or very close to zero), the system has no unique solution and <span class="inline-code">solve</span> cannot be called safely.
+        </div>
 
         <!-- SUMMARY CHAIN -->
         <div class="summary-chain">
