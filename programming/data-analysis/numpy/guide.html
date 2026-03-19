@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NumPy — Complete Guide</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --orange: #e67e22; --orange-lt: #fef5e7;
+      --blue:   #2980b9; --blue-lt:   #eaf4fb;
+      --teal:   #16a085; --teal-lt:   #e8f8f5;
+      --purple: #8e44ad; --purple-lt: #f5eef8;
+      --red:    #e74c3c; --red-lt:    #fdecea;
+      --code-bg: #1e2a35;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; line-height: 1.8; padding-bottom: 80px; }
+
+    .page-header { background: #1a252f; color: white; padding: 30px 20px 26px; text-align: center; position: relative; }
+    .page-header .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .page-header .back:hover { color: white; }
+    .page-header h1 { font-size: 1.35em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+    .page-header p  { font-size: 0.82em; opacity: 0.55; }
+
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: var(--orange-lt); color: var(--orange); text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: var(--orange); color: white; }
+
+    .container { max-width: 860px; margin: 32px auto 0; padding: 0 18px; }
+
+    .chapter { background: white; border-radius: 18px; box-shadow: 0 3px 18px rgba(0,0,0,0.07); margin-bottom: 32px; overflow: hidden; }
+    .chapter-header { background: var(--orange); color: white; padding: 22px 28px 18px; }
+    .chapter-num   { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 4px; }
+    .chapter-title { font-size: 1.3em; font-weight: 800; }
+    .chapter-sub   { font-size: 0.82em; opacity: 0.78; margin-top: 4px; }
+    .chapter-body  { padding: 28px 28px 32px; }
+
+    h3 { font-size: 1.02em; font-weight: 800; color: var(--orange); margin: 28px 0 10px; border-left: 4px solid var(--orange); padding-left: 12px; }
+    h3:first-child { margin-top: 0; }
+    p  { font-size: 0.9em; color: #34495e; line-height: 1.8; margin-bottom: 14px; }
+    ul, ol { padding-left: 22px; margin-bottom: 14px; }
+    li { font-size: 0.88em; color: #34495e; line-height: 1.8; margin-bottom: 4px; }
+
+    .box { border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 18px 0; font-size: 0.87em; line-height: 1.75; }
+    .box-orange { background: var(--orange-lt); border-left: 5px solid var(--orange); color: #784212; }
+    .box-teal   { background: var(--teal-lt);   border-left: 5px solid var(--teal);   color: #0e6655; }
+    .box-blue   { background: var(--blue-lt);   border-left: 5px solid var(--blue);   color: #1a5276; }
+    .box-purple { background: var(--purple-lt); border-left: 5px solid var(--purple); color: #5b2c6f; }
+    .box-red    { background: var(--red-lt);    border-left: 5px solid var(--red);    color: #7b241c; }
+    .box strong { font-weight: 800; }
+    .box code   { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.93em; }
+
+    pre { background: var(--code-bg); color: #cdd9e5; border-radius: 12px; padding: 20px 22px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 16px 0; font-family: Consolas, 'Courier New', monospace; border-left: 4px solid var(--orange); }
+    .c  { color: #6a9955; } /* comment */
+    .kw { color: #c792ea; } /* keyword */
+    .st { color: #c3e88d; } /* string */
+    .fn { color: #82aaff; } /* function */
+    .nm { color: #f78c6c; } /* number */
+    .ou { color: #89ddff; } /* output */
+    code { font-family: Consolas, monospace; font-size: 0.88em; background: #f0f2f5; color: var(--orange); padding: 1px 5px; border-radius: 4px; }
+
+    /* ── Array visualiser ────────────────────────────── */
+    .array-vis { display: flex; align-items: center; gap: 0; margin: 18px 0; flex-wrap: wrap; }
+    .arr-cell { min-width: 44px; height: 44px; border: 2px solid var(--orange); display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700; font-family: Consolas, monospace; background: var(--orange-lt); color: #784212; margin-right: -2px; }
+    .arr-cell.hl { background: var(--orange); color: white; }
+    .arr-cell.dim { background: #f0f2f5; border-color: #bdc3c7; color: #7f8c8d; }
+    .arr-label { font-size: 0.72em; color: #7f8c8d; margin-top: 4px; text-align: center; font-family: Consolas, monospace; }
+    .arr-wrap { display: flex; flex-direction: column; align-items: flex-start; margin: 18px 0; }
+
+    /* ── 2D grid ─────────────────────────────────────── */
+    .grid-vis { display: inline-grid; gap: 0; margin: 18px 0; }
+    .grid-cell { width: 46px; height: 38px; border: 1.5px solid #c39bd3; display: flex; align-items: center; justify-content: center; font-size: 0.82em; font-weight: 700; font-family: Consolas, monospace; background: var(--purple-lt); color: #5b2c6f; margin: -0.75px; }
+    .grid-cell.hl-row { background: #c39bd3; color: white; }
+    .grid-cell.hl-col { background: var(--purple); color: white; }
+    .grid-cell.hl-cell { background: var(--orange); color: white; border-color: var(--orange); }
+
+    /* ── Comparison bar ──────────────────────────────── */
+    .compare-row { display: flex; gap: 16px; margin: 18px 0; flex-wrap: wrap; }
+    .compare-box { flex: 1; min-width: 220px; background: #f8f9fa; border-radius: 12px; padding: 16px 18px; border: 1.5px solid #dde3ea; }
+    .compare-box h4 { font-size: 0.8em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .compare-box.good h4 { color: var(--teal); }
+    .compare-box.bad  h4 { color: var(--red); }
+
+    /* ── Chart canvas ────────────────────────────────── */
+    .chart-wrap { background: white; border: 1.5px solid #dde3ea; border-radius: 14px; padding: 20px; margin: 18px 0; }
+    .chart-title { font-size: 0.78em; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #7f8c8d; margin-bottom: 14px; }
+    canvas { max-height: 280px; }
+
+    /* ── Table ───────────────────────────────────────── */
+    .cmp-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85em; }
+    .cmp-table th { background: var(--orange); color: white; padding: 10px 14px; text-align: left; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
+    .cmp-table td { padding: 10px 14px; border-bottom: 1px solid #e8edf2; vertical-align: top; }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table tr:nth-child(even) td { background: #fef9f4; }
+
+    /* ── Broadcasting diagram ────────────────────────── */
+    .bc-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; flex-wrap: wrap; }
+    .bc-arr { display: flex; }
+    .bc-cell { width: 38px; height: 34px; border: 1.5px solid var(--blue); background: var(--blue-lt); color: #1a5276; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: 700; font-family: Consolas, monospace; margin: -0.75px; }
+    .bc-cell.ghost { border-style: dashed; background: white; color: #aab4bc; }
+    .bc-op { font-size: 1.2em; font-weight: 800; color: #7f8c8d; }
+    .bc-label { font-size: 0.72em; color: #7f8c8d; font-family: Consolas, monospace; }
+
+    .ch-nav { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 18px; border-top: 1px solid #e8edf2; }
+    .ch-nav a { font-size: 0.8em; font-weight: 700; color: var(--orange); text-decoration: none; }
+    .ch-nav a:hover { text-decoration: underline; }
+
+    @media (max-width: 540px) { .chapter-body { padding: 20px 16px 24px; } pre { font-size: 0.76em; } }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <a class="back" href="index.html">← NumPy</a>
+  <h1>NumPy — Complete Guide</h1>
+  <p>Arrays · Operations · Indexing · Real data tasks</p>
+</div>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · Why NumPy</a>
+  <a class="toc-pill" href="#ch2">2 · Creating Arrays</a>
+  <a class="toc-pill" href="#ch3">3 · Array Operations</a>
+  <a class="toc-pill" href="#ch4">4 · Indexing &amp; Slicing</a>
+  <a class="toc-pill" href="#ch5">5 · 2D Arrays</a>
+  <a class="toc-pill" href="#ch6">6 · Broadcasting</a>
+  <a class="toc-pill" href="#ch7">7 · Aggregations</a>
+  <a class="toc-pill" href="#ch8">8 · Real Tasks</a>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════
+     CH 1 — WHY NUMPY
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch1">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 1</div>
+    <div class="chapter-title">Why NumPy?</div>
+    <div class="chapter-sub">The problem with plain Python lists · speed · memory</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>The problem NumPy solves</h3>
+    <p>Imagine you have 1 million sales figures and you want to add a 10% tax to every one. In plain Python you write a loop. NumPy lets you do it in one line — and it runs roughly <strong>100× faster</strong> because the computation happens in compiled C code, not interpreted Python.</p>
+
+    <div class="compare-row">
+      <div class="compare-box bad">
+        <h4>❌ Plain Python list</h4>
+        <pre style="margin:0;font-size:0.8em;border:none;padding:0;background:transparent;color:#2c3e50;">prices = [10.0, 20.0, 30.0]
+with_tax = []
+for p in prices:
+    with_tax.append(p * 1.2)
+<span style="color:#e74c3c;"># Loop over every element</span></pre>
+      </div>
+      <div class="compare-box good">
+        <h4>✓ NumPy array</h4>
+        <pre style="margin:0;font-size:0.8em;border:none;padding:0;background:transparent;color:#2c3e50;">import numpy as np
+prices = np.array([10.0, 20.0, 30.0])
+with_tax = prices * 1.2
+<span style="color:#16a085;"># Applies to all at once</span></pre>
+      </div>
+    </div>
+
+    <h3>Speed comparison — visualised</h3>
+    <div class="chart-wrap">
+      <div class="chart-title">Time to multiply 1 million numbers (lower = better)</div>
+      <canvas id="speedChart"></canvas>
+    </div>
+
+    <h3>What is a NumPy array?</h3>
+    <p>A NumPy array is a grid of values, <strong>all the same type</strong>, stored in a single contiguous block of memory. This is what makes it fast — no boxing, no object overhead, no type-checking per element.</p>
+
+    <div class="arr-wrap">
+      <div class="array-vis">
+        <div class="arr-cell">10.0</div>
+        <div class="arr-cell">20.0</div>
+        <div class="arr-cell">30.0</div>
+        <div class="arr-cell">40.0</div>
+        <div class="arr-cell">50.0</div>
+      </div>
+      <div class="arr-label">dtype: float64 &nbsp;|&nbsp; shape: (5,) &nbsp;|&nbsp; 5 × 8 bytes = 40 bytes contiguous in memory</div>
+    </div>
+
+    <p>A Python list storing the same 5 numbers uses roughly <strong>5× more memory</strong> because each element is a full Python object with its own type info, reference count, and pointer.</p>
+
+    <h3>Installing and importing</h3>
+<pre><span class="c"># Install once (if not already installed)</span>
+pip install numpy
+
+<span class="c"># Import — always use the alias np</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np</pre>
+
+    <div class="box box-orange">
+      <strong>np is universal.</strong> Every tutorial, textbook, and job uses <code>import numpy as np</code>. Never use a different alias — anyone reading your code expects <code>np</code>.
+    </div>
+
+    <div class="ch-nav"><span></span><a href="#ch2">Chapter 2 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 2 — CREATING ARRAYS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch2">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 2</div>
+    <div class="chapter-title">Creating Arrays</div>
+    <div class="chapter-sub">array · zeros · ones · arange · linspace · random</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>From a Python list</h3>
+<pre>prices = np.<span class="fn">array</span>([<span class="nm">10.0</span>, <span class="nm">20.0</span>, <span class="nm">30.0</span>, <span class="nm">40.0</span>])
+<span class="fn">print</span>(prices.dtype)   <span class="ou"># float64</span>
+<span class="fn">print</span>(prices.shape)   <span class="ou"># (4,)</span>
+<span class="fn">print</span>(prices.ndim)    <span class="ou"># 1</span></pre>
+
+    <div class="box box-blue">
+      <strong>dtype</strong> = data type (float64, int32, bool, etc.). NumPy infers it from your data. You can force it: <code>np.array([1,2,3], dtype=np.float32)</code>. The dtype affects memory usage and precision.
+    </div>
+
+    <h3>Filled arrays</h3>
+<pre><span class="c"># All zeros — useful to pre-allocate results</span>
+np.<span class="fn">zeros</span>(<span class="nm">5</span>)           <span class="ou"># [0. 0. 0. 0. 0.]</span>
+np.<span class="fn">zeros</span>((<span class="nm">3</span>, <span class="nm">4</span>))       <span class="ou"># 3×4 matrix of 0.0</span>
+
+<span class="c"># All ones</span>
+np.<span class="fn">ones</span>(<span class="nm">5</span>)            <span class="ou"># [1. 1. 1. 1. 1.]</span>
+
+<span class="c"># Any fill value</span>
+np.<span class="fn">full</span>(<span class="nm">5</span>, <span class="nm">99</span>)        <span class="ou"># [99 99 99 99 99]</span></pre>
+
+    <h3>Ranges</h3>
+<pre><span class="c"># Like Python range() but returns an array</span>
+np.<span class="fn">arange</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">2</span>)   <span class="ou"># [0 2 4 6 8]</span>
+np.<span class="fn">arange</span>(<span class="nm">1.0</span>, <span class="nm">2.0</span>, <span class="nm">0.25</span>)  <span class="ou"># [1.   1.25 1.5  1.75]</span>
+
+<span class="c"># N evenly spaced points between start and stop (inclusive)</span>
+np.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">100</span>, <span class="nm">5</span>)  <span class="ou"># [  0.  25.  50.  75. 100.]</span></pre>
+
+    <div class="chart-wrap">
+      <div class="chart-title">arange vs linspace — 10 points from 0 to 9</div>
+      <canvas id="rangeChart"></canvas>
+    </div>
+
+    <h3>Random arrays</h3>
+<pre><span class="c"># Reproducibility: set a seed first</span>
+rng = np.random.<span class="fn">default_rng</span>(seed=<span class="nm">42</span>)
+
+<span class="c"># Uniform random floats between 0 and 1</span>
+rng.<span class="fn">random</span>(<span class="nm">5</span>)           <span class="ou"># [0.77 0.43 0.02 0.85 0.51]</span>
+
+<span class="c"># Random integers</span>
+rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">100</span>, size=<span class="nm">6</span>)  <span class="ou"># [77 43  2 85 51 37]</span>
+
+<span class="c"># Normal distribution — mean=0, std=1</span>
+rng.<span class="fn">standard_normal</span>(<span class="nm">5</span>)   <span class="ou"># [ 0.30 -0.94  1.12 -0.21  0.47]</span></pre>
+
+    <div class="box box-teal">
+      <strong>Always set a seed when doing analysis.</strong> It makes your results reproducible — running the script tomorrow gives the same random numbers as today. Use <code>np.random.default_rng(seed=42)</code> (the modern API).
+    </div>
+
+    <div class="ch-nav"><a href="#ch1">← Ch 1</a><a href="#ch3">Ch 3 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 3 — ARRAY OPERATIONS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch3">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 3</div>
+    <div class="chapter-title">Array Operations</div>
+    <div class="chapter-sub">Vectorised arithmetic · universal functions · real examples</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Vectorised arithmetic</h3>
+    <p>Every arithmetic operator (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code>) applies <strong>element-wise</strong> to every value in the array simultaneously. No loop needed.</p>
+
+<pre>revenue = np.<span class="fn">array</span>([<span class="nm">1000</span>, <span class="nm">1500</span>, <span class="nm">800</span>, <span class="nm">2200</span>, <span class="nm">950</span>])
+costs   = np.<span class="fn">array</span>([ <span class="nm">400</span>,  <span class="nm">600</span>, <span class="nm">300</span>,  <span class="nm">900</span>, <span class="nm">380</span>])
+
+profit     = revenue - costs          <span class="ou"># [600 900 500 1300 570]</span>
+margin_pct = profit / revenue * <span class="nm">100</span>  <span class="ou"># [60.  60.  62.5 59.1 60. ]</span>
+with_tax   = revenue * <span class="nm">1.2</span>          <span class="ou"># [1200. 1800. 960. 2640. 1140.]</span></pre>
+
+    <div class="chart-wrap">
+      <div class="chart-title">Revenue vs Costs vs Profit — element-wise subtraction</div>
+      <canvas id="profitChart"></canvas>
+    </div>
+
+    <h3>Universal functions (ufuncs)</h3>
+    <p>NumPy provides mathematical functions that operate element-wise on entire arrays — these are called <strong>ufuncs</strong>.</p>
+
+<pre>values = np.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">9</span>, <span class="nm">16</span>, <span class="nm">25</span>])
+
+np.<span class="fn">sqrt</span>(values)        <span class="ou"># [1. 2. 3. 4. 5.]</span>
+np.<span class="fn">log</span>(values)         <span class="ou"># natural log of each</span>
+np.<span class="fn">log10</span>(values)       <span class="ou"># log base 10</span>
+np.<span class="fn">abs</span>([-<span class="nm">3</span>, <span class="nm">4</span>, -<span class="nm">1</span>])    <span class="ou"># [3 4 1]</span>
+np.<span class="fn">round</span>([<span class="nm">1.6</span>, <span class="nm">2.3</span>, <span class="nm">3.5</span>], <span class="nm">0</span>)  <span class="ou"># [2. 2. 4.]</span>
+np.<span class="fn">exp</span>(values)         <span class="ou"># e^x for each element</span></pre>
+
+    <h3>Comparison operators — boolean arrays</h3>
+    <p>Comparisons also work element-wise and return a <strong>boolean array</strong>. This is the foundation of filtering.</p>
+
+<pre>scores = np.<span class="fn">array</span>([<span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">88</span>, <span class="nm">61</span>, <span class="nm">95</span>, <span class="nm">33</span>])
+
+mask   = scores >= <span class="nm">70</span>    <span class="ou"># [False  True  True False  True False]</span>
+passing = scores[mask]    <span class="ou"># [72 88 95]  — only the True ones</span>
+
+<span class="c"># Count how many passed</span>
+<span class="fn">print</span>(mask.<span class="fn">sum</span>())         <span class="ou"># 3  (True counts as 1)</span>
+<span class="fn">print</span>(mask.<span class="fn">mean</span>() * <span class="nm">100</span>) <span class="ou"># 50.0  (50% passing rate)</span></pre>
+
+    <div class="box box-orange">
+      <strong>Boolean arrays are incredibly powerful.</strong> The pattern <code>array[condition]</code> is called <em>boolean indexing</em> — it filters the array to only the elements where the condition is True. You will use this constantly in Pandas too.
+    </div>
+
+    <div class="ch-nav"><a href="#ch2">← Ch 2</a><a href="#ch4">Ch 4 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 4 — INDEXING & SLICING
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch4">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 4</div>
+    <div class="chapter-title">Indexing &amp; Slicing</div>
+    <div class="chapter-sub">Accessing elements · ranges · fancy indexing</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Basic indexing (1D)</h3>
+
+    <div class="arr-wrap">
+      <div class="array-vis">
+        <div class="arr-cell hl">10</div>
+        <div class="arr-cell">20</div>
+        <div class="arr-cell">30</div>
+        <div class="arr-cell">40</div>
+        <div class="arr-cell">50</div>
+      </div>
+      <div class="arr-label">index: &nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4</div>
+      <div class="arr-label">negative:&nbsp;-5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1</div>
+    </div>
+
+<pre>a = np.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>])
+
+a[<span class="nm">0</span>]    <span class="ou"># 10  — first element</span>
+a[<span class="nm">4</span>]    <span class="ou"># 50  — last by index</span>
+a[-<span class="nm">1</span>]   <span class="ou"># 50  — last by negative index</span>
+a[-<span class="nm">2</span>]   <span class="ou"># 40  — second from last</span></pre>
+
+    <h3>Slicing — [start : stop : step]</h3>
+    <p>Slicing returns a <strong>view</strong> of the original array (not a copy). Modifying the slice modifies the original — be careful.</p>
+
+    <div class="arr-wrap">
+      <div class="array-vis">
+        <div class="arr-cell dim">10</div>
+        <div class="arr-cell hl">20</div>
+        <div class="arr-cell hl">30</div>
+        <div class="arr-cell hl">40</div>
+        <div class="arr-cell dim">50</div>
+      </div>
+      <div class="arr-label">a[1:4] &nbsp;→&nbsp; [20, 30, 40]</div>
+    </div>
+
+<pre>a[<span class="nm">1</span>:<span class="nm">4</span>]    <span class="ou"># [20 30 40]  — index 1 up to (not including) 4</span>
+a[:<span class="nm">3</span>]     <span class="ou"># [10 20 30]  — from start to index 3</span>
+a[<span class="nm">2</span>:]     <span class="ou"># [30 40 50]  — from index 2 to end</span>
+a[::<span class="nm">2</span>]    <span class="ou"># [10 30 50]  — every 2nd element</span>
+a[::-<span class="nm">1</span>]   <span class="ou"># [50 40 30 20 10]  — reversed</span></pre>
+
+    <h3>Fancy indexing — pick specific elements</h3>
+<pre>a = np.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>])
+
+<span class="c"># Pass a list of indices</span>
+a[[<span class="nm">0</span>, <span class="nm">2</span>, <span class="nm">4</span>]]    <span class="ou"># [10 30 50]</span>
+a[[<span class="nm">4</span>, <span class="nm">1</span>, <span class="nm">3</span>]]    <span class="ou"># [50 20 40]  — order matters</span></pre>
+
+    <div class="box box-blue">
+      <strong>View vs copy:</strong> slicing gives a <em>view</em> (no memory copied). Fancy indexing gives a <em>copy</em>. To force a copy from a slice: <code>a[1:4].copy()</code>. This matters when you want to modify without affecting the original.
+    </div>
+
+    <div class="ch-nav"><a href="#ch3">← Ch 3</a><a href="#ch5">Ch 5 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 5 — 2D ARRAYS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch5">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 5</div>
+    <div class="chapter-title">2D Arrays</div>
+    <div class="chapter-sub">Matrices · rows &amp; columns · reshape · real data tables</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Creating a 2D array</h3>
+    <p>A 2D array is a grid of rows and columns — think of it as a spreadsheet or a data table. Shape is always <code>(rows, columns)</code>.</p>
+
+<pre><span class="c"># Sales data: 3 products × 4 months</span>
+sales = np.<span class="fn">array</span>([
+    [<span class="nm">120</span>, <span class="nm">135</span>, <span class="nm">98</span>,  <span class="nm">150</span>],  <span class="c"># Product A</span>
+    [<span class="nm">200</span>, <span class="nm">185</span>, <span class="nm">210</span>, <span class="nm">195</span>],  <span class="c"># Product B</span>
+    [ <span class="nm">80</span>,  <span class="nm">95</span>,  <span class="nm">88</span>, <span class="nm">102</span>],  <span class="c"># Product C</span>
+])
+
+sales.shape   <span class="ou"># (3, 4)  → 3 rows, 4 columns</span>
+sales.ndim    <span class="ou"># 2</span>
+sales.size    <span class="ou"># 12  → total elements</span></pre>
+
+    <h3>Indexing a 2D array — [row, column]</h3>
+
+    <div style="overflow-x:auto;margin:18px 0;">
+      <table style="border-collapse:collapse;font-family:Consolas,monospace;font-size:0.82em;">
+        <tr>
+          <td style="padding:6px 10px;color:#7f8c8d;font-size:0.85em;"></td>
+          <td style="padding:6px 14px;text-align:center;color:#7f8c8d;font-size:0.85em;">col 0</td>
+          <td style="padding:6px 14px;text-align:center;color:#7f8c8d;font-size:0.85em;">col 1</td>
+          <td style="padding:6px 14px;text-align:center;color:#7f8c8d;font-size:0.85em;">col 2</td>
+          <td style="padding:6px 14px;text-align:center;color:#7f8c8d;font-size:0.85em;">col 3</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px;color:#7f8c8d;font-size:0.85em;">row 0</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">120</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">135</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">98</td>
+          <td style="padding:8px 14px;border:2px solid var(--orange);background:var(--orange-lt);color:#784212;text-align:center;font-weight:700;">150 ←</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px;color:#7f8c8d;font-size:0.85em;">row 1</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:var(--purple);color:white;text-align:center;font-weight:700;">200</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:var(--purple);color:white;text-align:center;font-weight:700;">185</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:var(--purple);color:white;text-align:center;font-weight:700;">210</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:var(--purple);color:white;text-align:center;font-weight:700;">195</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px;color:#7f8c8d;font-size:0.85em;">row 2</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">80</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">95</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">88</td>
+          <td style="padding:8px 14px;border:2px solid #c39bd3;background:#f5eef8;color:#5b2c6f;text-align:center;font-weight:700;">102</td>
+        </tr>
+      </table>
+      <p style="font-size:0.78em;color:#7f8c8d;margin-top:6px;">Purple row = sales[1, :] &nbsp;·&nbsp; Orange cell = sales[0, 3]</p>
+    </div>
+
+<pre>sales[<span class="nm">1</span>, <span class="nm">3</span>]      <span class="ou"># 195  — row 1, col 3</span>
+sales[<span class="nm">0</span>, :]      <span class="ou"># [120 135  98 150]  — entire row 0 (Product A)</span>
+sales[:, <span class="nm">2</span>]      <span class="ou"># [ 98 210  88]  — entire col 2 (Month 3)</span>
+sales[<span class="nm">1</span>:, :<span class="nm">2</span>]    <span class="ou"># rows 1+, first 2 cols</span></pre>
+
+    <h3>Reshape</h3>
+<pre>flat = np.<span class="fn">arange</span>(<span class="nm">12</span>)           <span class="ou"># [0 1 2 3 4 5 6 7 8 9 10 11]</span>
+grid = flat.<span class="fn">reshape</span>(<span class="nm">3</span>, <span class="nm">4</span>)       <span class="ou"># 3 rows × 4 cols</span>
+flat_again = grid.<span class="fn">flatten</span>()     <span class="ou"># back to 1D</span>
+
+<span class="c"># -1 lets NumPy calculate one dimension automatically</span>
+grid2 = flat.<span class="fn">reshape</span>(<span class="nm">2</span>, -<span class="nm">1</span>)    <span class="ou"># shape (2, 6) — NumPy works out 6</span></pre>
+
+    <div class="ch-nav"><a href="#ch4">← Ch 4</a><a href="#ch6">Ch 6 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 6 — BROADCASTING
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch6">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 6</div>
+    <div class="chapter-title">Broadcasting</div>
+    <div class="chapter-sub">How NumPy handles different shapes · the rules</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>What is broadcasting?</h3>
+    <p>Broadcasting is NumPy's rule for how to apply operations between arrays of <strong>different shapes</strong>. Instead of throwing an error, NumPy "stretches" the smaller array to match the larger one — conceptually, not in memory.</p>
+
+    <h3>Scalar broadcasting (simplest case)</h3>
+    <p>When you write <code>sales * 1.2</code>, the scalar <code>1.2</code> is broadcast to match the shape of <code>sales</code>:</p>
+
+    <div style="margin:18px 0;">
+      <div class="bc-row">
+        <div class="bc-arr">
+          <div class="bc-cell">120</div><div class="bc-cell">135</div><div class="bc-cell">98</div><div class="bc-cell">150</div>
+        </div>
+        <div class="bc-op">×</div>
+        <div class="bc-arr"><div class="bc-cell" style="background:var(--orange-lt);border-color:var(--orange);color:#784212;">1.2</div></div>
+        <div class="bc-op">=</div>
+        <div class="bc-arr">
+          <div class="bc-cell" style="background:var(--teal-lt);border-color:var(--teal);color:#0e6655;">144</div>
+          <div class="bc-cell" style="background:var(--teal-lt);border-color:var(--teal);color:#0e6655;">162</div>
+          <div class="bc-cell" style="background:var(--teal-lt);border-color:var(--teal);color:#0e6655;">118</div>
+          <div class="bc-cell" style="background:var(--teal-lt);border-color:var(--teal);color:#0e6655;">180</div>
+        </div>
+      </div>
+      <div class="bc-label">shape (4,) × shape () → shape (4,)</div>
+    </div>
+
+    <h3>1D + 1D broadcasting (column-wise operation)</h3>
+    <p>A practical example: you have a 3×4 sales table and want to apply a different discount to each of the 3 products (rows).</p>
+
+    <div style="margin:18px 0;">
+      <div class="bc-row">
+        <div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell">120</div><div class="bc-cell">135</div><div class="bc-cell">98</div><div class="bc-cell">150</div></div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell">200</div><div class="bc-cell">185</div><div class="bc-cell">210</div><div class="bc-cell">195</div></div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell">80</div><div class="bc-cell">95</div><div class="bc-cell">88</div><div class="bc-cell">102</div></div>
+          <div class="bc-label">sales (3, 4)</div>
+        </div>
+        <div class="bc-op">×</div>
+        <div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell" style="background:var(--orange-lt);border-color:var(--orange);color:#784212;">0.9</div><div class="bc-cell ghost">0.9</div><div class="bc-cell ghost">0.9</div><div class="bc-cell ghost">0.9</div></div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell" style="background:var(--orange-lt);border-color:var(--orange);color:#784212;">1.0</div><div class="bc-cell ghost">1.0</div><div class="bc-cell ghost">1.0</div><div class="bc-cell ghost">1.0</div></div>
+          <div class="bc-row" style="margin:2px 0;"><div class="bc-cell" style="background:var(--orange-lt);border-color:var(--orange);color:#784212;">1.1</div><div class="bc-cell ghost">1.1</div><div class="bc-cell ghost">1.1</div><div class="bc-cell ghost">1.1</div></div>
+          <div class="bc-label">discounts (3,1) → broadcast to (3,4)</div>
+        </div>
+      </div>
+    </div>
+
+<pre>sales     = np.<span class="fn">array</span>([[<span class="nm">120</span>,<span class="nm">135</span>,<span class="nm">98</span>,<span class="nm">150</span>],[<span class="nm">200</span>,<span class="nm">185</span>,<span class="nm">210</span>,<span class="nm">195</span>],[<span class="nm">80</span>,<span class="nm">95</span>,<span class="nm">88</span>,<span class="nm">102</span>]])
+discounts = np.<span class="fn">array</span>([<span class="nm">0.9</span>, <span class="nm">1.0</span>, <span class="nm">1.1</span>]).<span class="fn">reshape</span>(<span class="nm">3</span>, <span class="nm">1</span>)  <span class="c"># shape (3,1)</span>
+
+adjusted = sales * discounts   <span class="c"># broadcasts to (3,4)</span>
+<span class="ou"># [[108. 121.5  88.2 135. ]</span>
+<span class="ou">#  [200. 185.  210.  195. ]</span>
+<span class="ou">#  [ 88. 104.5  96.8 112.2]]</span></pre>
+
+    <div class="box box-orange">
+      <strong>Broadcasting rule:</strong> two shapes are compatible if, comparing from the right, each pair of dimensions is either equal or one of them is 1. NumPy stretches the dimension of size 1. If shapes are incompatible you get a <code>ValueError</code>.
+    </div>
+
+    <div class="ch-nav"><a href="#ch5">← Ch 5</a><a href="#ch7">Ch 7 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 7 — AGGREGATIONS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch7">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 7</div>
+    <div class="chapter-title">Aggregations</div>
+    <div class="chapter-sub">sum · mean · std · min · max · axis parameter</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Basic aggregations (1D)</h3>
+<pre>data = np.<span class="fn">array</span>([<span class="nm">23</span>, <span class="nm">45</span>, <span class="nm">12</span>, <span class="nm">67</span>, <span class="nm">34</span>, <span class="nm">89</span>, <span class="nm">56</span>])
+
+data.<span class="fn">sum</span>()    <span class="ou"># 326</span>
+data.<span class="fn">mean</span>()   <span class="ou"># 46.57</span>
+data.<span class="fn">std</span>()    <span class="ou"># 25.64  — standard deviation</span>
+data.<span class="fn">var</span>()    <span class="ou"># 657.39 — variance</span>
+data.<span class="fn">min</span>()    <span class="ou"># 12</span>
+data.<span class="fn">max</span>()    <span class="ou"># 89</span>
+data.<span class="fn">argmin</span>() <span class="ou"># 2  — index of minimum</span>
+data.<span class="fn">argmax</span>() <span class="ou"># 5  — index of maximum</span>
+np.<span class="fn">median</span>(data)   <span class="ou"># 45.0</span>
+np.<span class="fn">percentile</span>(data, <span class="nm">75</span>)  <span class="ou"># 75th percentile</span></pre>
+
+    <h3>The axis parameter — crucial for 2D</h3>
+    <p>For 2D arrays, <code>axis=0</code> collapses <strong>down the rows</strong> (gives one value per column). <code>axis=1</code> collapses <strong>across columns</strong> (gives one value per row).</p>
+
+    <div style="overflow-x:auto;margin:18px 0;">
+      <table style="border-collapse:collapse;font-family:Consolas,monospace;font-size:0.85em;text-align:center;">
+        <tr>
+          <td style="padding:4px 8px;color:#7f8c8d;"></td>
+          <td style="padding:4px 12px;color:#7f8c8d;">Jan</td>
+          <td style="padding:4px 12px;color:#7f8c8d;">Feb</td>
+          <td style="padding:4px 12px;color:#7f8c8d;">Mar</td>
+          <td style="padding:4px 12px;color:#7f8c8d;">Apr</td>
+          <td style="padding:4px 12px;color:var(--teal);font-weight:800;">← axis=1 sum</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;color:#7f8c8d;">Prod A</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">120</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">135</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">98</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">150</td>
+          <td style="padding:8px 12px;background:var(--teal-lt);color:#0e6655;font-weight:800;">503</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;color:#7f8c8d;">Prod B</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">200</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">185</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">210</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">195</td>
+          <td style="padding:8px 12px;background:var(--teal-lt);color:#0e6655;font-weight:800;">790</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;color:#7f8c8d;">Prod C</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">80</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">95</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">88</td>
+          <td style="padding:8px 12px;border:1.5px solid #c39bd3;background:#f5eef8;font-weight:700;">102</td>
+          <td style="padding:8px 12px;background:var(--teal-lt);color:#0e6655;font-weight:800;">365</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px;color:var(--orange);font-weight:800;">axis=0 ↓</td>
+          <td style="padding:8px 12px;background:var(--orange-lt);color:#784212;font-weight:800;">400</td>
+          <td style="padding:8px 12px;background:var(--orange-lt);color:#784212;font-weight:800;">415</td>
+          <td style="padding:8px 12px;background:var(--orange-lt);color:#784212;font-weight:800;">396</td>
+          <td style="padding:8px 12px;background:var(--orange-lt);color:#784212;font-weight:800;">447</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
+
+<pre>sales.<span class="fn">sum</span>(axis=<span class="nm">0</span>)    <span class="ou"># [400 415 396 447] — total per month</span>
+sales.<span class="fn">sum</span>(axis=<span class="nm">1</span>)    <span class="ou"># [503 790 365]    — total per product</span>
+sales.<span class="fn">mean</span>(axis=<span class="nm">1</span>)   <span class="ou"># [125.75 197.5  91.25] — avg per product</span></pre>
+
+    <div class="ch-nav"><a href="#ch6">← Ch 6</a><a href="#ch8">Ch 8 →</a></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 8 — REAL TASKS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch8">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 8</div>
+    <div class="chapter-title">Real Analysis Tasks</div>
+    <div class="chapter-sub">Normalisation · percentiles · missing values · correlation</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Task 1: Normalise data (min-max scaling)</h3>
+    <p>Scaling values to the 0–1 range so that different features are comparable. Used before machine learning models.</p>
+
+<pre>raw = np.<span class="fn">array</span>([<span class="nm">200</span>, <span class="nm">450</span>, <span class="nm">150</span>, <span class="nm">800</span>, <span class="nm">320</span>])
+
+normalised = (raw - raw.<span class="fn">min</span>()) / (raw.<span class="fn">max</span>() - raw.<span class="fn">min</span>())
+<span class="ou"># [0.077 0.462 0.    1.    0.262]</span>
+<span class="c"># 150 → 0.0 (minimum), 800 → 1.0 (maximum)</span></pre>
+
+    <h3>Task 2: Z-score standardisation</h3>
+    <p>Scaling so the mean is 0 and standard deviation is 1. Tells you how many standard deviations each value is from the mean.</p>
+
+<pre>standardised = (raw - raw.<span class="fn">mean</span>()) / raw.<span class="fn">std</span>()
+<span class="ou"># [-0.60  0.55 -0.82  1.88 -0.02]</span>
+<span class="c"># 800 is 1.88 standard deviations above average</span></pre>
+
+    <h3>Task 3: Handling NaN values</h3>
+<pre>data = np.<span class="fn">array</span>([<span class="nm">10.0</span>, np.nan, <span class="nm">30.0</span>, np.nan, <span class="nm">50.0</span>])
+
+np.<span class="fn">isnan</span>(data)         <span class="ou"># [F F? T F T F... ]  — find NaNs</span>
+np.<span class="fn">nanmean</span>(data)       <span class="ou"># 30.0  — ignores NaN</span>
+np.<span class="fn">nansum</span>(data)        <span class="ou"># 90.0</span>
+np.<span class="fn">nanstd</span>(data)        <span class="ou"># 16.33</span>
+
+<span class="c"># Replace NaN with the mean</span>
+mean_val = np.<span class="fn">nanmean</span>(data)
+data[np.<span class="fn">isnan</span>(data)] = mean_val
+<span class="ou"># [10. 30. 30. 30. 50.]</span></pre>
+
+    <h3>Task 4: Sorting and ranking</h3>
+<pre>scores = np.<span class="fn">array</span>([<span class="nm">88</span>, <span class="nm">72</span>, <span class="nm">95</span>, <span class="nm">61</span>, <span class="nm">84</span>])
+
+np.<span class="fn">sort</span>(scores)           <span class="ou"># [61 72 84 88 95]</span>
+np.<span class="fn">argsort</span>(scores)        <span class="ou"># [3 1 4 0 2]  — indices that would sort it</span>
+
+<span class="c"># Get top 3 scores</span>
+top3_idx = np.<span class="fn">argsort</span>(scores)[-<span class="nm">3</span>:][::-<span class="nm">1</span>]
+<span class="ou"># [2 0 4]  → scores[top3_idx] = [95 88 84]</span></pre>
+
+    <h3>Task 5: Correlation between two variables</h3>
+<pre>hours_studied  = np.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>, <span class="nm">7</span>])
+exam_scores    = np.<span class="fn">array</span>([<span class="nm">45</span>, <span class="nm">55</span>, <span class="nm">60</span>, <span class="nm">70</span>, <span class="nm">75</span>, <span class="nm">85</span>, <span class="nm">90</span>])
+
+corr_matrix = np.<span class="fn">corrcoef</span>(hours_studied, exam_scores)
+r = corr_matrix[<span class="nm">0</span>, <span class="nm">1</span>]
+<span class="fn">print</span>(<span class="fn">f</span><span class="st">"r = {r:.3f}"</span>)   <span class="ou"># r = 0.997  — very strong positive correlation</span></pre>
+
+    <div class="chart-wrap">
+      <div class="chart-title">Hours studied vs exam score — correlation visualised</div>
+      <canvas id="corrChart"></canvas>
+    </div>
+
+    <div class="box box-teal">
+      <strong>NumPy's role in your workflow:</strong> you will rarely use NumPy directly for analysis once you learn Pandas — Pandas is built on top of NumPy and does all of this with labelled columns and rows. But understanding NumPy makes you understand <em>why</em> Pandas works the way it does, and it is essential for machine learning (scikit-learn, PyTorch, TensorFlow all use NumPy arrays).
+    </div>
+
+    <div class="ch-nav"><a href="#ch7">← Ch 7</a><a href="../index.html">↑ Data Analysis Hub</a></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── Speed chart ──────────────────────────────────────────
+new Chart(document.getElementById('speedChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Python list loop', 'NumPy vectorised'],
+    datasets: [{
+      label: 'Time (ms) — 1M multiplications',
+      data: [85, 0.8],
+      backgroundColor: ['#e74c3c', '#16a085'],
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: 'Time (ms)' } }
+    }
+  }
+});
+
+// ── Range chart ──────────────────────────────────────────
+new Chart(document.getElementById('rangeChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'arange(0, 9)',
+        data: [0,1,2,3,4,5,6,7,8,9].map((x,i) => ({x: i, y: 0.7})),
+        backgroundColor: '#e67e22', pointRadius: 8,
+      },
+      {
+        label: 'linspace(0, 9, 10)',
+        data: [0,1,2,3,4,5,6,7,8,9].map((x,i) => ({x: i, y: 0.3})),
+        backgroundColor: '#2980b9', pointRadius: 8,
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      x: { title: { display: true, text: 'Value' } },
+      y: { display: false, min: 0, max: 1 }
+    }
+  }
+});
+
+// ── Profit chart ─────────────────────────────────────────
+new Chart(document.getElementById('profitChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    datasets: [
+      { label: 'Revenue', data: [1000,1500,800,2200,950], backgroundColor: '#2980b9', borderRadius: 6 },
+      { label: 'Costs',   data: [400,600,300,900,380],   backgroundColor: '#e74c3c', borderRadius: 6 },
+      { label: 'Profit',  data: [600,900,500,1300,570],  backgroundColor: '#16a085', borderRadius: 6 },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom' } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+// ── Correlation chart ────────────────────────────────────
+new Chart(document.getElementById('corrChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'Students',
+        data: [{x:1,y:45},{x:2,y:55},{x:3,y:60},{x:4,y:70},{x:5,y:75},{x:6,y:85},{x:7,y:90}],
+        backgroundColor: '#e67e22', pointRadius: 8,
+      },
+      {
+        label: 'Trend',
+        type: 'line',
+        data: [{x:1,y:42},{x:7,y:92}],
+        borderColor: '#8e44ad', borderDash: [6,3], pointRadius: 0, fill: false,
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      x: { title: { display: true, text: 'Hours studied' } },
+      y: { title: { display: true, text: 'Exam score' }, min: 30, max: 100 }
+    }
+  }
+});
+</script>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

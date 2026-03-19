@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    .sql { background: #0d1117; color: #c9d1d9; }
+    .kw  { color: #ff7b72; font-weight: 700; }   /* SQL keywords */
+    .fn  { color: #79c0ff; }                       /* functions */
+    .str { color: #a5d6ff; }                       /* strings */
+    .cmt { color: #8b949e; font-style: italic; }  /* comments */
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    /* SQL result tables */
+    .result-table { border-collapse: collapse; font-size: 0.82em; font-family: Consolas, monospace; margin: 12px 0; }
+    .result-table th { background: #2c3e50; color: white; padding: 7px 14px; text-align: left; }
+    .result-table td { padding: 6px 14px; border-bottom: 1px solid #eaecee; }
+    .result-table tr:last-child td { border-bottom: none; }
+    /* Join diagrams */
+    .join-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0; }
+    .join-card { border-radius: 10px; overflow: hidden; border: 2px solid #dde3ea; }
+    .join-card .jh { background: #2c3e50; color: white; padding: 7px 12px; font-size: 0.8em; font-weight: 800; }
+    .join-card .jb { padding: 10px 12px; font-size: 0.78em; font-family: Consolas, monospace; }
+    .jv { font-size: 0.76em; color: #7f8c8d; font-style: italic; margin-top: 4px; }
+    @media(max-width:560px) { .join-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← SQL</a>
+  <h1>SQL — Theory Guide</h1>
+  <p>From SELECT to CTEs · joins · aggregations · Python integration</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · SELECT Fundamentals</a>
+  <a class="toc-pill" href="#ch2">2 · Filtering &amp; Sorting</a>
+  <a class="toc-pill" href="#ch3">3 · Aggregation &amp; GroupBy</a>
+  <a class="toc-pill" href="#ch4">4 · Joins</a>
+  <a class="toc-pill" href="#ch5">5 · Subqueries &amp; CTEs</a>
+  <a class="toc-pill" href="#ch6">6 · Window Functions</a>
+  <a class="toc-pill" href="#ch7">7 · Writing &amp; Modifying Data</a>
+  <a class="toc-pill" href="#ch8">8 · Python Integration</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">SELECT Fundamentals</div>
+
+  <p>SQL (Structured Query Language) is the standard language for working with relational databases. As a data analyst you'll write more <code>SELECT</code> queries than anything else.</p>
+
+  <h3>Basic query anatomy</h3>
+<pre class="sql"><span class="kw">SELECT</span>  rep_name, region, sales         <span class="cmt">-- which columns</span>
+<span class="kw">FROM</span>    sales                            <span class="cmt">-- which table</span>
+<span class="kw">WHERE</span>   sales > 10000                    <span class="cmt">-- filter rows</span>
+<span class="kw">ORDER BY</span> sales <span class="kw">DESC</span>                      <span class="cmt">-- sort result</span>
+<span class="kw">LIMIT</span>   10;                              <span class="cmt">-- take first 10 rows</span></pre>
+
+  <div style="overflow-x:auto;">
+    <p style="font-size:0.78em; color:#7f8c8d; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Result</p>
+    <table class="result-table">
+      <tr><th>rep_name</th><th>region</th><th>sales</th></tr>
+      <tr><td>Dave</td><td>East</td><td>18300</td></tr>
+      <tr><td>Bob</td><td>South</td><td>15800</td></tr>
+      <tr><td>Eve</td><td>South</td><td>14200</td></tr>
+      <tr><td>Alice</td><td>North</td><td>12400</td></tr>
+    </table>
+  </div>
+
+  <h3>Selecting columns</h3>
+<pre class="sql"><span class="kw">SELECT</span> *                          <span class="cmt">-- all columns (avoid in production)</span>
+<span class="kw">SELECT</span> rep_name, sales
+<span class="kw">SELECT</span> rep_name <span class="kw">AS</span> name,
+       sales * 0.08 <span class="kw">AS</span> commission  <span class="cmt">-- aliasing and expressions</span>
+<span class="kw">SELECT DISTINCT</span> region            <span class="cmt">-- unique values only</span></pre>
+
+  <div class="callout info">
+    <strong>SQL execution order</strong>
+    SQL clauses run in this order, regardless of how you write them:<br>
+    <code>FROM</code> → <code>WHERE</code> → <code>GROUP BY</code> → <code>HAVING</code> → <code>SELECT</code> → <code>ORDER BY</code> → <code>LIMIT</code><br>
+    This matters: you cannot use a <code>SELECT</code> alias in a <code>WHERE</code> clause because WHERE runs before SELECT.
+  </div>
+
+  <h3>Data types</h3>
+<pre class="sql"><span class="cmt">-- SQLite (most common for local analysis)</span>
+TEXT            <span class="cmt">-- any string</span>
+INTEGER         <span class="cmt">-- whole numbers</span>
+REAL            <span class="cmt">-- floating-point</span>
+BLOB            <span class="cmt">-- binary data</span>
+NULL            <span class="cmt">-- missing value</span>
+
+<span class="cmt">-- Type casting</span>
+<span class="kw">CAST</span>(sales <span class="kw">AS</span> REAL)
+<span class="kw">CAST</span>(date_str <span class="kw">AS</span> DATE)</pre>
+
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Filtering & Sorting</div>
+
+<pre class="sql"><span class="cmt">-- Comparisons</span>
+<span class="kw">WHERE</span> sales > 10000
+<span class="kw">WHERE</span> sales <span class="kw">BETWEEN</span> 10000 <span class="kw">AND</span> 20000
+<span class="kw">WHERE</span> region = <span class="str">'South'</span>
+<span class="kw">WHERE</span> region != <span class="str">'North'</span>
+
+<span class="cmt">-- NULL checks</span>
+<span class="kw">WHERE</span> email <span class="kw">IS NULL</span>
+<span class="kw">WHERE</span> email <span class="kw">IS NOT NULL</span>
+
+<span class="cmt">-- List membership</span>
+<span class="kw">WHERE</span> region <span class="kw">IN</span> (<span class="str">'North'</span>, <span class="str">'East'</span>)
+<span class="kw">WHERE</span> region <span class="kw">NOT IN</span> (<span class="str">'Unknown'</span>, <span class="str">'N/A'</span>)
+
+<span class="cmt">-- Pattern matching</span>
+<span class="kw">WHERE</span> rep_name <span class="kw">LIKE</span> <span class="str">'A%'</span>        <span class="cmt">-- starts with A</span>
+<span class="kw">WHERE</span> email <span class="kw">LIKE</span> <span class="str">'%@gmail.com'</span>  <span class="cmt">-- ends with @gmail.com</span>
+<span class="kw">WHERE</span> code <span class="kw">LIKE</span> <span class="str">'A_B'</span>           <span class="cmt">-- _ matches any single char</span>
+
+<span class="cmt">-- Logical operators</span>
+<span class="kw">WHERE</span> region = <span class="str">'South'</span> <span class="kw">AND</span> sales > 12000
+<span class="kw">WHERE</span> month = <span class="str">'Jan'</span>   <span class="kw">OR</span>  month = <span class="str">'Feb'</span>
+<span class="kw">WHERE NOT</span> (region = <span class="str">'North'</span>)</pre>
+
+  <h3>Sorting</h3>
+<pre class="sql"><span class="kw">ORDER BY</span> sales <span class="kw">DESC</span>           <span class="cmt">-- highest first</span>
+<span class="kw">ORDER BY</span> region, sales <span class="kw">DESC</span>  <span class="cmt">-- by region first, then sales descending</span>
+<span class="kw">ORDER BY</span> 3 <span class="kw">DESC</span>               <span class="cmt">-- sort by 3rd column in SELECT list</span></pre>
+
+  <h3>Date filtering</h3>
+<pre class="sql"><span class="cmt">-- In SQLite dates are stored as strings: 'YYYY-MM-DD'</span>
+<span class="kw">WHERE</span> date >= <span class="str">'2024-01-01'</span>
+<span class="kw">WHERE</span> date <span class="kw">BETWEEN</span> <span class="str">'2024-01-01'</span> <span class="kw">AND</span> <span class="str">'2024-03-31'</span>
+<span class="kw">WHERE</span> <span class="fn">strftime</span>(<span class="str">'%Y'</span>, date) = <span class="str">'2024'</span>
+<span class="kw">WHERE</span> <span class="fn">strftime</span>(<span class="str">'%m'</span>, date) = <span class="str">'01'</span>  <span class="cmt">-- January only</span></pre>
+
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Aggregation & GroupBy</div>
+
+<pre class="sql"><span class="cmt">-- Aggregate functions</span>
+<span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(*)          <span class="kw">AS</span> total_rows,
+    <span class="fn">COUNT</span>(email)      <span class="kw">AS</span> non_null_emails,
+    <span class="fn">SUM</span>(sales)        <span class="kw">AS</span> total_sales,
+    <span class="fn">AVG</span>(sales)        <span class="kw">AS</span> avg_sales,
+    <span class="fn">MAX</span>(sales)        <span class="kw">AS</span> highest_sale,
+    <span class="fn">MIN</span>(sales)        <span class="kw">AS</span> lowest_sale
+<span class="kw">FROM</span> sales;</pre>
+
+  <h3>GROUP BY</h3>
+<pre class="sql"><span class="kw">SELECT</span>
+    region,
+    <span class="fn">SUM</span>(sales)   <span class="kw">AS</span> total_sales,
+    <span class="fn">COUNT</span>(*)     <span class="kw">AS</span> num_deals,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(sales), 2) <span class="kw">AS</span> avg_deal
+<span class="kw">FROM</span> sales
+<span class="kw">GROUP BY</span> region
+<span class="kw">ORDER BY</span> total_sales <span class="kw">DESC</span>;</pre>
+
+  <div style="overflow-x:auto;">
+    <table class="result-table">
+      <tr><th>region</th><th>total_sales</th><th>num_deals</th><th>avg_deal</th></tr>
+      <tr><td>South</td><td>30000</td><td>2</td><td>15000.00</td></tr>
+      <tr><td>East</td><td>18300</td><td>1</td><td>18300.00</td></tr>
+      <tr><td>North</td><td>22100</td><td>2</td><td>11050.00</td></tr>
+    </table>
+  </div>
+
+  <h3>HAVING — filter on aggregated values</h3>
+  <p><code>HAVING</code> is like <code>WHERE</code> but applied after aggregation. Use it to filter groups, not individual rows.</p>
+<pre class="sql"><span class="kw">SELECT</span> region, <span class="fn">SUM</span>(sales) <span class="kw">AS</span> total
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> region
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(sales) > 20000    <span class="cmt">-- only groups with total > 20000</span>
+<span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;
+
+<span class="cmt">-- Multi-level grouping</span>
+<span class="kw">SELECT</span> region, month, <span class="fn">SUM</span>(sales) <span class="kw">AS</span> total
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> region, month
+<span class="kw">ORDER BY</span> region, month;</pre>
+
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Joins</div>
+
+  <p>Joins combine rows from two tables using a shared key.</p>
+
+  <div class="join-grid">
+    <div class="join-card">
+      <div class="jh">INNER JOIN</div>
+      <div class="jb">Only rows that match in BOTH tables.<div class="jv">Most common. Drops non-matching rows.</div></div>
+    </div>
+    <div class="join-card">
+      <div class="jh" style="background:#1a6b42;">LEFT JOIN</div>
+      <div class="jb">All rows from left table; NULLs for non-matching right rows.<div class="jv">Use when left table is the "source of truth".</div></div>
+    </div>
+    <div class="join-card">
+      <div class="jh" style="background:#7b3a8f;">RIGHT JOIN</div>
+      <div class="jb">All rows from right table; NULLs for non-matching left rows.<div class="jv">Rare — can always rewrite as LEFT JOIN.</div></div>
+    </div>
+    <div class="join-card">
+      <div class="jh" style="background:#9b4e12;">FULL OUTER JOIN</div>
+      <div class="jb">All rows from both tables; NULLs where no match.<div class="jv">Not supported in SQLite directly.</div></div>
+    </div>
+  </div>
+
+<pre class="sql"><span class="cmt">-- INNER JOIN: only matching reps</span>
+<span class="kw">SELECT</span> s.rep_id, r.name, r.region, s.sales
+<span class="kw">FROM</span>   sales   s
+<span class="kw">JOIN</span>   reps    r <span class="kw">ON</span> s.rep_id = r.rep_id;
+
+<span class="cmt">-- LEFT JOIN: all sales, even if rep details missing</span>
+<span class="kw">SELECT</span> s.sale_id, r.name, s.sales
+<span class="kw">FROM</span>   sales s
+<span class="kw">LEFT JOIN</span> reps r <span class="kw">ON</span> s.rep_id = r.rep_id;
+
+<span class="cmt">-- Find rows with NO match (anti-join pattern)</span>
+<span class="kw">SELECT</span> s.*
+<span class="kw">FROM</span>   sales s
+<span class="kw">LEFT JOIN</span> reps r <span class="kw">ON</span> s.rep_id = r.rep_id
+<span class="kw">WHERE</span>  r.rep_id <span class="kw">IS NULL</span>;    <span class="cmt">-- sales with unknown rep</span>
+
+<span class="cmt">-- Three-table join</span>
+<span class="kw">SELECT</span> s.sale_id, r.name, p.product_name, s.amount
+<span class="kw">FROM</span>   sales s
+<span class="kw">JOIN</span>   reps     r <span class="kw">ON</span> s.rep_id     = r.rep_id
+<span class="kw">JOIN</span>   products p <span class="kw">ON</span> s.product_id  = p.product_id;</pre>
+
+  <div class="callout tip">
+    <strong>Always use table aliases</strong>
+    <code>s</code>, <code>r</code>, <code>p</code> are aliases. Without them, <code>sales.rep_id</code> is explicit but verbose. Aliases make multi-join queries readable.
+  </div>
+
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Subqueries & CTEs</div>
+
+  <h3>Subqueries</h3>
+  <p>A subquery is a query nested inside another query.</p>
+<pre class="sql"><span class="cmt">-- In WHERE: find reps who made more than average</span>
+<span class="kw">SELECT</span> rep_name, sales
+<span class="kw">FROM</span>   sales
+<span class="kw">WHERE</span>  sales > (<span class="kw">SELECT</span> <span class="fn">AVG</span>(sales) <span class="kw">FROM</span> sales);
+
+<span class="cmt">-- In FROM: treat aggregate result as a table</span>
+<span class="kw">SELECT</span> t.region, t.total, t.total / grand.grand_total * 100 <span class="kw">AS</span> pct
+<span class="kw">FROM</span> (
+    <span class="kw">SELECT</span> region, <span class="fn">SUM</span>(sales) <span class="kw">AS</span> total
+    <span class="kw">FROM</span>   sales
+    <span class="kw">GROUP BY</span> region
+) t,
+(<span class="kw">SELECT</span> <span class="fn">SUM</span>(sales) <span class="kw">AS</span> grand_total <span class="kw">FROM</span> sales) grand;</pre>
+
+  <h3>CTEs — Common Table Expressions</h3>
+  <p>CTEs (<code>WITH</code> clauses) give subqueries a name. They make complex queries far easier to read.</p>
+<pre class="sql"><span class="kw">WITH</span> regional_totals <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> region, <span class="fn">SUM</span>(sales) <span class="kw">AS</span> total
+    <span class="kw">FROM</span>   sales
+    <span class="kw">GROUP BY</span> region
+),
+grand_total <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> <span class="fn">SUM</span>(total) <span class="kw">AS</span> grand
+    <span class="kw">FROM</span>   regional_totals
+)
+<span class="kw">SELECT</span>
+    rt.region,
+    rt.total,
+    <span class="fn">ROUND</span>(rt.total * 100.0 / gt.grand, 1) <span class="kw">AS</span> pct_of_total
+<span class="kw">FROM</span>  regional_totals rt, grand_total gt
+<span class="kw">ORDER BY</span> rt.total <span class="kw">DESC</span>;</pre>
+
+  <div class="callout tip">
+    <strong>CTEs over subqueries</strong>
+    Prefer CTEs whenever a subquery is used more than once or the query is getting long. They are easier to debug — you can run just the CTE part to check its output.
+  </div>
+
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Window Functions</div>
+
+  <p>Window functions compute a value over a <em>window</em> of rows related to the current row — without collapsing rows like GROUP BY does. They are among the most powerful tools in SQL.</p>
+
+<pre class="sql"><span class="cmt">-- Syntax: function() OVER (PARTITION BY ... ORDER BY ...)</span>
+
+<span class="cmt">-- Running total</span>
+<span class="kw">SELECT</span>
+    date,
+    sales,
+    <span class="fn">SUM</span>(sales) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> date) <span class="kw">AS</span> running_total
+<span class="kw">FROM</span> sales;
+
+<span class="cmt">-- Rank within each region</span>
+<span class="kw">SELECT</span>
+    rep_name, region, sales,
+    <span class="fn">RANK</span>()     <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> region <span class="kw">ORDER BY</span> sales <span class="kw">DESC</span>) <span class="kw">AS</span> rnk,
+    <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> region <span class="kw">ORDER BY</span> sales <span class="kw">DESC</span>) <span class="kw">AS</span> row_num,
+    <span class="fn">DENSE_RANK</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> region <span class="kw">ORDER BY</span> sales <span class="kw">DESC</span>) <span class="kw">AS</span> dense_rnk
+<span class="kw">FROM</span> sales;
+
+<span class="cmt">-- Each rep's share of their region's total</span>
+<span class="kw">SELECT</span>
+    rep_name, region, sales,
+    <span class="fn">SUM</span>(sales) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> region) <span class="kw">AS</span> region_total,
+    <span class="fn">ROUND</span>(sales * 100.0 / <span class="fn">SUM</span>(sales) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> region), 1) <span class="kw">AS</span> share_pct
+<span class="kw">FROM</span> sales;
+
+<span class="cmt">-- Moving average (7-day)</span>
+<span class="kw">SELECT</span>
+    date, sales,
+    <span class="fn">AVG</span>(sales) <span class="kw">OVER</span> (
+        <span class="kw">ORDER BY</span> date
+        <span class="kw">ROWS BETWEEN</span> 6 <span class="kw">PRECEDING AND CURRENT ROW</span>
+    ) <span class="kw">AS</span> moving_avg_7d
+<span class="kw">FROM</span> daily_sales;
+
+<span class="cmt">-- Previous row value (LAG)</span>
+<span class="kw">SELECT</span>
+    month, sales,
+    <span class="fn">LAG</span>(sales, 1, 0) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> prev_month_sales,
+    sales - <span class="fn">LAG</span>(sales, 1, 0) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> month_over_month
+<span class="kw">FROM</span> monthly_sales;</pre>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Writing & Modifying Data</div>
+
+<pre class="sql"><span class="cmt">-- Create table</span>
+<span class="kw">CREATE TABLE</span> sales (
+    sale_id  INTEGER <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
+    rep_id   INTEGER <span class="kw">NOT NULL</span>,
+    sales    REAL    <span class="kw">NOT NULL</span>,
+    month    TEXT,
+    date     TEXT,
+    <span class="kw">FOREIGN KEY</span> (rep_id) <span class="kw">REFERENCES</span> reps(rep_id)
+);
+
+<span class="cmt">-- Insert rows</span>
+<span class="kw">INSERT INTO</span> sales (rep_id, sales, month, date)
+<span class="kw">VALUES</span> (101, 12400, <span class="str">'Jan'</span>, <span class="str">'2024-01-15'</span>);
+
+<span class="cmt">-- Insert from another table</span>
+<span class="kw">INSERT INTO</span> sales_archive
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> sales <span class="kw">WHERE</span> date < <span class="str">'2023-01-01'</span>;
+
+<span class="cmt">-- Update</span>
+<span class="kw">UPDATE</span> sales
+<span class="kw">SET</span>    sales = sales * 1.05
+<span class="kw">WHERE</span>  region = <span class="str">'North'</span> <span class="kw">AND</span> month = <span class="str">'Jan'</span>;
+
+<span class="cmt">-- Delete</span>
+<span class="kw">DELETE FROM</span> sales <span class="kw">WHERE</span> sale_id = 42;
+
+<span class="cmt">-- Add a column</span>
+<span class="kw">ALTER TABLE</span> sales <span class="kw">ADD COLUMN</span> commission REAL;</pre>
+
+  <div class="callout warn">
+    <strong>Always test UPDATE/DELETE with SELECT first</strong>
+    Replace <code>UPDATE sales SET ... WHERE ...</code> with <code>SELECT * FROM sales WHERE ...</code> to verify you have the right rows before modifying them.
+  </div>
+
+</div>
+
+<!-- Ch 8 -->
+<div class="chapter" id="ch8">
+  <div class="ch-label">Chapter 8</div>
+  <div class="ch-title">Python Integration</div>
+
+  <p>The most common workflow: run SQL from Python, load results directly into a Pandas DataFrame.</p>
+
+  <h3>sqlite3 — built-in, no setup</h3>
+<pre>import sqlite3, pandas as pd
+
+conn = sqlite3.connect('company.db')    # creates file if it doesn't exist
+
+# Execute a query → DataFrame
+df = pd.read_sql("""
+    SELECT region, SUM(sales) AS total
+    FROM   sales
+    GROUP  BY region
+    ORDER  BY total DESC
+""", conn)
+
+print(df)
+
+# Parameterised query (safe — never build SQL by string formatting)
+region = 'South'
+df = pd.read_sql(
+    "SELECT * FROM sales WHERE region = ?",
+    conn,
+    params=(region,)
+)
+
+conn.close()</pre>
+
+  <h3>Write a DataFrame to SQLite</h3>
+<pre>conn = sqlite3.connect('company.db')
+
+df.to_sql(
+    'sales_cleaned',    # table name
+    conn,
+    if_exists='replace',  # 'replace', 'append', or 'fail'
+    index=False
+)
+
+conn.close()</pre>
+
+  <h3>Run arbitrary SQL (INSERT / CREATE / etc.)</h3>
+<pre>conn = sqlite3.connect('company.db')
+cur  = conn.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS reps (
+        rep_id INTEGER PRIMARY KEY,
+        name   TEXT NOT NULL,
+        region TEXT
+    )
+""")
+
+# Insert multiple rows from Python list
+reps_data = [(101,'Alice','North'), (102,'Bob','South'), (103,'Carol','North')]
+cur.executemany("INSERT OR IGNORE INTO reps VALUES (?,?,?)", reps_data)
+
+conn.commit()
+conn.close()</pre>
+
+  <h3>SQLAlchemy — for production databases</h3>
+<pre>from sqlalchemy import create_engine
+import pandas as pd
+
+# PostgreSQL, MySQL, MS SQL Server, etc.
+engine = create_engine('postgresql+psycopg2://user:pass@host:5432/dbname')
+# SQLite:
+engine = create_engine('sqlite:///company.db')
+
+df = pd.read_sql('SELECT * FROM sales LIMIT 1000', engine)
+
+# Write back
+df_results.to_sql('results', engine, if_exists='append', index=False)</pre>
+
+  <div class="callout key">
+    <strong>pandas + SQL is a superpower</strong>
+    Use SQL to filter and aggregate the data at the database level (fast, efficient), then load only what you need into pandas for Python-specific transformations and plotting. Avoid loading entire tables into memory when a WHERE clause can cut the data down first.
+  </div>
+
+  <h3>Complete workflow — SQL + Pandas pipeline</h3>
+<pre>import sqlite3, pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# Connect
+conn = sqlite3.connect('sales.db')
+
+# Aggregate in SQL
+df = pd.read_sql("""
+    WITH monthly AS (
+        SELECT strftime('%Y-%m', date) AS month,
+               region,
+               SUM(sales)             AS total
+        FROM   sales
+        GROUP  BY month, region
+    )
+    SELECT *
+    FROM   monthly
+    ORDER  BY month, region
+""", conn)
+conn.close()
+
+# Pivot for plotting
+pivot = df.pivot(index='month', columns='region', values='total').fillna(0)
+
+# Plot
+fig, ax = plt.subplots(figsize=(12, 5))
+for col in pivot.columns:
+    ax.plot(pivot.index, pivot[col], marker='o', label=col, linewidth=2)
+ax.set_title('Monthly Sales by Region')
+ax.set_xlabel('Month')
+ax.set_ylabel('Total Sales ($)')
+ax.legend()
+ax.tick_params(axis='x', rotation=45)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x,_: f'${x/1e3:.0f}k'))
+ax.spines[['top','right']].set_visible(False)
+plt.tight_layout()
+plt.savefig('monthly_trend.png', dpi=150)
+print("Done.")</pre>
+
+</div>
+</div>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

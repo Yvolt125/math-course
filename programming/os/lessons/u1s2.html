@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Where Are You?</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u1s2',
+  title: 'Where Are You?',
+  subtitle: 'cwd · Absolute vs Relative Paths',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What does cwd stand for in the context of the operating system?',
+      options: ['Core Working Data', 'Current Working Directory', 'Computer Wide Directory', 'Custom Write Destination'],
+      answer: 1,
+      explanation: 'cwd = Current Working Directory. It is the folder your script is "standing in" right now. All relative paths are resolved starting from the cwd.'
+    },
+    {
+      type: 'fill',
+      before: 'In Python, you get the current working directory with ',
+      after: '.getcwd().',
+      answer: 'os',
+      explanation: 'os.getcwd() returns a string like "/home/alice/projects". You must import os first. This is the starting point for all relative paths in your script.'
+    },
+    {
+      type: 'tf',
+      prompt: 'An absolute path always starts from the root of the filesystem.',
+      answer: true,
+      explanation: 'Absolute paths are complete addresses: /home/alice/data/sales.csv on Linux, C:\\Users\\alice\\data\\sales.csv on Windows. They work regardless of where your script is running.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which of these is a relative path?',
+      options: ['/data/sales.csv', 'C:\\Users\\report.csv', 'data/sales.csv', '/home/alice/'],
+      answer: 2,
+      explanation: 'data/sales.csv has no leading slash, so it is relative. It means "look for a folder called data inside the current working directory, then find sales.csv inside that." The result depends on where your script runs from.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does the special path component ".." mean?',
+      options: ['Current directory', 'Parent directory', 'Home directory', 'Root directory'],
+      answer: 1,
+      explanation: '.. means "go up one level". So ../data/file.csv means: go up from the cwd, then into data, then find file.csv. You can chain them: ../../ goes up two levels.'
+    },
+    {
+      type: 'tf',
+      prompt: 'A single dot "." in a path refers to the current directory.',
+      answer: true,
+      explanation: '. means "this directory". ./script.py is the same as script.py. It is useful when you explicitly want to signal "look here, not somewhere on the system PATH".'
+    },
+    {
+      type: 'mc',
+      prompt: 'Your cwd is /home/alice/projects. What does the path ../data/sales.csv resolve to?',
+      options: [
+        '/home/alice/projects/data/sales.csv',
+        '/home/alice/data/sales.csv',
+        '/data/sales.csv',
+        '/home/data/sales.csv'
+      ],
+      answer: 1,
+      explanation: '.. from /home/alice/projects goes up to /home/alice. Then we go into data and find sales.csv — result: /home/alice/data/sales.csv.'
+    },
+    {
+      type: 'fill',
+      before: 'The ~ character in a path is a shortcut for the ',
+      after: ' directory of the current user.',
+      answer: 'home',
+      explanation: '~ expands to your home directory: /home/alice on Linux, /Users/alice on Mac. ~/data/file.csv always refers to the data folder in your home regardless of cwd. Python\'s os.path.expanduser("~") converts it to the full path.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Absolute paths are safer to use in scripts that may be run from different directories.',
+      answer: true,
+      explanation: 'Correct. A relative path like data/file.csv only works when the cwd is what you expect. An absolute path like /home/alice/data/file.csv always resolves the same way, making scripts more reliable.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which Python call changes the current working directory to /tmp?',
+      options: ['os.getcwd("/tmp")', 'os.chdir("/tmp")', 'os.setwd("/tmp")', 'os.move("/tmp")'],
+      answer: 1,
+      explanation: 'os.chdir(path) changes the cwd. After os.chdir("/tmp"), any relative paths in your script will be resolved from /tmp. Use sparingly — it affects all subsequent code in the process.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

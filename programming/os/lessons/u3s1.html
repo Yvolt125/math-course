@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Text Files</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u3s1',
+  title: 'Text Files',
+  subtitle: 'open · read · readlines · with',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What is the recommended way to open a file in Python?',
+      options: [
+        'f = open("file.txt"); data = f.read(); f.close()',
+        'with open("file.txt") as f: data = f.read()',
+        'data = read("file.txt")',
+        'f = File("file.txt").open()'
+      ],
+      answer: 1,
+      explanation: 'The with statement (context manager) automatically closes the file when the block exits — even if an exception occurs. Always prefer it over manually calling f.close(), which is easy to forget or skip on error.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the difference between f.read() and f.readlines()?',
+      options: [
+        'f.read() reads one line; f.readlines() reads the whole file',
+        'f.read() returns the entire file as one string; f.readlines() returns a list of lines',
+        'f.readlines() is faster for large files',
+        'There is no difference'
+      ],
+      answer: 1,
+      explanation: 'f.read() gives you the whole file as a single string (newlines included). f.readlines() gives you a list where each element is one line (including the \\n). For large files, iterate with "for line in f:" instead — it reads one line at a time.'
+    },
+    {
+      type: 'fill',
+      before: 'To open a file for writing (overwriting if it exists) use mode ',
+      after: '.',
+      answer: '"w"',
+      explanation: 'Mode "w" opens for writing and truncates the file if it already exists. Use "a" to append, "r" to read (default), "r+" to read and write. Always specify the mode explicitly for clarity.'
+    },
+    {
+      type: 'tf',
+      prompt: 'When reading a text file, you should specify encoding="utf-8" to avoid issues across different operating systems.',
+      answer: true,
+      explanation: 'Different OSes use different default encodings. On Windows the default may be cp1252; on Linux it is usually utf-8. Explicitly passing encoding="utf-8" ensures consistent behaviour: open("file.txt", "r", encoding="utf-8").'
+    },
+    {
+      type: 'mc',
+      prompt: 'Lines read with f.readlines() include the newline character. How do you strip it?',
+      options: [
+        'line.remove("\\n")',
+        'line.strip()',
+        'line.split("\\n")[0]',
+        'line[:-1] — always safe'
+      ],
+      answer: 1,
+      explanation: 'line.strip() removes leading and trailing whitespace including \\n and \\r\\n (Windows). Option D (line[:-1]) works only for \\n but fails for the last line if it has no trailing newline, making it fragile.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which is the most memory-efficient way to process a very large text file line by line?',
+      options: [
+        'data = f.read().split("\\n")',
+        'lines = f.readlines(); for line in lines:',
+        'for line in f:',
+        'while True: line = f.readline(); if not line: break'
+      ],
+      answer: 2,
+      explanation: '"for line in f:" reads one line at a time from disk — it does not load the whole file into memory. This is crucial for files larger than available RAM. f.read() and f.readlines() both load everything at once.'
+    },
+    {
+      type: 'tf',
+      prompt: 'f.write() automatically adds a newline at the end of each call.',
+      answer: false,
+      explanation: 'f.write() writes exactly what you give it — no newline is added automatically. You must write "\\n" explicitly: f.write(line + "\\n") or f.write(f"{line}\\n"). f.writelines() also does not add newlines between elements.'
+    },
+    {
+      type: 'fill',
+      before: 'To write multiple lines at once, pass a list of strings to f.',
+      after: '(lines).',
+      answer: 'writelines',
+      explanation: 'f.writelines(["line1\\n", "line2\\n"]) writes each string in the list sequentially. Remember to include \\n in each string — writelines does not add separators automatically.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does mode "a" do when opening a file?',
+      options: [
+        'Opens for reading (alias for "r")',
+        'Opens for writing and erases existing content',
+        'Opens for appending — writes go to the end, existing content is preserved',
+        'Opens in binary mode'
+      ],
+      answer: 2,
+      explanation: '"a" (append) opens the file and positions the write pointer at the end. Existing content is preserved. If the file does not exist it is created. Use "a" for log files or when accumulating results across runs.'
+    },
+    {
+      type: 'tf',
+      prompt: 'You can use pathlib\'s Path.write_text() as a one-liner alternative to open() for writing a complete string to a file.',
+      answer: true,
+      explanation: 'Path("output.txt").write_text("hello world", encoding="utf-8") is equivalent to opening in "w" mode and calling write(). It is concise for simple cases. For large files or appending, use open() with a context manager.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

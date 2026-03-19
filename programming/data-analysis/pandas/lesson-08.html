@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pandas · Reshaping Data</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1a252f; color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    .hdr-title { font-size: 0.82em; font-weight: 700; color: rgba(255,255,255,0.85); }
+    .hearts { font-size: 1.05em; letter-spacing: 2px; min-width: 60px; text-align: right; }
+    .progress-bar { height: 5px; background: #2c3e50; flex-shrink: 0; }
+    .progress-fill { height: 100%; background: #e67e22; transition: width .3s; }
+    .screen { flex: 1; display: none; flex-direction: column; }
+    .screen.active { display: flex; }
+    .center-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; gap: 14px; text-align: center; }
+    .big-icon { font-size: 3.2em; }
+    h2 { font-size: 1.25em; font-weight: 800; color: #2c3e50; }
+    .sub { font-size: 0.88em; color: #7f8c8d; max-width: 300px; line-height: 1.5; }
+    .btn-primary { padding: 14px 36px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+    .btn-secondary { padding: 12px 28px; background: #f0f2f5; color: #7f8c8d; border: none; border-radius: 14px; font-size: 0.88em; cursor: pointer; text-decoration: none; display: inline-block; }
+    #screen-q { padding: 18px 16px 24px; gap: 14px; align-items: stretch; }
+    .q-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; text-align: center; }
+    .q-prompt { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-top: 4px solid #e67e22; }
+    .prompt-code { font-family: Consolas, monospace; font-size: 0.92em; line-height: 1.6; white-space: pre; text-align: left; background: #1e2b38; color: #e8f0fe; border-radius: 8px; padding: 12px 16px; display: inline-block; max-width: 100%; overflow-x: auto; }
+    .prompt-text { font-size: 1.05em; font-weight: 700; color: #2c3e50; line-height: 1.4; }
+    .prompt-hint { font-size: 0.82em; color: #7f8c8d; margin-top: 8px; line-height: 1.4; }
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn { width: 100%; padding: 15px 18px; background: white; color: #2c3e50; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.88em; font-weight: 600; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; font-family: inherit; }
+    .choice-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .choice-btn:disabled { cursor: default; }
+    .choice-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .choice-btn.wrong   { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+    .choice-btn.reveal  { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .feedback { border-radius: 14px; padding: 14px 16px; display: none; flex-direction: column; gap: 4px; }
+    .feedback.correct { display: flex; background: #eafaf1; border: 2px solid #27ae60; }
+    .feedback.wrong   { display: flex; background: #fdedec; border: 2px solid #e74c3c; }
+    .fb-head { font-weight: 700; font-size: 0.9em; }
+    .feedback.correct .fb-head { color: #27ae60; }
+    .feedback.wrong   .fb-head { color: #e74c3c; }
+    .fb-body { font-size: 0.82em; color: #555; line-height: 1.5; }
+    .btn-continue { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; display: none; }
+    .btn-continue.visible { display: block; }
+    .stars { font-size: 2.4em; letter-spacing: 6px; }
+    .score-row { display: flex; gap: 24px; justify-content: center; }
+    .sc { text-align: center; }
+    .sc-num { font-size: 2em; font-weight: 800; color: #e67e22; }
+    .sc-lbl { font-size: 0.75em; color: #7f8c8d; margin-top: 2px; }
+    .fill-row { display: flex; gap: 10px; }
+    .fill-input { flex: 1; padding: 14px 16px; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.9em; font-family: inherit; outline: none; }
+    .fill-input:focus { border-color: #e67e22; }
+    .fill-input.correct { border-color: #27ae60; background: #eafaf1; }
+    .fill-input.wrong { border-color: #e74c3c; background: #fdedec; }
+    .fill-submit { padding: 14px 20px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.9em; font-weight: 700; cursor: pointer; }
+    .tf-btns { display: flex; gap: 12px; }
+    .tf-btn { flex: 1; padding: 18px; background: white; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; color: #2c3e50; transition: border-color .15s, background .15s; }
+    .tf-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .tf-btn:disabled { cursor: default; }
+    .tf-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .tf-btn.wrong { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+  </style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Pandas</a>
+  <div class="hdr-title">Reshaping Data</div>
+  <span class="hearts" id="hearts">❤️❤️❤️</span>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+<div class="screen active" id="screen-start">
+  <div class="center-box">
+    <div class="big-icon">🔄</div>
+    <h2>Reshaping Data</h2>
+    <p class="sub">10 questions · 3 lives · melt, pivot, stack, get_dummies, set_index</p>
+    <button class="btn-primary" onclick="startLesson()">Begin</button>
+    <a class="btn-secondary" href="index.html">Back</a>
+  </div>
+</div>
+<div class="screen" id="screen-q">
+  <div class="q-label" id="q-label"></div>
+  <div class="q-prompt" id="q-prompt"></div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback">
+    <div class="fb-head" id="fb-head"></div>
+    <div class="fb-body" id="fb-body"></div>
+  </div>
+  <button class="btn-continue" id="btn-continue" onclick="nextQuestion()">Continue →</button>
+</div>
+<div class="screen" id="screen-finish">
+  <div class="center-box">
+    <div class="stars" id="finish-stars">⭐⭐⭐</div>
+    <h2>Lesson complete!</h2>
+    <div class="score-row">
+      <div class="sc"><div class="sc-num" id="fin-correct">0</div><div class="sc-lbl">Correct</div></div>
+      <div class="sc"><div class="sc-num" id="fin-wrong">0</div><div class="sc-lbl">Wrong</div></div>
+      <div class="sc"><div class="sc-num" id="fin-xp">0</div><div class="sc-lbl">XP</div></div>
+    </div>
+    <button class="btn-primary" onclick="startLesson()">Play Again</button>
+    <a class="btn-secondary" href="index.html">Back to Hub</a>
+  </div>
+</div>
+<script>
+const SESSION_SIZE = 10;
+const QUESTIONS = [
+  { label:"Key concept", prompt:"What does df.melt() do?", isCode:false, options:["Converts wide format to long format (unpivots columns into rows)","Converts long to wide format","Transposes the DataFrame","Flattens nested columns"], answer:"Converts wide format to long format (unpivots columns into rows)", explain:"Wide: one row per customer with Q1/Q2/Q3/Q4 columns. Long: one row per customer per quarter. Most ML models want long format." },
+  { label:"Key concept", prompt:"What does df.pivot() do?", isCode:false, options:["Converts long format to wide format","Converts wide to long","Transposes","Aggregates and groups"], answer:"Converts long format to wide format", explain:"pivot() reshapes long data into a 2D grid. Raises an error if there are duplicate index/column combinations — use pivot_table instead." },
+  { label:"Key concept", prompt:"What does df.stack() do?", isCode:false, options:["Moves the innermost column level into the row index","Moves index level to columns","Transposes rows and columns","Adds new rows"], answer:"Moves the innermost column level into the row index", explain:"stack() pivots columns to become a new level in the row MultiIndex. The result is a 'longer' Series or DataFrame." },
+  { label:"Key concept", prompt:"What does df.unstack() do?", isCode:false, options:["Moves the innermost row index level to become column headers","Moves columns to index","Transposes","Removes the index"], answer:"Moves the innermost row index level to become column headers", explain:"unstack() is the inverse of stack(). Together they let you rotate axes of a hierarchically indexed DataFrame." },
+  { label:"What does this do?", prompt:"pd.get_dummies(df['colour'])", isCode:true, options:["One-hot encodes — creates one binary column per category","Label encodes (integers)","Counts each category","Error"], answer:"One-hot encodes — creates one binary column per category", explain:"For colour=['red','blue','red'], result has columns 'red' and 'blue' with 0/1 values. Each row has exactly one 1." },
+  { label:"What does this do?", prompt:"df.set_index('customer_id')", isCode:true, options:["Makes 'customer_id' the row index","Moves it to first column position","Drops the column","Error"], answer:"Makes 'customer_id' the row index", explain:"Setting a meaningful index enables fast label-based lookup with .loc. Use reset_index() to reverse it." },
+  { label:"What does this do?", prompt:"df.reset_index()", isCode:true, options:["Moves the current index back into a regular column","Resets values to 0","Sorts by index","Drops the index"], answer:"Moves the current index back into a regular column", explain:"reset_index() converts the index labels back into a normal column and resets to 0,1,2,... Very common after groupby." },
+  { label:"Key concept", prompt:"In melt, what is the purpose of id_vars?", isCode:false, options:["Columns to keep as identifier variables — not melted into rows","Columns to melt into rows","Index columns","Error"], answer:"Columns to keep as identifier variables — not melted into rows", explain:"Example: id_vars=['customer_id','date'] keeps those columns fixed while all other columns are melted into 'variable'/'value' rows." },
+  { label:"Key concept", prompt:"What is the main difference between df.pivot() and df.pivot_table()?", isCode:false, options:["pivot_table aggregates duplicates; pivot raises an error if there are duplicates","No difference — same function","pivot_table is deprecated","pivot is newer"], answer:"pivot_table aggregates duplicates; pivot raises an error if there are duplicates", explain:"In real data there are often duplicate row/column combinations. pivot_table handles them with aggfunc. pivot requires uniqueness." },
+  { label:"What does this do?", prompt:"df.pivot(index='date', columns='product', values='sales')", isCode:true, options:["Reshapes: one row per date, one column per product, values=sales","Melts data","Error","Groups by date and product"], answer:"Reshapes: one row per date, one column per product, values=sales", explain:"This creates a time-series matrix perfect for comparing products over time. Raises error on duplicate date+product pairs." },
+  { label:"Key concept", prompt:"What does df.T do?", isCode:false, options:["Transposes the DataFrame — rows become columns and vice versa","Reverses row order","Flattens to 1D","Error on non-square DataFrames"], answer:"Transposes the DataFrame — rows become columns and vice versa", explain:"Transpose is occasionally useful for display, or when you receive data where rows/columns are swapped from what you expect." },
+  { label:"What does this do?", prompt:"pd.get_dummies(df, drop_first=True)", isCode:true, options:["One-hot encodes all object columns, dropping first category to avoid multicollinearity","Drops the first row","Error","Only encodes the first column"], answer:"One-hot encodes all object columns, dropping first category to avoid multicollinearity", explain:"drop_first=True prevents the 'dummy variable trap' in linear models — if you have N categories, you only need N-1 binary columns." },
+  { label:"Key concept", prompt:"What does pd.crosstab(df['region'], df['product']) return?", isCode:false, options:["A frequency table showing how many rows fall in each region × product combination","A pivot table with aggregation","Error","A correlation matrix"], answer:"A frequency table showing how many rows fall in each region × product combination", explain:"crosstab is a quick contingency table. Great for exploring relationships between two categorical variables." },
+  { label:"Key concept", prompt:"Wide format vs long format — which does most machine learning require?", isCode:false, options:["Long format — one observation per row, one feature per column","Wide format — one subject per row with all time points as columns","Either works equally","ML requires neither format"], answer:"Long format — one observation per row, one feature per column", explain:"ML algorithms expect a 2D matrix of shape (n_samples, n_features). Wide format with repeated measures violates independence assumptions." }
+  ,
+  { type: 'tf', label: "True or False", prompt: "pd.melt converts a wide DataFrame to long format.", isCode: false, answer: "True", explain: "melt unpivots columns into rows — the opposite of pivot." },
+  { type: 'tf', label: "True or False", prompt: "df.pivot() can handle duplicate row/column key combinations without error.", isCode: false, answer: "False", explain: "pivot raises ValueError on duplicates. Use pivot_table (which aggregates) instead." },
+  { type: 'tf', label: "True or False", prompt: "pd.get_dummies creates one binary column for each unique category value.", isCode: false, answer: "True", explain: "get_dummies one-hot encodes categorical columns — each category becomes its own 0/1 column." },
+  { type: 'fill', label: "Short answer", prompt: "Which function converts wide-format data to long format?", isCode: false, answer: "melt", explain: "pd.melt(df, id_vars=[...]) unpivots value columns into rows." },
+  { type: 'fill', label: "Short answer", prompt: "Which function one-hot encodes categorical columns in a DataFrame?", isCode: false, answer: "get_dummies", explain: "pd.get_dummies(df, columns=['col']) creates binary indicator columns for each category." },
+  { type: 'fill', label: "Fill in the blank", prompt: "df.pivot(index='date', columns='city', values='temp').___()   # collapse column levels back to rows", isCode: false, answer: "stack", explain: "stack() pivots the innermost column level into the row index, making the DataFrame taller." }
+];
+let questions=[], qIndex=0, hearts=3, correctCount=0, wrongCount=0, answered=false, currentQ=null;
+function startLesson() {
+  questions = shuffle([...QUESTIONS]).slice(0, SESSION_SIZE).map(q => ({...q, options: q.options ? shuffle([...q.options]) : q.options}));
+  qIndex=0; hearts=3; correctCount=0; wrongCount=0;
+  updateHearts(); updateProgress(); showScreen('screen-q'); showQuestion();
+}
+function showQuestion() {
+  if (qIndex >= questions.length || hearts <= 0) { showFinish(); return; }
+  currentQ = questions[qIndex]; answered = false;
+  document.getElementById('q-label').textContent = currentQ.label;
+  const p = document.getElementById('q-prompt');
+  p.innerHTML = (currentQ.isCode ? '<div class="prompt-code">'+escHtml(currentQ.prompt)+'</div>' : '<div class="prompt-text">'+escHtml(currentQ.prompt)+'</div>') + (currentQ.hint?'<div class="prompt-hint">'+currentQ.hint+'</div>':'');
+  const ch = document.getElementById('choices');
+  if (!currentQ.type || currentQ.type === 'mcq') {
+    ch.innerHTML = currentQ.options.map((opt,i) =>
+      '<button class="choice-btn" id="c'+i+'" onclick="choose('+i+')">' + escHtml(opt) + '</button>'
+    ).join('');
+  } else if (currentQ.type === 'tf') {
+    ch.innerHTML = '<div class="tf-btns"><button class="tf-btn" id="tf-true" onclick="chooseTF(\'True\')">True</button><button class="tf-btn" id="tf-false" onclick="chooseTF(\'False\')">False</button></div>';
+  } else if (currentQ.type === 'fill') {
+    ch.innerHTML = '<div class="fill-row"><input class="fill-input" id="fill-inp" type="text" placeholder="Type your answer\u2026" onkeydown="if(event.key===\'Enter\')submitFill()"><button class="fill-submit" onclick="submitFill()">Check</button></div>';
+    setTimeout(function(){ var el=document.getElementById('fill-inp'); if(el) el.focus(); }, 50);
+  }
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btn-continue').classList.remove('visible');
+  updateProgress();
+}
+function choose(i) {
+  if (answered) return;
+  answered = true;
+  const chosen = currentQ.options[i];
+  const isRight = chosen === currentQ.answer;
+  currentQ.options.forEach((_,j) => {
+    const b = document.getElementById('c'+j);
+    b.disabled = true;
+    if (currentQ.options[j] === currentQ.answer) b.classList.add('reveal');
+  });
+  if (!isRight) document.getElementById('c'+i).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function chooseTF(val) {
+  if (answered) return;
+  answered = true;
+  const isRight = val === currentQ.answer;
+  ['True','False'].forEach(function(v) {
+    const b = document.getElementById('tf-'+v.toLowerCase());
+    b.disabled = true;
+    if (v === currentQ.answer) b.classList.add('correct');
+  });
+  if (!isRight) document.getElementById('tf-'+val.toLowerCase()).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function submitFill() {
+  if (answered) return;
+  const inp = document.getElementById('fill-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) return;
+  answered = true;
+  const isRight = val.toLowerCase() === currentQ.answer.toLowerCase();
+  inp.disabled = true;
+  inp.classList.add(isRight ? 'correct' : 'wrong');
+  const sb = document.querySelector('.fill-submit');
+  if (sb) sb.disabled = true;
+  showFeedback(isRight);
+}
+
+function showFeedback(isRight) {
+  const fb = document.getElementById('feedback');
+  document.getElementById('fb-head').textContent = isRight ? 'Correct!' : 'Not quite';
+  document.getElementById('fb-body').textContent = currentQ.explain;
+  fb.className = 'feedback ' + (isRight ? 'correct' : 'wrong');
+  if (isRight) correctCount++; else { wrongCount++; hearts = Math.max(0,hearts-1); updateHearts(); }
+  document.getElementById('btn-continue').classList.add('visible');
+  qIndex++;
+}
+function nextQuestion() { if(hearts<=0||qIndex>=questions.length)showFinish(); else showQuestion(); }
+function showFinish() {
+  const pct=correctCount/Math.max(1,correctCount+wrongCount);
+  document.getElementById('finish-stars').textContent=pct>=0.9?'⭐⭐⭐':pct>=0.7?'⭐⭐':'⭐';
+  document.getElementById('fin-correct').textContent=correctCount;
+  document.getElementById('fin-wrong').textContent=wrongCount;
+  document.getElementById('fin-xp').textContent=correctCount*10;
+  showScreen('screen-finish');
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateHearts(){document.getElementById('hearts').textContent='❤️'.repeat(hearts)+'🖤'.repeat(3-hearts);}
+function updateProgress(){document.getElementById('prog-fill').style.width=(qIndex/SESSION_SIZE*100)+'%';}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

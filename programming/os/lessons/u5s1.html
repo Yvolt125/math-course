@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: File Operations</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u5s1',
+  title: 'File Operations',
+  subtitle: 'shutil · Copy · Move · Delete Safely',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'Which module provides high-level file operations like copy, move, and delete?',
+      options: ['os', 'shutil', 'fileops', 'sys'],
+      answer: 1,
+      explanation: 'shutil (shell utilities) provides copy, copy2, copytree, move, rmtree, and disk_usage. os handles lower-level things like rename and remove. For anything more than renaming or deleting a single file, reach for shutil.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the difference between shutil.copy() and shutil.copy2()?',
+      options: [
+        'copy() copies files; copy2() copies directories',
+        'copy2() also copies the file metadata (timestamps, permissions); copy() copies only content and permissions',
+        'copy() is faster; copy2() is safer',
+        'They are identical'
+      ],
+      answer: 1,
+      explanation: 'shutil.copy2() preserves metadata including the original modification timestamp. shutil.copy() copies file content and permissions but uses the current time as the new modification timestamp. Use copy2() when you want an exact duplicate.'
+    },
+    {
+      type: 'fill',
+      before: 'To copy an entire directory tree, use shutil.',
+      after: '(src, dst).',
+      answer: 'copytree',
+      explanation: 'shutil.copytree(src, dst) recursively copies a whole directory including all its subdirectories and files. The destination must not already exist (Python < 3.8) or you can pass dirs_exist_ok=True (Python 3.8+).'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does shutil.move() do?',
+      options: [
+        'Copies the file and leaves the original in place',
+        'Moves or renames a file or directory — works across filesystems',
+        'Moves only directories, not files',
+        'Requires admin privileges'
+      ],
+      answer: 1,
+      explanation: 'shutil.move(src, dst) moves src to dst. If they are on the same filesystem it renames; if on different filesystems it copies then deletes the original. It works for both files and directories, unlike os.rename().'
+    },
+    {
+      type: 'tf',
+      prompt: 'os.remove() can delete a directory.',
+      answer: false,
+      explanation: 'os.remove() only deletes files. To delete an empty directory use os.rmdir(). To delete a directory and all its contents use shutil.rmtree(). Calling os.remove() on a directory raises IsADirectoryError.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the safest way to delete a directory and all its contents?',
+      options: [
+        'os.remove(dir_path)',
+        'os.rmdir(dir_path)',
+        'shutil.rmtree(dir_path)',
+        'os.deletedir(dir_path, recursive=True)'
+      ],
+      answer: 2,
+      explanation: 'shutil.rmtree(path) deletes the entire directory tree. It is irreversible — there is no recycle bin. Always double-check the path before calling it, ideally with a dry-run print first. os.rmdir() only works on empty directories.'
+    },
+    {
+      type: 'tf',
+      prompt: 'It is good practice to check that a file exists before attempting to delete it, to avoid errors.',
+      answer: true,
+      explanation: 'os.remove() raises FileNotFoundError if the file does not exist. Check first: if os.path.exists(path): os.remove(path). Or use Path.unlink(missing_ok=True) (Python 3.8+) which silently does nothing if the file is gone.'
+    },
+    {
+      type: 'fill',
+      before: 'To rename a file within the same directory, use os.',
+      after: '(old_name, new_name).',
+      answer: 'rename',
+      explanation: 'os.rename(src, dst) renames or moves a file/directory within the same filesystem. On different filesystems it may fail — use shutil.move() instead for cross-filesystem operations. pathlib\'s p.rename(new_path) is an equivalent alternative.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You want to copy files but skip any that already exist at the destination. What is the right approach?',
+      options: [
+        'shutil.copy(src, dst, skip_existing=True)',
+        'Check os.path.exists(dst) before calling shutil.copy()',
+        'shutil.safe_copy(src, dst)',
+        'shutil.copy() handles this automatically'
+      ],
+      answer: 1,
+      explanation: 'shutil has no built-in skip_existing option. You check manually: if not os.path.exists(dst): shutil.copy(src, dst). This pattern is fundamental in incremental pipelines — only process what has not been done yet.'
+    },
+    {
+      type: 'tf',
+      prompt: 'shutil.disk_usage(path) can tell you the total, used, and free disk space for a given path.',
+      answer: true,
+      explanation: 'shutil.disk_usage("/") returns a named tuple with .total, .used, and .free in bytes. Useful for checking whether there is enough space before writing a large output file — avoids mid-write failures.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

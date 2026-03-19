@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: pathlib — The Modern Way</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u2s2',
+  title: 'pathlib — The Modern Way',
+  subtitle: 'Path Objects · / Operator · glob',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What is the main advantage of pathlib.Path over os.path?',
+      options: [
+        'pathlib is faster',
+        'pathlib works only on Linux',
+        'pathlib represents paths as objects with useful attributes and methods, not plain strings',
+        'pathlib automatically creates directories'
+      ],
+      answer: 2,
+      explanation: 'pathlib.Path is an object-oriented approach. Instead of os.path.join(folder, file) you write folder / file. Attributes like .name, .stem, .suffix, .parent make path manipulation cleaner and more readable.'
+    },
+    {
+      type: 'fill',
+      before: 'from pathlib import ',
+      after: ' is the standard import for pathlib.',
+      answer: 'Path',
+      explanation: 'You typically import just Path: "from pathlib import Path". Then p = Path("/data/sales.csv") creates a Path object. You can also use pathlib.Path without the from import.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does the / operator do with Path objects?',
+      options: [
+        'Divides the path into equal parts',
+        'Joins path components — a cleaner alternative to os.path.join()',
+        'Splits the path at every separator',
+        'It is not valid — paths cannot use /'
+      ],
+      answer: 1,
+      explanation: 'pathlib overloads / for path joining. Path("/data") / "2024" / "sales.csv" produces Path("/data/2024/sales.csv"). This is much more readable than os.path.join("/data", "2024", "sales.csv").'
+    },
+    {
+      type: 'mc',
+      prompt: 'p = Path("/home/alice/data/report.csv"). What does p.name return?',
+      options: ['/home/alice/data/', 'report', 'report.csv', '.csv'],
+      answer: 2,
+      explanation: 'p.name is the final component of the path including the extension — "report.csv". Compare with p.stem ("report") and p.suffix (".csv").'
+    },
+    {
+      type: 'mc',
+      prompt: 'p = Path("/home/alice/data/report.csv"). What does p.stem return?',
+      options: ['report.csv', 'report', '.csv', '/home/alice/data'],
+      answer: 1,
+      explanation: 'p.stem is the filename without the extension — "report". It is the equivalent of os.path.splitext(os.path.basename(path))[0] but much more concise.'
+    },
+    {
+      type: 'tf',
+      prompt: 'p.parent returns the directory containing the file as a Path object.',
+      answer: true,
+      explanation: 'p.parent is equivalent to os.path.dirname(). For Path("/home/alice/data/report.csv"), p.parent is Path("/home/alice/data"). You can chain: p.parent.parent goes up two levels.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which pathlib method checks whether a path actually exists on disk?',
+      options: ['p.check()', 'p.isfile()', 'p.exists()', 'p.valid()'],
+      answer: 2,
+      explanation: 'p.exists() returns True if the path exists (file or directory). p.is_file() and p.is_dir() narrow it further. These are method calls on the Path object — much cleaner than os.path.exists(str_path).'
+    },
+    {
+      type: 'fill',
+      before: 'To create a directory and all missing parents with pathlib, call p.',
+      after: '(parents=True, exist_ok=True).',
+      answer: 'mkdir',
+      explanation: 'p.mkdir(parents=True, exist_ok=True) creates the directory and any missing parent directories. exist_ok=True means it will not raise an error if the directory already exists — essential for safe script re-runs.'
+    },
+    {
+      type: 'mc',
+      prompt: 'How do you read the text contents of a file with pathlib?',
+      options: [
+        'Path("file.txt").open().read()',
+        'Path("file.txt").read_text()',
+        'Path("file.txt").load()',
+        'Path("file.txt").get_contents()'
+      ],
+      answer: 1,
+      explanation: 'Path.read_text() reads the entire file as a string in one call. There is also Path.read_bytes() for binary content, and Path.write_text(content) to write. For large files you should still use open() with a context manager.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Path objects can be passed directly to built-in functions like open() that normally expect a string.',
+      answer: true,
+      explanation: 'Since Python 3.6, Path objects implement __fspath__() so they are accepted anywhere a string path is expected: open(p), pd.read_csv(p), os.path.exists(p), etc. You rarely need to call str(p) explicitly.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

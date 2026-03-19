@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistics Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    .when-box { background: #e8f8f5; border-left: 4px solid #16a085; border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .when-box strong { display: block; font-weight: 800; margin-bottom: 8px; color: #0e6655; }
+    .when-box table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .when-box th { background: #16a085; color: white; padding: 6px 10px; text-align: left; font-size: 0.88em; }
+    .when-box td { padding: 6px 10px; border-bottom: 1px solid #d1f0eb; vertical-align: top; font-size: 0.88em; }
+    .when-box tr:last-child td { border-bottom: none; }
+    .chart-wrap { background: white; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    canvas { max-width: 100%; }
+    /* formula box */
+    .formula { background: #f8f9fa; border: 1.5px solid #dde3ea; border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-family: 'Georgia', serif; font-size: 1em; text-align: center; color: #2c3e50; }
+    .formula .label { font-size: 0.72em; font-family: 'Segoe UI', sans-serif; color: #7f8c8d; text-align: right; margin-top: 6px; }
+    /* normal curve diagram */
+    .norm-labels { display: flex; justify-content: space-around; font-size: 0.72em; color: #7f8c8d; margin-top: 4px; }
+    @media(max-width:560px) { }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← Statistics</a>
+  <h1>Statistics for Data Analysis — Guide</h1>
+  <p>From descriptive stats to hypothesis testing · with Python</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · Descriptive Statistics</a>
+  <a class="toc-pill" href="#ch2">2 · Distributions</a>
+  <a class="toc-pill" href="#ch3">3 · Correlation</a>
+  <a class="toc-pill" href="#ch4">4 · Probability Basics</a>
+  <a class="toc-pill" href="#ch5">5 · Confidence Intervals</a>
+  <a class="toc-pill" href="#ch6">6 · Hypothesis Testing</a>
+  <a class="toc-pill" href="#ch7">7 · Statistical Tests in Python</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">Descriptive Statistics</div>
+
+  <p>Descriptive statistics summarise a dataset. Before any modelling or testing, you should always compute these to understand what you have.</p>
+
+  <h3>Measures of Central Tendency</h3>
+
+  <div class="formula">
+    Mean = (x₁ + x₂ + ... + xₙ) / n
+    <div class="label">arithmetic average — sensitive to outliers</div>
+  </div>
+
+  <div class="formula">
+    Median = middle value when sorted
+    <div class="label">50th percentile — robust to outliers</div>
+  </div>
+
+  <div class="formula">
+    Mode = most frequently occurring value
+    <div class="label">useful for categorical data</div>
+  </div>
+
+<pre>import numpy as np
+import pandas as pd
+from scipy import stats
+
+data = [12400, 15800, 9700, 18300, 14200, 9700, 22000, 11500]
+
+np.mean(data)     # 14200.0
+np.median(data)   # 13300.0
+stats.mode(data)  # ModeResult(mode=9700, count=2)
+
+# With Pandas
+s = pd.Series(data)
+s.mean()
+s.median()
+s.mode()[0]</pre>
+
+  <h3>Measures of Spread</h3>
+
+  <div class="formula">
+    Variance σ² = Σ(xᵢ − x̄)² / n
+    <div class="label">average squared deviation from mean</div>
+  </div>
+
+  <div class="formula">
+    Standard Deviation σ = √Variance
+    <div class="label">same units as data — most interpretable spread measure</div>
+  </div>
+
+  <div class="formula">
+    IQR = Q3 − Q1
+    <div class="label">interquartile range — spread of middle 50% — robust to outliers</div>
+  </div>
+
+<pre>np.std(data, ddof=0)   # population std (divide by n)
+np.std(data, ddof=1)   # sample std (divide by n-1) ← use this for samples
+
+s.std()                # same as ddof=1
+s.var()                # variance
+s.quantile(0.25)       # Q1
+s.quantile(0.75)       # Q3
+s.quantile(0.75) - s.quantile(0.25)  # IQR
+
+s.describe()   # all of the above in one call</pre>
+
+  <h3>Shape: Skewness & Kurtosis</h3>
+<pre>s.skew()     # 0 = symmetric, >0 = right-skewed, <0 = left-skewed
+s.kurtosis() # 0 = normal, >0 = heavier tails, <0 = lighter tails</pre>
+
+  <div class="callout info">
+    <strong>Mean vs Median — which to use?</strong>
+    For symmetric data, they are similar. For skewed data (e.g. income, house prices, order values), the median is a better "typical" value because it is not pulled by extreme outliers. Always check a histogram before deciding.
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="descChart" height="200"></canvas>
+  </div>
+
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Distributions</div>
+
+  <p>A distribution describes how values are spread across a dataset. Understanding the shape of your data is essential before choosing models or tests.</p>
+
+  <h3>The Normal Distribution</h3>
+  <p>The most important distribution in statistics. Many real-world measurements (heights, measurement errors, aggregated sums) follow a bell curve.</p>
+
+  <div class="chart-wrap">
+    <canvas id="normalChart" height="180"></canvas>
+  </div>
+
+  <p>The <strong>68-95-99.7 rule</strong>: in a normal distribution, 68% of data falls within 1 standard deviation of the mean, 95% within 2, and 99.7% within 3.</p>
+
+<pre>from scipy.stats import norm
+import numpy as np
+
+mu, sigma = 50, 10   # mean=50, std=10
+
+# Probability that X ≤ 65
+norm.cdf(65, loc=mu, scale=sigma)   # 0.9332 → 93.3%
+
+# Value at which 90% of data falls below (90th percentile)
+norm.ppf(0.90, loc=mu, scale=sigma) # 62.8
+
+# Generate 1000 samples
+samples = norm.rvs(loc=mu, scale=sigma, size=1000, random_state=42)</pre>
+
+  <h3>Common Distribution Shapes</h3>
+<pre>from scipy.stats import norm, expon, lognorm
+import matplotlib.pyplot as plt, numpy as np
+
+x = np.linspace(0, 5, 300)
+fig, axes = plt.subplots(1, 3, figsize=(12, 3))
+
+axes[0].plot(np.linspace(-4,4,300), norm.pdf(np.linspace(-4,4,300)))
+axes[0].set_title('Normal (symmetric)')
+axes[0].fill_between(np.linspace(-4,4,300), norm.pdf(np.linspace(-4,4,300)), alpha=0.3)
+
+axes[1].plot(x, expon.pdf(x))
+axes[1].set_title('Exponential (right-skewed)')
+axes[1].fill_between(x, expon.pdf(x), alpha=0.3)
+
+axes[2].plot(x, lognorm.pdf(x, s=0.6))
+axes[2].set_title('Log-normal (right-skewed)')
+axes[2].fill_between(x, lognorm.pdf(x, s=0.6), alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('distributions.png', dpi=120)</pre>
+
+  <h3>Central Limit Theorem</h3>
+  <p>No matter what the original distribution looks like, <strong>the distribution of sample means</strong> will approach a normal distribution as the sample size grows. This is why so many statistical tests assume normality.</p>
+
+<pre>import numpy as np
+import matplotlib.pyplot as plt
+
+# Original data: skewed (exponential)
+population = np.random.exponential(scale=2, size=100000)
+
+# Sample means of size n=30
+means = [np.mean(np.random.choice(population, size=30)) for _ in range(5000)]
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+axes[0].hist(population, bins=80, color='#e74c3c', alpha=0.7)
+axes[0].set_title('Original population (skewed)')
+axes[1].hist(means, bins=60, color='#2980b9', alpha=0.7)
+axes[1].set_title('Sampling distribution of means\n(n=30) — approaches normal')
+plt.tight_layout()</pre>
+
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Correlation</div>
+
+  <p>Correlation measures how strongly two variables move together.</p>
+
+  <div class="formula">
+    r = Σ[(xᵢ − x̄)(yᵢ − ȳ)] / [n · σₓ · σᵧ]
+    <div class="label">Pearson correlation coefficient — ranges from −1 to +1</div>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="corrChart" height="220"></canvas>
+  </div>
+
+<pre>import pandas as pd, numpy as np
+
+df = pd.read_csv('sales.csv')
+
+# Correlation matrix — all numeric columns
+corr = df.corr(numeric_only=True)
+print(corr)
+
+# Single pair
+r = df['hours_worked'].corr(df['sales'])
+print(f"r = {r:.3f}")
+
+# Spearman (rank-based, robust to outliers and non-linear)
+from scipy.stats import spearmanr, pearsonr
+
+r_p, p_p = pearsonr(df['hours_worked'], df['sales'])
+r_s, p_s = spearmanr(df['hours_worked'], df['sales'])
+
+print(f"Pearson  r={r_p:.3f}  p={p_p:.4f}")
+print(f"Spearman r={r_s:.3f}  p={p_s:.4f}")</pre>
+
+  <div class="callout warn">
+    <strong>Correlation ≠ causation</strong>
+    A high correlation means two variables move together, not that one causes the other. Ice cream sales correlate with drowning deaths (both rise in summer). Always consider confounding variables.
+  </div>
+
+  <h3>Interpreting r</h3>
+  <ul>
+    <li><strong>|r| ≥ 0.7</strong> — strong correlation</li>
+    <li><strong>0.4 ≤ |r| < 0.7</strong> — moderate correlation</li>
+    <li><strong>0.1 ≤ |r| < 0.4</strong> — weak correlation</li>
+    <li><strong>|r| < 0.1</strong> — negligible (near zero)</li>
+    <li>Sign: positive = both increase together; negative = one increases as other decreases</li>
+  </ul>
+
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Probability Basics</div>
+
+  <p>Statistics is built on probability. You don't need to be a mathematician — but understanding these ideas is essential for interpreting p-values and confidence intervals.</p>
+
+  <h3>Key concepts</h3>
+  <ul>
+    <li><strong>Event</strong> — an outcome or set of outcomes (e.g. "sale > $10k")</li>
+    <li><strong>Probability</strong> — a number between 0 and 1 representing likelihood (0 = impossible, 1 = certain)</li>
+    <li><strong>P(A and B)</strong> = P(A) × P(B) if independent</li>
+    <li><strong>P(A or B)</strong> = P(A) + P(B) − P(A and B)</li>
+    <li><strong>Conditional probability P(A|B)</strong> — probability of A given B has occurred</li>
+  </ul>
+
+<pre>import numpy as np
+
+# Simulate: what % of days does sales exceed $15k?
+np.random.seed(42)
+daily_sales = np.random.normal(loc=13000, scale=3000, size=10000)
+
+p_exceed = np.mean(daily_sales > 15000)
+print(f"P(sales > 15k) = {p_exceed:.3f}  ({p_exceed*100:.1f}%)")
+
+# Expected value
+outcomes  = np.array([5000, 10000, 20000, 40000])
+probs     = np.array([0.3,  0.4,   0.2,   0.1])
+ev = np.sum(outcomes * probs)
+print(f"Expected daily sales = ${ev:,.0f}")</pre>
+
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Confidence Intervals</div>
+
+  <p>A confidence interval gives a range of plausible values for a population parameter, based on sample data. A 95% CI means: if you repeated the experiment 100 times, 95 of those intervals would contain the true value.</p>
+
+  <div class="formula">
+    CI = x̄ ± z × (σ / √n)
+    <div class="label">for a 95% CI: z = 1.96 · x̄ = sample mean · σ = std · n = sample size</div>
+  </div>
+
+<pre>import numpy as np
+from scipy import stats
+
+sample = np.array([12400, 15800, 9700, 18300, 14200, 13800, 16500, 11900])
+n    = len(sample)
+mean = np.mean(sample)
+se   = stats.sem(sample)   # standard error = std / sqrt(n)
+
+# 95% confidence interval
+ci_95 = stats.t.interval(confidence=0.95, df=n-1, loc=mean, scale=se)
+print(f"Mean: ${mean:,.0f}")
+print(f"95% CI: (${ci_95[0]:,.0f}, ${ci_95[1]:,.0f})")
+
+# Interpret: we're 95% confident the true average sale is in this range</pre>
+
+  <div class="callout tip">
+    <strong>Wider CIs = more uncertainty</strong>
+    Small sample size, high variance, or a higher confidence level (99% vs 95%) all widen the interval. More data narrows it.
+  </div>
+
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Hypothesis Testing</div>
+
+  <p>Hypothesis testing is the framework for making data-driven decisions. You start with an assumption (null hypothesis), collect data, and assess whether there is enough evidence to reject it.</p>
+
+  <h3>The framework</h3>
+  <ol style="margin:12px 0 12px 20px;">
+    <li><strong>H₀ (Null hypothesis)</strong> — "There is no effect / no difference" (default assumption)</li>
+    <li><strong>H₁ (Alternative hypothesis)</strong> — "There IS an effect / difference"</li>
+    <li>Collect data and compute a <strong>test statistic</strong></li>
+    <li>Compute the <strong>p-value</strong> — probability of seeing this result (or more extreme) if H₀ is true</li>
+    <li>If p-value &lt; significance level (usually 0.05), <strong>reject H₀</strong></li>
+  </ol>
+
+  <div class="callout info">
+    <strong>What the p-value really means</strong>
+    p = 0.03 means: "If there were truly no difference, there is only a 3% chance of observing data as extreme as this." It does NOT mean "there is a 3% chance the null hypothesis is true."
+  </div>
+
+  <h3>Type I & Type II Errors</h3>
+  <div style="overflow-x:auto; margin:14px 0;">
+    <table style="border-collapse:collapse; font-size:0.82em; width:100%;">
+      <tr>
+        <th style="background:#2c3e50; color:white; padding:8px 14px;"></th>
+        <th style="background:#2c3e50; color:white; padding:8px 14px;">H₀ is True</th>
+        <th style="background:#2c3e50; color:white; padding:8px 14px;">H₀ is False</th>
+      </tr>
+      <tr>
+        <td style="padding:7px 14px; border-bottom:1px solid #eee; font-weight:700;">Reject H₀</td>
+        <td style="padding:7px 14px; border-bottom:1px solid #eee; background:#ffe0e0;">Type I Error (false positive) — α</td>
+        <td style="padding:7px 14px; border-bottom:1px solid #eee; background:#e0ffe0;">Correct ✓</td>
+      </tr>
+      <tr>
+        <td style="padding:7px 14px; font-weight:700;">Fail to reject H₀</td>
+        <td style="padding:7px 14px; background:#e0ffe0;">Correct ✓</td>
+        <td style="padding:7px 14px; background:#ffe0e0;">Type II Error (false negative) — β</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Statistical Tests in Python</div>
+
+  <div class="when-box">
+    <strong>Which statistical test should I use?</strong>
+    <table>
+      <tr><th>Question you're answering</th><th>Test to use</th><th>Real example</th></tr>
+      <tr><td>Did our A/B campaign change the average order value?</td><td>t-test (two-sample)</td><td>Control group vs promo group — mean spend</td></tr>
+      <tr><td>Did our new process change the mean (same group, before/after)?</td><td>Paired t-test</td><td>Employee productivity before vs after training</td></tr>
+      <tr><td>Are sales different across 3+ regions?</td><td>One-way ANOVA</td><td>North / South / West monthly revenue</td></tr>
+      <tr><td>Is there a relationship between two numeric columns?</td><td>Pearson / Spearman correlation</td><td>Ad spend vs conversions</td></tr>
+      <tr><td>Are two categorical variables related?</td><td>Chi-square test</td><td>Product category vs return rate</td></tr>
+      <tr><td>Does the data follow a normal distribution?</td><td>Shapiro-Wilk test</td><td>Check assumption before running a t-test</td></tr>
+    </table>
+  </div>
+
+  <h3>t-Test — compare two means</h3>
+<pre>from scipy import stats
+import numpy as np
+
+# One-sample t-test: is the mean different from a target?
+sample = [12400, 15800, 9700, 18300, 14200, 13800]
+t_stat, p_val = stats.ttest_1samp(sample, popmean=13000)
+print(f"t={t_stat:.3f}, p={p_val:.4f}")
+print("Reject H0" if p_val < 0.05 else "Fail to reject H0")
+
+# Two-sample t-test: are two groups different?
+group_a = [12400, 15800, 13100, 14700, 11900]
+group_b = [18300, 21400, 19800, 17600, 22100]
+t_stat, p_val = stats.ttest_ind(group_a, group_b, equal_var=True)
+print(f"t={t_stat:.3f}, p={p_val:.4f}")
+
+# Paired t-test: before vs after same subjects
+before = [12400, 9800, 15600, 11200, 13700]
+after  = [14800, 12100, 17200, 13400, 15300]
+t_stat, p_val = stats.ttest_rel(before, after)
+print(f"Paired t: t={t_stat:.3f}, p={p_val:.4f}")</pre>
+
+  <h3>Chi-Square Test — categorical variables</h3>
+<pre>from scipy.stats import chi2_contingency
+
+# Is region independent of high/low sales?
+observed = np.array([
+    [12, 8],   # North: [high, low]
+    [18, 5],   # South
+    [9,  11],  # East
+    [6,  14],  # West
+])
+chi2, p_val, dof, expected = chi2_contingency(observed)
+print(f"Chi2={chi2:.3f}, p={p_val:.4f}, dof={dof}")
+print("Significant association" if p_val < 0.05 else "No significant association")</pre>
+
+  <h3>ANOVA — compare more than two groups</h3>
+<pre>from scipy.stats import f_oneway
+
+north = [12400, 9700, 14200, 11500, 13800]
+south = [15800, 18300, 14200, 19100, 16700]
+east  = [11200, 13400, 10800, 14500, 12300]
+
+f_stat, p_val = f_oneway(north, south, east)
+print(f"F={f_stat:.3f}, p={p_val:.4f}")
+# p<0.05: at least one group mean is significantly different</pre>
+
+  <h3>A/B Test walkthrough</h3>
+<pre>import numpy as np
+from scipy import stats
+
+np.random.seed(42)
+# Control: old checkout button (conversion rate 12%)
+# Treatment: new button (conversion rate 14.5%)
+n = 1000
+control   = np.random.binomial(1, 0.12, n)
+treatment = np.random.binomial(1, 0.145, n)
+
+print(f"Control rate:   {control.mean()*100:.1f}%")
+print(f"Treatment rate: {treatment.mean()*100:.1f}%")
+
+# t-test on proportions
+t_stat, p_val = stats.ttest_ind(control, treatment)
+print(f"p-value: {p_val:.4f}")
+
+if p_val < 0.05:
+    lift = (treatment.mean() - control.mean()) / control.mean() * 100
+    print(f"Significant! Lift = {lift:.1f}% — deploy the new button.")
+else:
+    print("Not significant — gather more data.")</pre>
+
+  <div class="callout key">
+    <strong>Practical significance vs statistical significance</strong>
+    A result can be statistically significant (p &lt; 0.05) but have a tiny real-world effect — especially with large datasets. Always report effect size alongside p-values. Cohen's d for means, odds ratio for proportions.
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Ch1 — box + spread illustration
+new Chart(document.getElementById('descChart'), {
+  type: 'bar',
+  data: {
+    labels: ['9,700','11,500','12,400','14,200','15,800','18,300','22,000','9,700'],
+    datasets: [{
+      label: 'Sales values',
+      data: [9700,11500,12400,14200,15800,18300,22000,9700],
+      backgroundColor: data => {
+        const v = [9700,11500,12400,14200,15800,18300,22000,9700][data.dataIndex];
+        return v >= 14200 ? 'rgba(39,174,96,0.7)' : 'rgba(41,128,185,0.7)';
+      },
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Sales distribution — green = above median (13,300)', font: { size: 12, weight: '700' } },
+      legend: { display: false }
+    },
+    scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } }
+  }
+});
+
+// Ch2 — normal distribution
+function normalPDF(x, mu, sigma) {
+  return (1/(sigma*Math.sqrt(2*Math.PI))) * Math.exp(-0.5*((x-mu)/sigma)**2);
+}
+const xs = Array.from({length:100}, (_,i) => -4 + i*0.08);
+new Chart(document.getElementById('normalChart'), {
+  type: 'line',
+  data: {
+    labels: xs.map(x => x.toFixed(1)),
+    datasets: [
+      { label: 'Normal PDF', data: xs.map(x => normalPDF(x,0,1)), borderColor:'#3498db', backgroundColor:'rgba(52,152,219,0.15)', fill:true, pointRadius:0, tension:0.3 },
+      { label: '±1σ (68%)', data: xs.map(x => Math.abs(x)<=1 ? normalPDF(x,0,1) : null), borderColor:'rgba(0,0,0,0)', backgroundColor:'rgba(52,152,219,0.3)', fill:true, pointRadius:0, tension:0.3 },
+      { label: '±2σ (95%)', data: xs.map(x => Math.abs(x)<=2 && Math.abs(x)>1 ? normalPDF(x,0,1) : null), borderColor:'rgba(0,0,0,0)', backgroundColor:'rgba(39,174,96,0.25)', fill:true, pointRadius:0, tension:0.3 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { title: { display: true, text: 'Normal Distribution — 68-95-99.7 Rule', font: { size: 13, weight: '700' } }, legend: { position: 'bottom' } },
+    scales: { y: { display: false }, x: { ticks: { maxTicksLimit: 9 } } }
+  }
+});
+
+// Ch3 — correlation scatter
+const hrsData = [2,3,3.5,4,4.5,5,5.5,6,6.5,7,8,9];
+const scoresData = [42,51,55,63,70,72,75,80,83,85,91,94];
+new Chart(document.getElementById('corrChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Data points',
+      data: hrsData.map((h,i) => ({x:h, y:scoresData[i]})),
+      backgroundColor: 'rgba(52,152,219,0.7)',
+      pointRadius: 7
+    }, {
+      label: 'Trend line (r ≈ 0.99)',
+      data: [{x:2,y:43.7},{x:9,y:94.2}],
+      type: 'line',
+      borderColor: '#e74c3c',
+      borderWidth: 2,
+      borderDash: [6,3],
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { title: { display: true, text: 'Hours Studied vs Exam Score — strong positive correlation', font: { size: 12, weight: '700' } }, legend: { position: 'bottom' } },
+    scales: {
+      x: { title: { display: true, text: 'Hours studied' } },
+      y: { title: { display: true, text: 'Exam score' }, min: 30 }
+    }
+  }
+});
+</script>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

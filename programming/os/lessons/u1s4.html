@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Finding Files</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u1s4',
+  title: 'Finding Files',
+  subtitle: 'glob · rglob · Filtering by Type',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What does the glob module let you do?',
+      options: [
+        'Download files from the internet',
+        'Find files using wildcard patterns like *.csv',
+        'Compress files into a zip archive',
+        'Check file permissions'
+      ],
+      answer: 1,
+      explanation: 'glob finds files matching a pattern. The * wildcard matches any sequence of characters within a directory level. glob.glob("data/*.csv") returns all CSV files in the data folder.'
+    },
+    {
+      type: 'fill',
+      before: 'The wildcard character ',
+      after: ' in a glob pattern matches any number of characters within a single directory.',
+      answer: '*',
+      explanation: '* matches anything: *.csv matches report.csv, sales_2024.csv, etc. It does not cross directory boundaries — for that you need ** with recursive=True.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does glob.glob("data/**/*.csv", recursive=True) do?',
+      options: [
+        'Finds .csv files only in the data/ folder, not subdirectories',
+        'Finds all .csv files in data/ and all its subdirectories recursively',
+        'Raises an error — ** is not valid in glob',
+        'Finds files named **.csv'
+      ],
+      answer: 1,
+      explanation: '** with recursive=True matches zero or more directories. So data/**/*.csv finds data/sales.csv, data/2024/sales.csv, data/2024/q1/jan.csv — at any depth.'
+    },
+    {
+      type: 'tf',
+      prompt: 'glob.glob() returns a list of matching paths as strings.',
+      answer: true,
+      explanation: 'Yes — glob.glob() returns a list of strings (the matching paths). If nothing matches it returns an empty list [], not an error. You can iterate over it directly.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which pathlib method searches recursively for all .txt files?',
+      options: [
+        'Path("data").glob("*.txt")',
+        'Path("data").rglob("*.txt")',
+        'Path("data").find("*.txt")',
+        'Path("data").search("**/*.txt")'
+      ],
+      answer: 1,
+      explanation: 'rglob("*.txt") is shorthand for glob("**/*.txt") with recursion enabled. It returns a generator of Path objects for every .txt file anywhere under the given directory.'
+    },
+    {
+      type: 'tf',
+      prompt: 'pathlib\'s glob() and rglob() return Path objects, not plain strings.',
+      answer: true,
+      explanation: 'Correct. You get Path objects, which you can use like strings in most contexts but which also have handy attributes: .name, .stem, .suffix, .parent. Convert with str(p) if you need a plain string.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You want all Excel files (.xlsx) in /reports and its subfolders. Which is correct?',
+      options: [
+        'glob.glob("/reports/*.xlsx")',
+        'glob.glob("/reports/**/*.xlsx", recursive=True)',
+        'os.listdir("/reports", pattern="*.xlsx")',
+        'os.walk("/reports/*.xlsx")'
+      ],
+      answer: 1,
+      explanation: 'glob.glob("/reports/**/*.xlsx", recursive=True) finds .xlsx files at any depth. Option A only searches the top-level folder. os.listdir and os.walk do not accept glob patterns directly.'
+    },
+    {
+      type: 'fill',
+      before: 'A glob pattern that matches any single character uses the wildcard ',
+      after: '.',
+      answer: '?',
+      explanation: '? matches exactly one character. So file_?.csv matches file_1.csv and file_a.csv but not file_10.csv. It is useful when filenames follow a strict single-character convention.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the difference between glob.glob() and pathlib\'s Path.glob()?',
+      options: [
+        'No difference — they are identical',
+        'glob.glob() returns strings; Path.glob() returns Path objects',
+        'Path.glob() is slower but more accurate',
+        'glob.glob() supports ** but Path.glob() does not'
+      ],
+      answer: 1,
+      explanation: 'The main practical difference is return type. glob.glob() gives strings. Path.glob() gives Path objects, which have extra methods and attributes. Both support ** for recursion (use recursive=True for glob.glob()).'
+    },
+    {
+      type: 'tf',
+      prompt: 'Sorting the results of glob.glob() is recommended because glob does not guarantee a consistent order.',
+      answer: true,
+      explanation: 'The order depends on the filesystem and OS. For reproducible processing (e.g. when you want files in alphabetical or chronological order), always sort: sorted(glob.glob("data/*.csv")).'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OS Projects — Programming</title>
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; padding-bottom: 60px; }
+
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+
+    .intro { max-width: 680px; margin: 28px auto 0; padding: 0 18px; font-size: 0.88em; color: #5d6d7e; line-height: 1.7; }
+
+    .projects { max-width: 680px; margin: 0 auto; padding: 24px 16px 0; display: flex; flex-direction: column; gap: 22px; }
+
+    .project-card { background: white; border-radius: 18px; box-shadow: 0 3px 16px rgba(0,0,0,0.08); overflow: hidden; border-left: 5px solid #8e44ad; }
+    .project-header { padding: 20px 22px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 16px; }
+    .project-header:hover { background: #faf8fc; }
+    .proj-icon { font-size: 2em; flex-shrink: 0; margin-top: 2px; }
+    .proj-meta { flex: 1; }
+    .proj-num { font-size: 0.65em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #8e44ad; margin-bottom: 4px; }
+    .proj-title { font-size: 1.08em; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
+    .proj-desc { font-size: 0.82em; color: #7f8c8d; line-height: 1.6; }
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag { font-size: 0.68em; font-weight: 700; padding: 3px 9px; border-radius: 8px; background: #f5eef8; color: #8e44ad; }
+    .chevron { color: #bdc3c7; font-size: 1.2em; flex-shrink: 0; margin-top: 4px; transition: transform 0.2s; }
+    .project-card.open .chevron { transform: rotate(90deg); }
+
+    .project-body { display: none; border-top: 1px solid #f0f2f5; }
+    .project-card.open .project-body { display: block; }
+
+    .section { padding: 18px 22px; border-bottom: 1px solid #f0f2f5; }
+    .section:last-child { border-bottom: none; }
+    .section-title { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #8e44ad; margin-bottom: 10px; }
+
+    .section p { font-size: 0.86em; color: #34495e; line-height: 1.75; }
+    .section ul, .section ol { padding-left: 20px; }
+    .section li { font-size: 0.86em; color: #34495e; line-height: 1.75; margin-bottom: 3px; }
+
+    pre { background: #1e2a35; color: #e8f0f8; border-radius: 12px; padding: 18px 20px; font-size: 0.78em; line-height: 1.7; overflow-x: auto; font-family: Consolas, 'Courier New', monospace; }
+    code { font-family: Consolas, 'Courier New', monospace; font-size: 0.88em; background: #f0f2f5; color: #8e44ad; padding: 1px 5px; border-radius: 4px; }
+
+    .solution-toggle { display: flex; align-items: center; gap: 10px; padding: 14px 22px; cursor: pointer; background: #faf8fc; border-top: 1px solid #f0f2f5; font-size: 0.84em; font-weight: 700; color: #8e44ad; user-select: none; }
+    .solution-toggle:hover { background: #f5eef8; }
+    .sol-icon { font-size: 1.1em; }
+    .solution-body { display: none; background: #1e2a35; }
+    .solution-body.open { display: block; }
+    .solution-body pre { border-radius: 0; margin: 0; padding: 20px 22px; }
+
+    .callout { background: #fef9e7; border-left: 4px solid #f39c12; border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 10px 0; font-size: 0.84em; color: #7d6608; line-height: 1.6; }
+    .callout strong { color: #5d4e0a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← OS Course</a>
+  <h1>Challenge Projects</h1>
+  <p>Real scripts · practical value · full solutions</p>
+</header>
+
+<p class="intro">
+  Five real-world projects that pull together everything from the OS course. Each one produces something genuinely useful. Read the brief, try it yourself, then reveal the solution.
+</p>
+
+<div class="projects">
+
+  <!-- ─── PROJECT 1 ─── -->
+  <div class="project-card" id="p1">
+    <div class="project-header" onclick="toggle('p1')">
+      <div class="proj-icon">🗂️</div>
+      <div class="proj-meta">
+        <div class="proj-num">Project 1</div>
+        <div class="proj-title">Downloads Folder Organiser</div>
+        <div class="proj-desc">Your Downloads folder is a mess of PDFs, images, ZIPs, and spreadsheets. Write a script that automatically sorts every file into a subdirectory by type.</div>
+        <div class="proj-tags">
+          <span class="tag">os.listdir</span><span class="tag">os.path</span><span class="tag">shutil.move</span><span class="tag">os.makedirs</span>
+        </div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+
+    <div class="project-body">
+      <div class="section">
+        <div class="section-title">What it does</div>
+        <p>Scans a folder, maps each file's extension to a category (Images, Documents, Spreadsheets, Archives, Code, Other), creates the category subfolder if it does not exist, and moves the file there. Running it twice is safe — already-sorted files are skipped.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Requirements</div>
+        <ol>
+          <li>Define a dictionary mapping categories to lists of extensions.</li>
+          <li>Loop over every file in the target folder (not subdirectories).</li>
+          <li>Skip files that are already inside a subdirectory.</li>
+          <li>Create the destination subdirectory if it does not exist.</li>
+          <li>Move the file. If a file with the same name exists at the destination, skip it.</li>
+          <li>Print a summary: how many files were moved, how many skipped.</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Hints</div>
+        <ul>
+          <li>Use <code>os.path.splitext()</code> to get the extension, then <code>.lower()</code> it.</li>
+          <li>Use <code>os.path.isfile()</code> to skip subdirectories.</li>
+          <li>Use <code>os.makedirs(dest_dir, exist_ok=True)</code> to safely create folders.</li>
+          <li>Check <code>os.path.exists(dest_path)</code> before moving to avoid overwriting.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Real-world use:</strong> Run this on your actual Downloads folder. Or schedule it with a cron job / Task Scheduler so it runs every day automatically.
+      </div>
+
+      <div class="solution-toggle" onclick="toggleSol('p1')">
+        <span class="sol-icon">💡</span> Show solution
+      </div>
+      <div class="solution-body" id="sol-p1">
+        <pre>import os
+import shutil
+
+# ── Config ──────────────────────────────────────────────
+FOLDER = os.path.expanduser("~/Downloads")   # change this path
+
+CATEGORIES = {
+    "Images":       [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".heic"],
+    "Documents":    [".pdf", ".doc", ".docx", ".txt", ".md", ".ppt", ".pptx", ".odt"],
+    "Spreadsheets": [".xls", ".xlsx", ".csv", ".ods"],
+    "Archives":     [".zip", ".tar", ".gz", ".rar", ".7z"],
+    "Code":         [".py", ".js", ".ts", ".html", ".css", ".json", ".sql", ".sh"],
+    "Audio":        [".mp3", ".wav", ".flac", ".aac", ".m4a"],
+    "Video":        [".mp4", ".mov", ".avi", ".mkv", ".wmv"],
+}
+
+# Build reverse map: extension → category name
+EXT_MAP = {}
+for category, extensions in CATEGORIES.items():
+    for ext in extensions:
+        EXT_MAP[ext] = category
+
+# ── Main logic ──────────────────────────────────────────
+moved = 0
+skipped = 0
+
+for name in os.listdir(FOLDER):
+    src = os.path.join(FOLDER, name)
+
+    # Skip directories (already-organised subfolders, etc.)
+    if not os.path.isfile(src):
+        continue
+
+    _, ext = os.path.splitext(name)
+    category = EXT_MAP.get(ext.lower(), "Other")
+
+    dest_dir = os.path.join(FOLDER, category)
+    os.makedirs(dest_dir, exist_ok=True)
+
+    dest = os.path.join(dest_dir, name)
+
+    if os.path.exists(dest):
+        print(f"  skip (exists): {name}")
+        skipped += 1
+        continue
+
+    shutil.move(src, dest)
+    print(f"  moved → {category}: {name}")
+    moved += 1
+
+print(f"\nDone. {moved} moved, {skipped} skipped.")</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PROJECT 2 ─── -->
+  <div class="project-card" id="p2">
+    <div class="project-header" onclick="toggle('p2')">
+      <div class="proj-icon">📊</div>
+      <div class="proj-meta">
+        <div class="proj-num">Project 2</div>
+        <div class="proj-title">Multi-CSV Combiner</div>
+        <div class="proj-desc">You have a folder (and subfolders) full of monthly sales CSVs with the same columns. Write a script that finds them all, merges them into one file, and adds a "source_file" column so you know where each row came from.</div>
+        <div class="proj-tags">
+          <span class="tag">glob / rglob</span><span class="tag">csv.DictReader</span><span class="tag">csv.DictWriter</span><span class="tag">os.path</span>
+        </div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+
+    <div class="project-body">
+      <div class="section">
+        <div class="section-title">What it does</div>
+        <p>Recursively finds all <code>.csv</code> files under a root folder, reads each one with <code>csv.DictReader</code>, adds a <code>source_file</code> field to every row, and writes everything into a single <code>combined.csv</code>. The header is written only once. Files are processed in sorted order for reproducibility.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Requirements</div>
+        <ol>
+          <li>Use <code>glob</code> or <code>pathlib.rglob</code> to find all CSVs recursively.</li>
+          <li>Skip the output file itself if it already exists in the folder.</li>
+          <li>Read each CSV with <code>csv.DictReader</code>.</li>
+          <li>Add a <code>source_file</code> key to each row (just the filename, not the full path).</li>
+          <li>Write all rows to <code>combined.csv</code> using <code>csv.DictWriter</code>.</li>
+          <li>Print how many rows and files were processed.</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Hints</div>
+        <ul>
+          <li>Get the fieldnames from the first file's <code>DictReader.fieldnames</code> and append <code>"source_file"</code>.</li>
+          <li>Use <code>newline=""</code> when opening CSV files to avoid blank rows on Windows.</li>
+          <li>Sort the file list: <code>sorted(glob.glob(...))</code> for consistent output.</li>
+          <li>Use <code>os.path.basename(filepath)</code> for the source column value.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Real-world use:</strong> Monthly exports from accounting software, bank statements, regional sales reports — any situation where the same schema appears across many files.
+      </div>
+
+      <div class="solution-toggle" onclick="toggleSol('p2')">
+        <span class="sol-icon">💡</span> Show solution
+      </div>
+      <div class="solution-body" id="sol-p2">
+        <pre>import csv
+import glob
+import os
+
+# ── Config ──────────────────────────────────────────────
+ROOT_FOLDER = "./sales_data"          # folder containing the CSVs
+OUTPUT_FILE = os.path.join(ROOT_FOLDER, "combined.csv")
+
+# ── Find all CSVs ────────────────────────────────────────
+all_files = sorted(glob.glob(os.path.join(ROOT_FOLDER, "**", "*.csv"), recursive=True))
+
+# Exclude the output file if it already exists there
+all_files = [f for f in all_files if os.path.abspath(f) != os.path.abspath(OUTPUT_FILE)]
+
+if not all_files:
+    print("No CSV files found.")
+    exit()
+
+# ── Determine fieldnames from the first file ─────────────
+with open(all_files[0], newline="", encoding="utf-8") as f:
+    sample = csv.DictReader(f)
+    fieldnames = sample.fieldnames + ["source_file"]
+
+# ── Combine ──────────────────────────────────────────────
+total_rows = 0
+
+with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as out_f:
+    writer = csv.DictWriter(out_f, fieldnames=fieldnames)
+    writer.writeheader()
+
+    for filepath in all_files:
+        source_name = os.path.basename(filepath)
+        try:
+            with open(filepath, newline="", encoding="utf-8") as in_f:
+                reader = csv.DictReader(in_f)
+                for row in reader:
+                    row["source_file"] = source_name
+                    writer.writerow(row)
+                    total_rows += 1
+            print(f"  ✓ {source_name}")
+        except Exception as e:
+            print(f"  ✗ {source_name}: {e}")
+
+print(f"\nCombined {total_rows} rows from {len(all_files)} files → {OUTPUT_FILE}")</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PROJECT 3 ─── -->
+  <div class="project-card" id="p3">
+    <div class="project-header" onclick="toggle('p3')">
+      <div class="proj-icon">💾</div>
+      <div class="proj-meta">
+        <div class="proj-num">Project 3</div>
+        <div class="proj-title">Config-Driven File Backup</div>
+        <div class="proj-desc">Write a backup script that reads its settings from a JSON config file, respects a secret backup destination from an environment variable, and only copies files that have changed since the last backup.</div>
+        <div class="proj-tags">
+          <span class="tag">json.load</span><span class="tag">os.environ</span><span class="tag">shutil.copy2</span><span class="tag">os.walk</span><span class="tag">os.path.getmtime</span>
+        </div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+
+    <div class="project-body">
+      <div class="section">
+        <div class="section-title">What it does</div>
+        <p>Reads <code>backup_config.json</code> for the list of source folders and file extensions to include. Reads the backup destination from the <code>BACKUP_DEST</code> environment variable. Walks each source folder, mirrors the directory structure in the destination, and copies only files that are newer than the existing backup copy (or don't exist yet).</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Requirements</div>
+        <ol>
+          <li>Load config from <code>backup_config.json</code> (keys: <code>sources</code>, <code>include_extensions</code>).</li>
+          <li>Read <code>BACKUP_DEST</code> from <code>os.environ</code> — raise a clear error if missing.</li>
+          <li>For each source folder, walk with <code>os.walk</code>.</li>
+          <li>Skip files whose extension is not in <code>include_extensions</code>.</li>
+          <li>Compute the destination path by mirroring the relative path under <code>BACKUP_DEST</code>.</li>
+          <li>Copy only if the source is newer than the destination (<code>os.path.getmtime</code>).</li>
+          <li>Print a summary: copied vs up-to-date.</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Example config file</div>
+        <pre style="margin:0;border-radius:8px;font-size:0.76em;">{
+  "sources": [
+    "/home/alice/projects",
+    "/home/alice/documents"
+  ],
+  "include_extensions": [".py", ".csv", ".json", ".txt", ".md"]
+}</pre>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Hints</div>
+        <ul>
+          <li>Use <code>os.path.relpath(src_file, source_root)</code> to get the relative path.</li>
+          <li>Join it with <code>os.path.join(BACKUP_DEST, rel_path)</code> for the destination.</li>
+          <li>Use <code>os.makedirs(os.path.dirname(dest), exist_ok=True)</code> before copying.</li>
+          <li>Compare <code>os.path.getmtime(src) > os.path.getmtime(dest)</code> to detect changes.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Real-world use:</strong> Run this nightly via Task Scheduler (Windows) or cron (Linux/Mac) to keep an incremental backup of your work files on an external drive or network share.
+      </div>
+
+      <div class="solution-toggle" onclick="toggleSol('p3')">
+        <span class="sol-icon">💡</span> Show solution
+      </div>
+      <div class="solution-body" id="sol-p3">
+        <pre>import json
+import os
+import shutil
+
+# ── Load config ──────────────────────────────────────────
+config_path = os.path.join(os.path.dirname(__file__), "backup_config.json")
+with open(config_path, encoding="utf-8") as f:
+    config = json.load(f)
+
+sources    = config["sources"]
+include_ext = set(ext.lower() for ext in config["include_extensions"])
+
+# ── Read destination from environment ───────────────────
+backup_dest = os.environ.get("BACKUP_DEST")
+if not backup_dest:
+    raise EnvironmentError(
+        "BACKUP_DEST environment variable is not set. "
+        "Set it to the backup root directory before running."
+    )
+
+# ── Backup loop ──────────────────────────────────────────
+copied = 0
+up_to_date = 0
+
+for source_root in sources:
+    if not os.path.isdir(source_root):
+        print(f"WARNING: source not found, skipping: {source_root}")
+        continue
+
+    for dirpath, dirnames, filenames in os.walk(source_root):
+        for filename in filenames:
+            _, ext = os.path.splitext(filename)
+            if ext.lower() not in include_ext:
+                continue
+
+            src_file = os.path.join(dirpath, filename)
+            rel_path = os.path.relpath(src_file, os.path.dirname(source_root))
+            dest_file = os.path.join(backup_dest, rel_path)
+
+            dest_dir = os.path.dirname(dest_file)
+            os.makedirs(dest_dir, exist_ok=True)
+
+            # Copy only if source is newer or destination doesn't exist
+            if (not os.path.exists(dest_file) or
+                    os.path.getmtime(src_file) > os.path.getmtime(dest_file)):
+                shutil.copy2(src_file, dest_file)
+                print(f"  copied: {rel_path}")
+                copied += 1
+            else:
+                up_to_date += 1
+
+print(f"\nBackup complete. {copied} copied, {up_to_date} already up-to-date.")</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PROJECT 4 ─── -->
+  <div class="project-card" id="p4">
+    <div class="project-header" onclick="toggle('p4')">
+      <div class="proj-icon">🏗️</div>
+      <div class="proj-meta">
+        <div class="proj-num">Project 4</div>
+        <div class="proj-title">Project Scaffolder</div>
+        <div class="proj-desc">Write a CLI tool that creates a standard folder structure for a new data analysis project — complete with a README, a .gitignore, a config template, and placeholder Python files — from a single command.</div>
+        <div class="proj-tags">
+          <span class="tag">pathlib</span><span class="tag">os.makedirs</span><span class="tag">json.dump</span><span class="tag">os.environ</span><span class="tag">sys.argv</span>
+        </div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+
+    <div class="project-body">
+      <div class="section">
+        <div class="section-title">What it does</div>
+        <p>Takes a project name as a command-line argument (<code>python scaffold.py my_project</code>). Creates a directory tree: <code>data/raw</code>, <code>data/processed</code>, <code>notebooks</code>, <code>src</code>, <code>output</code>. Writes a <code>config.json</code> template, a <code>.gitignore</code> that excludes <code>.env</code> and data folders, a <code>README.md</code>, and a skeleton <code>src/pipeline.py</code>. Reads the author name from the <code>GIT_AUTHOR_NAME</code> env variable if available.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Requirements</div>
+        <ol>
+          <li>Read the project name from <code>sys.argv[1]</code>. Print usage and exit if missing.</li>
+          <li>Refuse to create if a folder with that name already exists.</li>
+          <li>Use <code>pathlib.Path</code> and the <code>/</code> operator throughout.</li>
+          <li>Create all subdirectories with <code>mkdir(parents=True)</code>.</li>
+          <li>Write <code>config.json</code> with <code>json.dump</code> and <code>indent=4</code>.</li>
+          <li>Write <code>.gitignore</code>, <code>README.md</code>, and <code>src/pipeline.py</code> as text files.</li>
+          <li>Print the created tree at the end.</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Hints</div>
+        <ul>
+          <li><code>Path(name).exists()</code> to check if the folder already exists.</li>
+          <li><code>Path.write_text(content, encoding="utf-8")</code> for writing template files.</li>
+          <li><code>os.environ.get("GIT_AUTHOR_NAME", "Your Name")</code> for the author fallback.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Real-world use:</strong> Instantly get a clean, consistent starting structure for every new analysis project. Add it to your PATH and call it from anywhere.
+      </div>
+
+      <div class="solution-toggle" onclick="toggleSol('p4')">
+        <span class="sol-icon">💡</span> Show solution
+      </div>
+      <div class="solution-body" id="sol-p4">
+        <pre>import json
+import os
+import sys
+from pathlib import Path
+
+# ── Args ─────────────────────────────────────────────────
+if len(sys.argv) < 2:
+    print("Usage: python scaffold.py <project_name>")
+    sys.exit(1)
+
+name = sys.argv[1]
+root = Path(name)
+author = os.environ.get("GIT_AUTHOR_NAME", "Your Name")
+
+if root.exists():
+    print(f"Error: '{name}' already exists.")
+    sys.exit(1)
+
+# ── Directory structure ───────────────────────────────────
+dirs = [
+    root / "data" / "raw",
+    root / "data" / "processed",
+    root / "notebooks",
+    root / "src",
+    root / "output",
+]
+for d in dirs:
+    d.mkdir(parents=True)
+
+# ── config.json ───────────────────────────────────────────
+config = {
+    "project": name,
+    "author": author,
+    "input_dir": "data/raw",
+    "output_dir": "data/processed",
+    "log_level": "INFO"
+}
+(root / "config.json").write_text(
+    json.dumps(config, indent=4), encoding="utf-8"
+)
+
+# ── .gitignore ────────────────────────────────────────────
+(root / ".gitignore").write_text(
+    ".env\n"
+    "data/raw/\n"
+    "data/processed/\n"
+    "output/\n"
+    "__pycache__/\n"
+    "*.pyc\n"
+    ".DS_Store\n",
+    encoding="utf-8"
+)
+
+# ── README.md ─────────────────────────────────────────────
+(root / "README.md").write_text(
+    f"# {name}\n\n"
+    f"**Author:** {author}\n\n"
+    "## Structure\n\n"
+    "```\n"
+    f"{name}/\n"
+    "├── data/\n"
+    "│   ├── raw/          # original input files (not in git)\n"
+    "│   └── processed/    # cleaned output files\n"
+    "├── notebooks/        # exploratory analysis\n"
+    "├── src/\n"
+    "│   └── pipeline.py   # main processing script\n"
+    "├── output/           # final deliverables\n"
+    "├── config.json       # runtime settings\n"
+    "└── .gitignore\n"
+    "```\n\n"
+    "## Usage\n\n"
+    "```bash\n"
+    "python src/pipeline.py\n"
+    "```\n",
+    encoding="utf-8"
+)
+
+# ── src/pipeline.py ───────────────────────────────────────
+(root / "src" / "pipeline.py").write_text(
+    '"""Main pipeline for ' + name + '."""\n'
+    "import json\n"
+    "import os\n"
+    "from pathlib import Path\n\n"
+    "ROOT = Path(__file__).parent.parent\n\n"
+    'with open(ROOT / "config.json", encoding="utf-8") as f:\n'
+    "    config = json.load(f)\n\n"
+    "input_dir  = ROOT / config[\"input_dir\"]\n"
+    "output_dir = ROOT / config[\"output_dir\"]\n"
+    "output_dir.mkdir(parents=True, exist_ok=True)\n\n"
+    "def main():\n"
+    "    files = sorted(input_dir.glob(\"*.csv\"))\n"
+    "    print(f\"Found {len(files)} input file(s).\")\n"
+    "    for f in files:\n"
+    "        print(f\"  processing {f.name}...\")\n"
+    "        # TODO: add your processing logic here\n\n"
+    'if __name__ == "__main__":\n'
+    "    main()\n",
+    encoding="utf-8"
+)
+
+# ── Summary ───────────────────────────────────────────────
+print(f"\n✓ Project '{name}' created:\n")
+for path in sorted(root.rglob("*")):
+    indent = "  " * (len(path.relative_to(root).parts) - 1)
+    icon = "📁" if path.is_dir() else "📄"
+    print(f"  {indent}{icon} {path.name}")</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PROJECT 5 ─── -->
+  <div class="project-card" id="p5">
+    <div class="project-header" onclick="toggle('p5')">
+      <div class="proj-icon">📋</div>
+      <div class="proj-meta">
+        <div class="proj-num">Project 5</div>
+        <div class="proj-title">Log File Analyser</div>
+        <div class="proj-desc">You have a folder of application log files (.log). Write a script that scans all logs, counts ERROR and WARNING lines, extracts unique error messages, and writes a clean summary report to a text file.</div>
+        <div class="proj-tags">
+          <span class="tag">glob</span><span class="tag">text file reading</span><span class="tag">os.path</span><span class="tag">file writing</span><span class="tag">pathlib</span>
+        </div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+
+    <div class="project-body">
+      <div class="section">
+        <div class="section-title">What it does</div>
+        <p>Finds all <code>.log</code> files in a target folder. For each file, reads line-by-line (memory-efficient), counts <code>ERROR</code> and <code>WARNING</code> occurrences, and collects unique error messages. Writes a <code>summary_report.txt</code> with per-file stats and the top 10 most frequent error messages overall.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Requirements</div>
+        <ol>
+          <li>Use <code>glob</code> or <code>pathlib.rglob</code> to find all <code>.log</code> files.</li>
+          <li>Read each file line-by-line (do not load the whole file at once).</li>
+          <li>Count lines containing <code>"ERROR"</code> and <code>"WARNING"</code> (case-sensitive or insensitive — your choice).</li>
+          <li>Collect all unique error messages in a <code>Counter</code> for frequency analysis.</li>
+          <li>Write <code>summary_report.txt</code> with: per-file counts, grand total, and top 10 errors.</li>
+          <li>Also print the summary to the terminal.</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Hints</div>
+        <ul>
+          <li>Use <code>from collections import Counter</code> for frequency counting.</li>
+          <li>Strip error lines: <code>line.strip()</code> before adding to the counter.</li>
+          <li>Use <code>counter.most_common(10)</code> to get the top 10 entries.</li>
+          <li>Open the output with mode <code>"w"</code> and write lines manually with <code>f.write()</code>.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Real-world use:</strong> After deploying an application, run this on your server's log directory to instantly see what errors are happening and how often — without opening each file manually.
+      </div>
+
+      <div class="solution-toggle" onclick="toggleSol('p5')">
+        <span class="sol-icon">💡</span> Show solution
+      </div>
+      <div class="solution-body" id="sol-p5">
+        <pre>import glob
+import os
+from collections import Counter
+from pathlib import Path
+
+# ── Config ──────────────────────────────────────────────
+LOGS_FOLDER = "./logs"
+REPORT_FILE = os.path.join(LOGS_FOLDER, "summary_report.txt")
+
+# ── Find log files ───────────────────────────────────────
+log_files = sorted(glob.glob(os.path.join(LOGS_FOLDER, "**", "*.log"), recursive=True))
+
+if not log_files:
+    print("No .log files found.")
+    exit()
+
+# ── Analyse ───────────────────────────────────────────────
+error_counter = Counter()
+file_stats = []   # list of (filename, error_count, warning_count)
+
+grand_errors   = 0
+grand_warnings = 0
+
+for filepath in log_files:
+    errors   = 0
+    warnings = 0
+
+    try:
+        with open(filepath, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if "ERROR" in line:
+                    errors += 1
+                    error_counter[line.strip()] += 1
+                elif "WARNING" in line:
+                    warnings += 1
+    except Exception as e:
+        print(f"Could not read {filepath}: {e}")
+        continue
+
+    filename = os.path.basename(filepath)
+    file_stats.append((filename, errors, warnings))
+    grand_errors   += errors
+    grand_warnings += warnings
+
+# ── Build report ─────────────────────────────────────────
+lines = []
+lines.append("=" * 60)
+lines.append("LOG ANALYSIS REPORT")
+lines.append("=" * 60)
+lines.append(f"Files scanned : {len(file_stats)}")
+lines.append(f"Total ERRORs  : {grand_errors}")
+lines.append(f"Total WARNINGs: {grand_warnings}")
+lines.append("")
+lines.append("Per-file breakdown:")
+lines.append("-" * 40)
+
+for fname, errs, warns in file_stats:
+    lines.append(f"  {fname:<30} ERR:{errs:>4}  WARN:{warns:>4}")
+
+lines.append("")
+lines.append("Top 10 most frequent ERROR lines:")
+lines.append("-" * 40)
+
+for i, (msg, count) in enumerate(error_counter.most_common(10), 1):
+    # Truncate long lines for readability
+    short = msg[:80] + "..." if len(msg) > 80 else msg
+    lines.append(f"  {i:>2}. [{count:>4}x]  {short}")
+
+lines.append("=" * 60)
+
+report_text = "\n".join(lines)
+
+# ── Write to file and print ──────────────────────────────
+Path(LOGS_FOLDER).mkdir(parents=True, exist_ok=True)
+
+with open(REPORT_FILE, "w", encoding="utf-8") as f:
+    f.write(report_text + "\n")
+
+print(report_text)
+print(f"\nReport saved → {REPORT_FILE}")</pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggle(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  function toggleSol(id) {
+    const sol = document.getElementById('sol-' + id);
+    const btn = sol.previousElementSibling;
+    sol.classList.toggle('open');
+    btn.querySelector('.sol-icon').textContent = sol.classList.contains('open') ? '🙈' : '💡';
+    btn.childNodes[1].textContent = sol.classList.contains('open') ? ' Hide solution' : ' Show solution';
+  }
+</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../sw.js');</script>
+</body>
+</html>

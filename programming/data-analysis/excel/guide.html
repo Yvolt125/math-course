@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel with Python Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    /* Excel cell grid simulation */
+    .xl-grid { border-collapse: collapse; font-size: 0.82em; font-family: Consolas, monospace; margin: 14px 0; }
+    .xl-grid th { background: #d5e8d4; border: 1px solid #82b366; padding: 5px 14px; font-weight: 700; text-align: center; min-width: 70px; }
+    .xl-grid th.row-h { background: #dae8fc; border-color: #6c8ebf; width: 36px; }
+    .xl-grid td { border: 1px solid #d6d6d6; padding: 5px 14px; }
+    .xl-grid .hdr-row td { background: #1f7244; color: white; font-weight: 700; }
+    .xl-grid .alt-row td { background: #f2f9f2; }
+    .xl-grid .total-row td { background: #fff3cd; font-weight: 700; border-top: 2px solid #f39c12; }
+    .xl-grid .num { text-align: right; }
+    @media(max-width:560px) { }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← Excel with Python</a>
+  <h1>Excel with Python — Theory Guide</h1>
+  <p>openpyxl · xlsxwriter · formatting · charts · automated reports</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · Reading Excel Files</a>
+  <a class="toc-pill" href="#ch2">2 · Writing with openpyxl</a>
+  <a class="toc-pill" href="#ch3">3 · Cell Formatting</a>
+  <a class="toc-pill" href="#ch4">4 · Tables &amp; Conditional Formatting</a>
+  <a class="toc-pill" href="#ch5">5 · Embedded Charts</a>
+  <a class="toc-pill" href="#ch6">6 · Multiple Sheets</a>
+  <a class="toc-pill" href="#ch7">7 · Full Report Automation</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">Reading Excel Files</div>
+
+  <p>For reading existing Excel files, <strong>pandas</strong> with <strong>openpyxl</strong> as the engine is the standard approach. For creating or editing formatted Excel files, use <strong>openpyxl</strong> directly.</p>
+
+<pre>pip install openpyxl xlsxwriter</pre>
+
+  <h3>Pandas read_excel</h3>
+<pre>import pandas as pd
+
+# Simple read
+df = pd.read_excel('sales_report.xlsx')
+
+# Common situations
+df = pd.read_excel(
+    'sales_report.xlsx',
+    sheet_name='Q1 Data',  # by name or 0-based index
+    header=2,              # header is in row 3 (0-indexed)
+    usecols='B:G',         # only columns B through G
+    skiprows=[0, 1],       # skip logo/title rows
+    na_values=['N/A', '-']
+)
+
+# All sheets at once
+all_sheets = pd.read_excel('report.xlsx', sheet_name=None)  # dict
+for name, df in all_sheets.items():
+    print(f"Sheet '{name}': {df.shape}")</pre>
+
+  <h3>Reading with openpyxl directly</h3>
+  <p>Use openpyxl when you need cell-level access (colours, formulas, merged cells, etc.).</p>
+<pre>from openpyxl import load_workbook
+
+wb = load_workbook('report.xlsx', data_only=True)  # data_only=True reads cell values, not formulas
+ws = wb.active           # first sheet
+# or
+ws = wb['Sheet1']        # by name
+ws = wb.worksheets[1]    # by index
+
+# Read a single cell
+val = ws['B3'].value
+val = ws.cell(row=3, column=2).value
+
+# Iterate rows
+for row in ws.iter_rows(min_row=2, values_only=True):
+    print(row)  # tuple of cell values
+
+# All data into a list of dicts
+headers = [ws.cell(1, c).value for c in range(1, ws.max_column+1)]
+data = []
+for row in ws.iter_rows(min_row=2, values_only=True):
+    data.append(dict(zip(headers, row)))
+
+df = pd.DataFrame(data)</pre>
+
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Writing with openpyxl</div>
+
+<pre>from openpyxl import Workbook
+
+wb = Workbook()
+ws = wb.active
+ws.title = 'Sales Data'
+
+# Write headers
+headers = ['Rep', 'Region', 'Sales', 'Month']
+for col, h in enumerate(headers, start=1):
+    ws.cell(row=1, column=col, value=h)
+
+# Write rows from a DataFrame
+import pandas as pd
+df = pd.read_csv('sales.csv')
+
+for r_idx, row in enumerate(df.itertuples(index=False), start=2):
+    for c_idx, val in enumerate(row, start=1):
+        ws.cell(row=r_idx, column=c_idx, value=val)
+
+wb.save('output.xlsx')</pre>
+
+  <h3>The faster pandas route</h3>
+  <p>When you don't need custom formatting, use pandas to write the data, then reopen with openpyxl for formatting:</p>
+<pre>with pd.ExcelWriter('output.xlsx', engine='openpyxl') as writer:
+    df_sales.to_excel(writer, sheet_name='Sales', index=False)
+    df_summary.to_excel(writer, sheet_name='Summary', index=False)</pre>
+
+  <h3>Column widths</h3>
+<pre>from openpyxl.utils import get_column_letter
+
+for col in ws.columns:
+    max_len = max(len(str(cell.value or '')) for cell in col)
+    ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 40)</pre>
+
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Cell Formatting</div>
+
+  <p>openpyxl lets you set fonts, fills, borders, alignment, and number formats on any cell.</p>
+
+  <!-- Excel grid preview -->
+  <table class="xl-grid">
+    <tr><th class="row-h"></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+    <tr class="hdr-row"><td>1</td><td>Rep</td><td>Region</td><td>Sales</td><td>Month</td></tr>
+    <tr><td>2</td><td>Alice</td><td>North</td><td class="num">12,400</td><td>Jan</td></tr>
+    <tr class="alt-row"><td>3</td><td>Bob</td><td>South</td><td class="num">15,800</td><td>Jan</td></tr>
+    <tr><td>4</td><td>Carol</td><td>North</td><td class="num">9,700</td><td>Feb</td></tr>
+    <tr class="alt-row"><td>5</td><td>Dave</td><td>East</td><td class="num">18,300</td><td>Feb</td></tr>
+    <tr class="total-row"><td>6</td><td colspan="2">TOTAL</td><td class="num">56,200</td><td></td></tr>
+  </table>
+
+<pre>from openpyxl.styles import (
+    Font, PatternFill, Alignment, Border, Side, numbers
+)
+from openpyxl.utils import get_column_letter
+
+# Font
+ws['A1'].font = Font(bold=True, size=12, color='FFFFFF', name='Calibri')
+
+# Fill (background colour)
+from openpyxl.styles import PatternFill
+green_fill  = PatternFill(fill_type='solid', fgColor='1F7244')
+alt_fill    = PatternFill(fill_type='solid', fgColor='F2F9F2')
+yellow_fill = PatternFill(fill_type='solid', fgColor='FFF3CD')
+
+ws['A1'].fill = green_fill
+
+# Apply to header row
+for cell in ws[1]:
+    cell.fill   = green_fill
+    cell.font   = Font(bold=True, color='FFFFFF')
+    cell.alignment = Alignment(horizontal='center', vertical='center')
+
+# Alternating row fill
+for row_idx in range(2, ws.max_row + 1):
+    fill = alt_fill if row_idx % 2 == 0 else PatternFill()
+    for cell in ws[row_idx]:
+        cell.fill = fill
+
+# Number format
+for row in ws.iter_rows(min_row=2, min_col=3, max_col=3):
+    for cell in row:
+        cell.number_format = '#,##0'        # 12,400
+        # or: '#,##0.00'  / '$#,##0.00' / '0%'
+
+# Borders
+thin = Side(style='thin', color='D6D6D6')
+border = Border(left=thin, right=thin, top=thin, bottom=thin)
+for row in ws.iter_rows():
+    for cell in row:
+        cell.border = border
+
+# Row height
+ws.row_dimensions[1].height = 22
+
+wb.save('formatted.xlsx')</pre>
+
+  <div class="callout tip">
+    <strong>Hex colours in openpyxl</strong>
+    openpyxl uses hex without the leading #. So CSS <code>#1F7244</code> becomes <code>1F7244</code>.
+  </div>
+
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Tables & Conditional Formatting</div>
+
+  <h3>Excel Tables (ListObject)</h3>
+  <p>Converting a range to an Excel Table enables sorting, filtering, and auto-extending formulas in Excel itself.</p>
+<pre>from openpyxl.worksheet.table import Table, TableStyleInfo
+
+table = Table(
+    displayName='SalesTable',
+    ref=f'A1:D{ws.max_row}'   # full data range
+)
+style = TableStyleInfo(
+    name='TableStyleMedium9',   # Excel's built-in style names
+    showFirstColumn=False,
+    showLastColumn=False,
+    showRowStripes=True,
+    showColumnStripes=False
+)
+table.tableStyleInfo = style
+ws.add_table(table)
+wb.save('with_table.xlsx')</pre>
+
+  <h3>Conditional Formatting</h3>
+<pre>from openpyxl.formatting.rule import (
+    ColorScaleRule, DataBarRule, CellIsRule, FormulaRule
+)
+from openpyxl.styles import PatternFill, Font
+
+# Colour scale: low=red, mid=yellow, high=green
+color_scale = ColorScaleRule(
+    start_type='min',  start_color='FF4444',
+    mid_type='percentile', mid_value=50, mid_color='FFFF44',
+    end_type='max',    end_color='44BB44'
+)
+ws.conditional_formatting.add('C2:C100', color_scale)
+
+# Data bar
+data_bar = DataBarRule(start_type='min', start_value=0,
+                       end_type='max', end_value=None, color='638EC6')
+ws.conditional_formatting.add('C2:C100', data_bar)
+
+# Highlight cells above threshold
+red_fill = PatternFill(fill_type='solid', fgColor='FFE0E0')
+above_rule = CellIsRule(operator='greaterThan', formula=['15000'], fill=red_fill)
+ws.conditional_formatting.add('C2:C100', above_rule)
+
+wb.save('conditional.xlsx')</pre>
+
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Embedded Charts</div>
+
+  <p>openpyxl can insert native Excel charts that the user can interact with after opening the file.</p>
+
+<pre>from openpyxl.chart import BarChart, LineChart, Reference
+
+# --- Bar chart ---
+bar = BarChart()
+bar.type   = 'col'       # 'col' = vertical bars, 'bar' = horizontal
+bar.style  = 10
+bar.title  = 'Sales by Region'
+bar.y_axis.title = 'Sales ($)'
+bar.x_axis.title = 'Region'
+
+# Data reference: rows 1-5, column C (sales values)
+data = Reference(ws, min_col=3, min_row=1, max_row=5)
+bar.add_data(data, titles_from_data=True)
+
+# Category labels: column A (region names)
+cats = Reference(ws, min_col=1, min_row=2, max_row=5)
+bar.set_categories(cats)
+
+bar.shape = 4              # rounded corners
+bar.width  = 15            # chart width in cm
+bar.height = 10
+
+ws.add_chart(bar, 'F2')    # top-left corner of chart placement
+wb.save('with_chart.xlsx')</pre>
+
+<pre>
+# --- Line chart ---
+line = LineChart()
+line.title  = 'Monthly Sales Trend'
+line.y_axis.title = 'Sales'
+line.x_axis.title = 'Month'
+line.style  = 10
+line.width  = 20
+line.height = 12
+
+# Multiple series (one per region)
+for col_idx in range(2, 5):   # columns B, C, D = regions
+    data = Reference(ws, min_col=col_idx, min_row=1, max_row=13)
+    line.add_data(data, titles_from_data=True)
+
+months_ref = Reference(ws, min_col=1, min_row=2, max_row=13)
+line.set_categories(months_ref)
+ws.add_chart(line, 'A16')
+wb.save('line_chart.xlsx')</pre>
+
+  <div class="callout info">
+    <strong>Available chart types in openpyxl</strong>
+    <code>BarChart</code>, <code>LineChart</code>, <code>PieChart</code>, <code>DoughnutChart</code>, <code>AreaChart</code>, <code>ScatterChart</code>, <code>BubbleChart</code>, <code>RadarChart</code>, <code>StockChart</code>. All live in <code>openpyxl.chart</code>.
+  </div>
+
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Multiple Sheets</div>
+
+<pre>wb = Workbook()
+
+# Create named sheets
+ws_raw     = wb.active;  ws_raw.title = 'Raw Data'
+ws_summary = wb.create_sheet('Summary')
+ws_charts  = wb.create_sheet('Charts')
+
+# Write to each sheet separately
+# ...
+
+# Reorder sheets
+wb.move_sheet('Summary', offset=-1)     # move to position 0
+
+# Sheet tab colours
+ws_summary.sheet_properties.tabColor = '1F7244'
+ws_charts.sheet_properties.tabColor  = '2980B9'
+ws_raw.sheet_properties.tabColor     = '7F8C8D'
+
+# Freeze panes (header row and left column visible while scrolling)
+ws_raw.freeze_panes = 'B2'   # freezes row 1 AND column A
+
+# Print settings
+ws_summary.page_setup.orientation = 'landscape'
+ws_summary.page_setup.fitToWidth  = 1
+
+wb.save('multi_sheet.xlsx')</pre>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Full Report Automation</div>
+
+  <p>This is the end goal — a Python script that runs on new data and produces a complete, formatted Excel report with summary stats, a data table, conditional formatting, and an embedded chart.</p>
+
+<pre>"""
+generate_sales_report.py
+Produces a formatted Excel report from a CSV file.
+Usage:  python generate_sales_report.py sales_data.csv
+"""
+import sys
+from pathlib import Path
+from datetime import date
+
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, numbers as xl_num
+from openpyxl.utils import get_column_letter
+from openpyxl.chart import BarChart, Reference
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.formatting.rule import ColorScaleRule
+
+# ── 1. Load & aggregate ────────────────────────────────────────────────────
+csv_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('sales.csv')
+df = pd.read_csv(csv_path, parse_dates=['date'])
+df.columns = df.columns.str.strip().str.lower()
+
+summary = (
+    df.groupby('region')
+      .agg(total_sales=('sales','sum'), deals=('sales','count'), avg_deal=('sales','mean'))
+      .round(2)
+      .reset_index()
+)
+
+# ── 2. Create workbook ─────────────────────────────────────────────────────
+wb = Workbook()
+
+# ── Sheet 1: Raw Data ──────────────────────────────────────────────────────
+ws_raw = wb.active
+ws_raw.title = 'Raw Data'
+ws_raw.sheet_properties.tabColor = '7F8C8D'
+ws_raw.freeze_panes = 'A2'
+
+raw_headers = list(df.columns)
+for c, h in enumerate(raw_headers, 1):
+    cell = ws_raw.cell(1, c, h.replace('_', ' ').title())
+    cell.font  = Font(bold=True, color='FFFFFF', size=10)
+    cell.fill  = PatternFill('solid', fgColor='2C3E50')
+    cell.alignment = Alignment(horizontal='center')
+
+for r, row in enumerate(df.itertuples(index=False), 2):
+    fill = PatternFill('solid', fgColor='F8F9FA') if r % 2 == 0 else PatternFill()
+    for c, val in enumerate(row, 1):
+        cell = ws_raw.cell(r, c, val)
+        cell.fill = fill
+        if isinstance(val, float):
+            cell.number_format = '#,##0.00'
+
+# Auto column width
+for col in ws_raw.columns:
+    w = max(len(str(cell.value or '')) for cell in col)
+    ws_raw.column_dimensions[get_column_letter(col[0].column)].width = min(w + 4, 35)
+
+# Table
+tbl = Table(displayName='RawSales', ref=f'A1:{get_column_letter(len(raw_headers))}{len(df)+1}')
+tbl.tableStyleInfo = TableStyleInfo(name='TableStyleMedium2', showRowStripes=True)
+ws_raw.add_table(tbl)
+
+# ── Sheet 2: Summary ───────────────────────────────────────────────────────
+ws_sum = wb.create_sheet('Summary')
+ws_sum.sheet_properties.tabColor = '1F7244'
+ws_sum.freeze_panes = 'A2'
+
+# Title
+ws_sum['A1'] = f'Sales Summary Report — {date.today().strftime("%d %b %Y")}'
+ws_sum['A1'].font = Font(bold=True, size=14, color='1A252F')
+ws_sum.merge_cells('A1:D1')
+ws_sum.row_dimensions[1].height = 26
+ws_sum['A1'].alignment = Alignment(horizontal='left', vertical='center')
+
+sum_headers = ['Region', 'Total Sales', 'Deals', 'Avg Deal']
+for c, h in enumerate(sum_headers, 1):
+    cell = ws_sum.cell(2, c, h)
+    cell.font  = Font(bold=True, color='FFFFFF', size=10)
+    cell.fill  = PatternFill('solid', fgColor='1F7244')
+    cell.alignment = Alignment(horizontal='center')
+
+thin = Side(style='thin', color='D0D0D0')
+border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+for r, row in enumerate(summary.itertuples(index=False), 3):
+    bg = 'F2F9F2' if r % 2 == 0 else 'FFFFFF'
+    ws_sum.cell(r, 1, row.region).fill = PatternFill('solid', fgColor=bg)
+    c2 = ws_sum.cell(r, 2, row.total_sales)
+    c2.number_format = '$#,##0.00'
+    c2.fill = PatternFill('solid', fgColor=bg)
+    ws_sum.cell(r, 3, row.deals).fill = PatternFill('solid', fgColor=bg)
+    c4 = ws_sum.cell(r, 4, row.avg_deal)
+    c4.number_format = '$#,##0.00'
+    c4.fill = PatternFill('solid', fgColor=bg)
+    for c in ws_sum[r]:
+        c.border = border
+
+# Totals row
+tr = len(summary) + 3
+ws_sum.cell(tr, 1, 'TOTAL').font = Font(bold=True)
+total_cell = ws_sum.cell(tr, 2, summary['total_sales'].sum())
+total_cell.number_format = '$#,##0.00'
+total_cell.font = Font(bold=True)
+total_cell.fill = PatternFill('solid', fgColor='FFF3CD')
+for c in ws_sum[tr]:
+    c.fill = PatternFill('solid', fgColor='FFF3CD')
+    c.font = Font(bold=True)
+
+# Color scale on Total Sales column
+ws_sum.conditional_formatting.add(
+    f'B3:B{tr-1}',
+    ColorScaleRule(start_type='min', start_color='FF9999',
+                   end_type='max',   end_color='44BB44')
+)
+
+# Auto widths
+for col in ws_sum.columns:
+    w = max(len(str(cell.value or '')) for cell in col)
+    ws_sum.column_dimensions[get_column_letter(col[0].column)].width = min(w + 4, 30)
+
+# ── Chart on Summary sheet ─────────────────────────────────────────────────
+bar = BarChart()
+bar.type = 'col'; bar.style = 10
+bar.title = 'Total Sales by Region'
+bar.y_axis.title = 'Sales ($)'
+bar.x_axis.title = 'Region'
+bar.width = 16; bar.height = 10
+
+data_ref = Reference(ws_sum, min_col=2, min_row=2, max_row=len(summary)+2)
+bar.add_data(data_ref, titles_from_data=True)
+cats_ref = Reference(ws_sum, min_col=1, min_row=3, max_row=len(summary)+2)
+bar.set_categories(cats_ref)
+
+ws_sum.add_chart(bar, f'F2')
+
+# ── Save ───────────────────────────────────────────────────────────────────
+out_path = csv_path.with_name(csv_path.stem + '_report.xlsx')
+wb.save(out_path)
+print(f"Report saved: {out_path}")</pre>
+
+  <div class="callout tip">
+    <strong>xlsxwriter vs openpyxl — quick comparison</strong>
+    <ul style="margin-top:6px;">
+      <li><strong>openpyxl</strong> — read AND write; modify existing files; best for most tasks</li>
+      <li><strong>xlsxwriter</strong> — write-only but faster for very large files; better sparklines support; use with <code>pd.ExcelWriter(engine='xlsxwriter')</code></li>
+    </ul>
+  </div>
+
+</div>
+</div>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OS & Python — Complete Guide</title>
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    :root {
+      --primary:  #1a252f;
+      --purple:   #8e44ad;
+      --purple-lt:#f5eef8;
+      --teal:     #16a085;
+      --teal-lt:  #e8f8f5;
+      --blue:     #2980b9;
+      --blue-lt:  #eaf4fb;
+      --orange:   #e67e22;
+      --orange-lt:#fef5e7;
+      --red:      #e74c3c;
+      --code-bg:  #1e2a35;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f2f5;
+      color: #2c3e50;
+      line-height: 1.8;
+      padding-bottom: 80px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .page-header {
+      background: var(--primary);
+      color: white;
+      padding: 30px 20px 26px;
+      text-align: center;
+      position: relative;
+    }
+    .page-header .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .page-header .back:hover { color: white; }
+    .page-header h1 { font-size: 1.35em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+    .page-header p  { font-size: 0.82em; opacity: 0.55; }
+
+    /* ── TOC strip ──────────────────────────────────── */
+    .toc-strip {
+      background: white;
+      border-bottom: 1px solid #dde3ea;
+      padding: 14px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .toc-pill {
+      font-size: 0.72em;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--purple-lt);
+      color: var(--purple);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .toc-pill:hover { background: var(--purple); color: white; }
+
+    /* ── Main container ─────────────────────────────── */
+    .container {
+      max-width: 860px;
+      margin: 32px auto 0;
+      padding: 0 18px;
+    }
+
+    /* ── Chapter headings ───────────────────────────── */
+    .chapter {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 3px 18px rgba(0,0,0,0.07);
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .chapter-header {
+      background: var(--purple);
+      color: white;
+      padding: 22px 28px 18px;
+    }
+    .chapter-num { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.75; margin-bottom: 4px; }
+    .chapter-title { font-size: 1.3em; font-weight: 800; }
+    .chapter-sub   { font-size: 0.82em; opacity: 0.75; margin-top: 4px; }
+    .chapter-body  { padding: 28px 28px 32px; }
+
+    /* ── Section within chapter ─────────────────────── */
+    h3 { font-size: 1.05em; font-weight: 800; color: var(--purple); margin: 28px 0 10px; border-left: 4px solid var(--purple); padding-left: 12px; }
+    h3:first-child { margin-top: 0; }
+    p  { font-size: 0.9em; color: #34495e; line-height: 1.8; margin-bottom: 14px; }
+    ul, ol { padding-left: 22px; margin-bottom: 14px; }
+    li { font-size: 0.88em; color: #34495e; line-height: 1.8; margin-bottom: 4px; }
+
+    /* ── Callout boxes ──────────────────────────────── */
+    .box { border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 18px 0; font-size: 0.87em; line-height: 1.75; }
+    .box-purple { background: var(--purple-lt); border-left: 5px solid var(--purple); color: #5b2c6f; }
+    .box-teal   { background: var(--teal-lt);   border-left: 5px solid var(--teal);   color: #0e6655; }
+    .box-blue   { background: var(--blue-lt);   border-left: 5px solid var(--blue);   color: #1a5276; }
+    .box-orange { background: var(--orange-lt); border-left: 5px solid var(--orange); color: #784212; }
+    .box strong { font-weight: 800; }
+    .box code   { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.93em; }
+
+    /* ── Code blocks ────────────────────────────────── */
+    pre {
+      background: var(--code-bg);
+      color: #cdd9e5;
+      border-radius: 12px;
+      padding: 20px 22px;
+      font-size: 0.82em;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 16px 0;
+      font-family: Consolas, 'Courier New', monospace;
+      border-left: 4px solid var(--purple);
+    }
+    pre .comment { color: #6a9955; }
+    pre .kw      { color: #c792ea; }
+    pre .str     { color: #c3e88d; }
+    pre .fn      { color: #82aaff; }
+    pre .num     { color: #f78c6c; }
+    pre .out     { color: #89ddff; }
+
+    code { font-family: Consolas, monospace; font-size: 0.88em; background: #f0f2f5; color: var(--purple); padding: 1px 5px; border-radius: 4px; }
+
+    /* ── Diagrams ───────────────────────────────────── */
+    .diagram {
+      background: #f8f9fa;
+      border: 1.5px solid #dde3ea;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 18px 0;
+      font-family: Consolas, monospace;
+      font-size: 0.82em;
+      color: #2c3e50;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .diagram .hl { color: var(--purple); font-weight: 700; }
+    .diagram .dim { color: #aab4bc; }
+    .diagram .note { color: var(--teal); font-style: italic; font-family: 'Segoe UI', sans-serif; font-size: 0.9em; }
+
+    /* ── Comparison table ───────────────────────────── */
+    .cmp-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85em; }
+    .cmp-table th { background: var(--purple); color: white; padding: 10px 14px; text-align: left; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
+    .cmp-table td { padding: 10px 14px; border-bottom: 1px solid #e8edf2; vertical-align: top; }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table tr:nth-child(even) td { background: #faf8fc; }
+    .cmp-table code { font-size: 0.9em; }
+
+    /* ── Flow diagram ───────────────────────────────── */
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
+    .flow-box { background: var(--purple); color: white; border-radius: 10px; padding: 10px 16px; font-size: 0.8em; font-weight: 700; text-align: center; min-width: 100px; }
+    .flow-box.alt { background: var(--teal); }
+    .flow-box.grey { background: #7f8c8d; }
+    .flow-arrow { color: #bdc3c7; font-size: 1.4em; font-weight: 700; }
+
+    /* ── Key/value table ────────────────────────────── */
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 0; margin: 16px 0; border: 1.5px solid #e1e8ed; border-radius: 10px; overflow: hidden; font-size: 0.84em; }
+    .kv-k { background: #f5eef8; color: var(--purple); font-weight: 700; padding: 9px 14px; font-family: Consolas, monospace; border-bottom: 1px solid #e1e8ed; }
+    .kv-v { background: white; color: #34495e; padding: 9px 14px; border-bottom: 1px solid #e1e8ed; line-height: 1.6; }
+    .kv-k:last-of-type, .kv-v:last-of-type { border-bottom: none; }
+
+    /* ── Chapter nav ────────────────────────────────── */
+    .ch-nav { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 18px; border-top: 1px solid #e8edf2; }
+    .ch-nav a { font-size: 0.8em; font-weight: 700; color: var(--purple); text-decoration: none; }
+    .ch-nav a:hover { text-decoration: underline; }
+
+    @media (max-width: 540px) {
+      .chapter-body { padding: 20px 18px 24px; }
+      pre { font-size: 0.76em; padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <a class="back" href="index.html">← OS Course</a>
+  <h1>OS &amp; Python — Complete Guide</h1>
+  <p>Theory · Examples · Illustrations · All 5 units</p>
+</div>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · The File System</a>
+  <a class="toc-pill" href="#ch2">2 · Navigating</a>
+  <a class="toc-pill" href="#ch3">3 · Finding Files</a>
+  <a class="toc-pill" href="#ch4">4 · Path Tools</a>
+  <a class="toc-pill" href="#ch5">5 · Reading &amp; Writing</a>
+  <a class="toc-pill" href="#ch6">6 · Environment</a>
+  <a class="toc-pill" href="#ch7">7 · Automation</a>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 1 — THE FILE SYSTEM
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch1">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 1</div>
+    <div class="chapter-title">The File System</div>
+    <div class="chapter-sub">What it is · The tree · Files vs directories</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>What is a file system?</h3>
+    <p>When you save a file, Python does not reach directly into the spinning magnetic disk or SSD flash cells. There is a layer in between — the <strong>file system</strong> — whose job is to organise raw storage into named, accessible units. It keeps track of where every file lives, how big it is, when it was last modified, and who is allowed to read or write it.</p>
+    <p>The <code>os</code> module is Python's gateway to the file system. It provides a uniform interface across Windows, Mac, and Linux — you write one script, it works everywhere.</p>
+
+    <div class="box box-purple">
+      <strong>The core idea:</strong> the file system is a phone book for your disk. A filename is the name you look up; the file system tells the OS where the actual bytes live.
+    </div>
+
+    <h3>The tree structure</h3>
+    <p>Every file system is organised as an <strong>inverted tree</strong>. There is one <strong>root</strong> at the top, and everything branches downward from it. Directories (folders) are the branches; files are the leaves.</p>
+
+    <div class="diagram">
+<span class="hl">/</span>                       <span class="dim">(root)</span>
+├── <span class="hl">home/</span>               <span class="dim">(directory)</span>
+│   └── <span class="hl">alice/</span>
+│       ├── <span class="hl">projects/</span>
+│       │   ├── analyse.py  <span class="dim">(file)</span>
+│       │   └── <span class="hl">data/</span>
+│       │       ├── sales.csv
+│       │       └── costs.csv
+│       └── notes.txt       <span class="dim">(file)</span>
+├── <span class="hl">etc/</span>
+└── <span class="hl">tmp/</span>
+    </div>
+    <p style="font-size:0.82em;color:#7f8c8d;margin-top:-6px;">Purple = directory &nbsp;·&nbsp; grey = file &nbsp;·&nbsp; root is <code>/</code> on Linux/Mac, <code>C:\</code> on Windows</p>
+
+    <p>A <strong>directory</strong> is nothing magical — it is itself stored as a small file that contains a list of names and pointers to its children. A <strong>file</strong> is a named sequence of bytes. That's it.</p>
+
+    <h3>Files vs directories at a glance</h3>
+    <table class="cmp-table">
+      <tr><th>Property</th><th>File</th><th>Directory</th></tr>
+      <tr><td>Contains</td><td>Data (bytes)</td><td>Names of children (files or more directories)</td></tr>
+      <tr><td>Python check</td><td><code>os.path.isfile(p)</code></td><td><code>os.path.isdir(p)</code></td></tr>
+      <tr><td>Can be empty?</td><td>Yes (0 bytes)</td><td>Yes (no children)</td></tr>
+      <tr><td>Has extension?</td><td>Usually (hint only)</td><td>Rarely (no rule)</td></tr>
+    </table>
+
+    <h3>Linux/Mac vs Windows paths</h3>
+    <p>The two path conventions you'll encounter constantly:</p>
+    <div class="diagram">
+<span class="note">Linux / Mac</span>
+  /home/alice/data/sales.csv
+
+<span class="note">Windows</span>
+  C:\Users\alice\data\sales.csv
+    </div>
+    <p style="font-size:0.82em;color:#7f8c8d;margin-top:-6px;">Linux/Mac uses <code>/</code> as separator, root is <code>/</code> &nbsp;·&nbsp; Windows uses <code>\</code>, root is a drive letter like <code>C:\</code></p>
+
+    <div class="box box-teal">
+      <strong>Good news:</strong> if you use <code>os.path.join()</code> or <code>pathlib.Path</code> to build paths (never string concatenation), Python picks the right separator for you automatically.
+    </div>
+
+    <h3>File extensions</h3>
+    <p>An extension like <code>.csv</code> or <code>.py</code> is just the last part of the filename after the final dot. It is a <em>convention</em>, not enforced by the OS. You can rename <code>data.csv</code> to <code>data.banana</code> — the bytes inside are unchanged. Python programs use <code>os.path.splitext()</code> or <code>Path.suffix</code> to read the extension so they can decide how to process a file.</p>
+
+    <div class="ch-nav">
+      <span></span>
+      <a href="#ch2">Chapter 2: Navigating →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 2 — NAVIGATING
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch2">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 2</div>
+    <div class="chapter-title">Navigating the File System</div>
+    <div class="chapter-sub">import os · getcwd · chdir · absolute vs relative</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>Importing os</h3>
+    <p>Everything in this guide starts with one line:</p>
+<pre><span class="kw">import</span> os</pre>
+    <p>The <code>os</code> module is part of Python's standard library — no installation needed. It provides hundreds of functions for interacting with the operating system: file paths, environment variables, process management, and more.</p>
+
+    <h3>The current working directory (cwd)</h3>
+    <p>Every running process has a <strong>current working directory</strong> — the folder it is currently "standing in." Think of it as your GPS position in the file-system tree. All <em>relative</em> paths are calculated from this position.</p>
+
+    <div class="diagram">
+/home/alice/
+├── <span class="hl">projects/</span>  <span class="dim">← cwd (you are here)</span>
+│   └── analyse.py
+└── data/
+    └── sales.csv
+    </div>
+    <div class="diagram">
+<span class="note">From cwd  /home/alice/projects/</span>
+
+"../data/sales.csv"
+  → /home/alice/data/sales.csv  <span class="hl">✓</span>
+
+"sales.csv"
+  → /home/alice/projects/sales.csv
+    </div>
+
+<pre><span class="kw">import</span> os
+
+<span class="comment"># Where are we right now?</span>
+cwd = os.<span class="fn">getcwd</span>()
+<span class="fn">print</span>(cwd)
+<span class="out"># /home/alice/projects</span>
+
+<span class="comment"># Change directory</span>
+os.<span class="fn">chdir</span>(<span class="str">"/home/alice/data"</span>)
+<span class="fn">print</span>(os.<span class="fn">getcwd</span>())
+<span class="out"># /home/alice/data</span></pre>
+
+    <div class="box box-orange">
+      <strong>Warning:</strong> <code>os.chdir()</code> changes the cwd for the <em>entire</em> Python process from that point onward. Any relative path used later will resolve differently. Prefer building absolute paths instead of relying on chdir — your script will be much more predictable.
+    </div>
+
+    <h3>Absolute vs relative paths</h3>
+    <p>This distinction is one of the most important concepts in working with files.</p>
+
+    <table class="cmp-table">
+      <tr><th></th><th>Absolute path</th><th>Relative path</th></tr>
+      <tr><td><strong>Starts with</strong></td><td><code>/</code> or <code>C:\</code></td><td>anything else</td></tr>
+      <tr><td><strong>Resolves from</strong></td><td>The root — always the same</td><td>The current working directory</td></tr>
+      <tr><td><strong>Example</strong></td><td><code>/home/alice/data/sales.csv</code></td><td><code>data/sales.csv</code></td></tr>
+      <tr><td><strong>Safe to use when…</strong></td><td>Always — never ambiguous</td><td>Only if you control the cwd</td></tr>
+    </table>
+
+    <h3>Special path symbols</h3>
+    <div class="kv">
+      <div class="kv-k">.</div>   <div class="kv-v">Current directory. <code>./script.py</code> = <code>script.py</code> in the cwd.</div>
+      <div class="kv-k">..</div>  <div class="kv-v">Parent directory. <code>../data</code> = the <code>data</code> folder one level up from cwd.</div>
+      <div class="kv-k">~</div>   <div class="kv-v">Home directory of the current user. Python: <code>os.path.expanduser("~")</code>.</div>
+    </div>
+
+    <h3>Building an absolute path from a relative one</h3>
+<pre><span class="kw">import</span> os
+
+<span class="comment"># Convert relative → absolute (based on current cwd)</span>
+abs_path = os.path.<span class="fn">abspath</span>(<span class="str">"data/sales.csv"</span>)
+<span class="fn">print</span>(abs_path)
+<span class="out"># /home/alice/projects/data/sales.csv</span>
+
+<span class="comment"># Expand ~ to the real home path</span>
+home = os.path.<span class="fn">expanduser</span>(<span class="str">"~"</span>)
+<span class="fn">print</span>(home)
+<span class="out"># /home/alice</span></pre>
+
+    <div class="box box-teal">
+      <strong>Best practice for scripts:</strong> anchor paths relative to the script file itself, not the cwd. This way the script works no matter where you run it from:
+      <br><br><code>SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))</code><br>
+      <code>DATA_FILE  = os.path.join(SCRIPT_DIR, "data", "sales.csv")</code>
+    </div>
+
+    <div class="ch-nav">
+      <a href="#ch1">← Chapter 1</a>
+      <a href="#ch3">Chapter 3: Finding Files →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 3 — LISTING & FINDING FILES
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch3">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 3</div>
+    <div class="chapter-title">Listing &amp; Finding Files</div>
+    <div class="chapter-sub">os.listdir · os.walk · glob · rglob</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>os.listdir() — look inside one folder</h3>
+    <p><code>os.listdir(path)</code> returns a plain Python list of <em>names</em> (not full paths) of everything inside the given directory — files and subdirectories alike. It does not recurse into subfolders.</p>
+
+<pre><span class="kw">import</span> os
+
+names = os.<span class="fn">listdir</span>(<span class="str">"/home/alice/data"</span>)
+<span class="fn">print</span>(names)
+<span class="out"># ['sales.csv', 'costs.csv', 'archive', '.DS_Store']</span>
+
+<span class="comment"># To get full paths, you must join manually:</span>
+folder = <span class="str">"/home/alice/data"</span>
+full_paths = [os.path.<span class="fn">join</span>(folder, name) <span class="kw">for</span> name <span class="kw">in</span> os.<span class="fn">listdir</span>(folder)]
+<span class="out"># ['/home/alice/data/sales.csv', '/home/alice/data/costs.csv', ...]</span></pre>
+
+    <div class="box box-blue">
+      <strong>Note:</strong> <code>os.listdir()</code> includes hidden files (those starting with <code>.</code> on Linux/Mac), and returns items in <em>arbitrary order</em>. Use <code>sorted(os.listdir(path))</code> for consistent ordering.
+    </div>
+
+    <h3>os.walk() — traverse the entire tree</h3>
+    <p>When you need to process files in subdirectories too, <code>os.walk()</code> is the tool. It walks down the tree and at each directory yields a <strong>3-tuple</strong>:</p>
+
+    <div class="kv">
+      <div class="kv-k">dirpath</div>  <div class="kv-v">The current directory as a string, e.g. <code>"/home/alice/data/2024"</code></div>
+      <div class="kv-k">dirnames</div> <div class="kv-v">List of subdirectory names inside dirpath (bare names, not full paths)</div>
+      <div class="kv-k">filenames</div><div class="kv-v">List of file names inside dirpath (bare names, not full paths)</div>
+    </div>
+
+    <div class="diagram">
+Directory tree being walked:
+/home/alice/data/
+    ├── sales.csv
+    ├── costs.csv
+    └── 2024/
+        ├── q1.csv
+        └── q2.csv
+
+os.walk yields these tuples:
+  (dirpath,               dirnames,  filenames)
+  ("/home/alice/data",    ["2024"],  ["sales.csv","costs.csv"])
+  ("/home/alice/data/2024", [],      ["q1.csv","q2.csv"])
+    </div>
+
+<pre><span class="kw">import</span> os
+
+<span class="kw">for</span> dirpath, dirnames, filenames <span class="kw">in</span> os.<span class="fn">walk</span>(<span class="str">"/home/alice/data"</span>):
+    <span class="kw">for</span> fname <span class="kw">in</span> filenames:
+        <span class="kw">if</span> fname.<span class="fn">endswith</span>(<span class="str">".csv"</span>):
+            full = os.path.<span class="fn">join</span>(dirpath, fname)
+            <span class="fn">print</span>(full)
+
+<span class="out"># /home/alice/data/sales.csv</span>
+<span class="out"># /home/alice/data/costs.csv</span>
+<span class="out"># /home/alice/data/2024/q1.csv</span>
+<span class="out"># /home/alice/data/2024/q2.csv</span></pre>
+
+    <h3>glob — find files with wildcards</h3>
+    <p>The <code>glob</code> module lets you find files using <strong>wildcard patterns</strong> — much more expressive than filtering a list manually.</p>
+
+    <div class="kv">
+      <div class="kv-k">*</div>   <div class="kv-v">Matches any sequence of characters within one directory level</div>
+      <div class="kv-k">?</div>   <div class="kv-v">Matches exactly one character</div>
+      <div class="kv-k">**</div>  <div class="kv-v">Matches zero or more directory levels (use with <code>recursive=True</code>)</div>
+    </div>
+
+<pre><span class="kw">import</span> glob
+
+<span class="comment"># All CSVs in one folder</span>
+files = glob.<span class="fn">glob</span>(<span class="str">"/home/alice/data/*.csv"</span>)
+<span class="out"># ['/home/alice/data/sales.csv', '/home/alice/data/costs.csv']</span>
+
+<span class="comment"># All CSVs anywhere under /data (recursive)</span>
+files = glob.<span class="fn">glob</span>(<span class="str">"/home/alice/data/**/*.csv"</span>, recursive=<span class="kw">True</span>)
+<span class="out"># ['/home/alice/data/sales.csv', ..., '/home/alice/data/2024/q1.csv', ...]</span>
+
+<span class="comment"># Always sort for reproducibility</span>
+files = <span class="fn">sorted</span>(glob.<span class="fn">glob</span>(<span class="str">"/home/alice/data/**/*.csv"</span>, recursive=<span class="kw">True</span>))</pre>
+
+    <h3>Choosing the right tool</h3>
+    <table class="cmp-table">
+      <tr><th>Tool</th><th>Use when…</th><th>Returns</th></tr>
+      <tr><td><code>os.listdir()</code></td><td>You want everything in <em>one</em> folder</td><td>List of bare names</td></tr>
+      <tr><td><code>os.walk()</code></td><td>You need to recurse and also know the directory path at each step</td><td>Generator of (dirpath, dirs, files)</td></tr>
+      <tr><td><code>glob.glob()</code></td><td>You want files matching a wildcard pattern, optionally recursive</td><td>List of path strings</td></tr>
+      <tr><td><code>Path.rglob()</code></td><td>Same as glob but you're already using pathlib</td><td>Generator of Path objects</td></tr>
+    </table>
+
+    <div class="ch-nav">
+      <a href="#ch2">← Chapter 2</a>
+      <a href="#ch4">Chapter 4: Path Tools →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 4 — PATH TOOLS
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch4">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 4</div>
+    <div class="chapter-title">Path Tools</div>
+    <div class="chapter-sub">os.path · pathlib.Path · Building output paths</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>os.path — the classic approach</h3>
+    <p><code>os.path</code> is a sub-module of <code>os</code> containing functions that operate on path <em>strings</em>. It is the traditional way to work with paths and you will see it everywhere in older codebases.</p>
+
+    <div class="diagram">
+path = <span class="hl">"/home/alice/data/sales_2024.csv"</span>
+
+<span class="note">Breaking it apart:</span>
+dirname(path)   → <span class="hl">"/home/alice/data"</span>
+basename(path)  → <span class="hl">"sales_2024.csv"</span>
+splitext(path)  → <span class="hl">("/home/alice/data/sales_2024",
+                    ".csv")</span>
+
+<span class="note">Checking:</span>
+exists(path)    → True / False
+isfile(path)    → True / False
+isdir(path)     → True / False
+getsize(path)   → size in bytes
+    </div>
+
+<pre><span class="kw">import</span> os
+
+path = <span class="str">"/home/alice/data/sales_2024.csv"</span>
+
+<span class="comment"># Break apart a path</span>
+folder = os.path.<span class="fn">dirname</span>(path)      <span class="comment"># "/home/alice/data"</span>
+name   = os.path.<span class="fn">basename</span>(path)     <span class="comment"># "sales_2024.csv"</span>
+stem, ext = os.path.<span class="fn">splitext</span>(name)  <span class="comment"># ("sales_2024", ".csv")</span>
+
+<span class="comment"># Build a new path (always join, never concatenate)</span>
+output = os.path.<span class="fn">join</span>(folder, stem + <span class="str">"_cleaned"</span> + ext)
+<span class="out"># "/home/alice/data/sales_2024_cleaned.csv"</span>
+
+<span class="comment"># Safety checks</span>
+<span class="kw">if</span> os.path.<span class="fn">exists</span>(path):
+    size_mb = os.path.<span class="fn">getsize</span>(path) / <span class="num">1024</span>**<span class="num">2</span>
+    <span class="fn">print</span>(<span class="str">f"File is </span>{size_mb:<span class="num">.1f</span>}<span class="str"> MB"</span>)</pre>
+
+    <div class="box box-orange">
+      <strong>Common gotcha with os.path.join():</strong> if any argument is an absolute path, everything before it is thrown away.<br>
+      <code>os.path.join("/data", "/output/file.csv")</code> → <code>"/output/file.csv"</code> — not what you intended!
+    </div>
+
+    <h3>pathlib — the modern approach</h3>
+    <p>Introduced in Python 3.4, <code>pathlib</code> represents paths as <strong>objects</strong> rather than strings. The same operations become cleaner and more readable. Prefer pathlib for new code.</p>
+
+<pre><span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+p = <span class="fn">Path</span>(<span class="str">"/home/alice/data/sales_2024.csv"</span>)
+
+<span class="comment"># Attributes — no function calls needed</span>
+p.parent   <span class="comment"># Path("/home/alice/data")</span>
+p.name     <span class="comment"># "sales_2024.csv"</span>
+p.stem     <span class="comment"># "sales_2024"</span>
+p.suffix   <span class="comment"># ".csv"</span>
+
+<span class="comment"># Joining with the / operator</span>
+output_dir = <span class="fn">Path</span>(<span class="str">"/home/alice/output"</span>)
+output_file = output_dir / p.name
+<span class="out"># Path("/home/alice/output/sales_2024.csv")</span>
+
+<span class="comment"># Swap the extension</span>
+parquet = p.<span class="fn">with_suffix</span>(<span class="str">".parquet"</span>)
+<span class="out"># Path("/home/alice/data/sales_2024.parquet")</span>
+
+<span class="comment"># Swap the filename entirely</span>
+summary = p.<span class="fn">with_name</span>(<span class="str">"summary.csv"</span>)
+<span class="out"># Path("/home/alice/data/summary.csv")</span>
+
+<span class="comment"># Check existence</span>
+p.<span class="fn">exists</span>()    <span class="comment"># True/False</span>
+p.<span class="fn">is_file</span>()  <span class="comment"># True/False</span>
+p.<span class="fn">is_dir</span>()   <span class="comment"># True/False</span></pre>
+
+    <h3>Creating directories safely</h3>
+<pre><span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+output = <span class="fn">Path</span>(<span class="str">"/home/alice/output/2024/q1"</span>)
+
+<span class="comment"># Create the full path including any missing parents</span>
+<span class="comment"># exist_ok=True means no error if it already exists</span>
+output.<span class="fn">mkdir</span>(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+
+<span class="comment"># os equivalent:</span>
+<span class="kw">import</span> os
+os.<span class="fn">makedirs</span>(<span class="str">"/home/alice/output/2024/q1"</span>, exist_ok=<span class="kw">True</span>)</pre>
+
+    <h3>Mirroring a directory structure</h3>
+    <p>A very common pattern in data pipelines: read from <code>data/raw/</code>, write to <code>data/processed/</code> preserving the same subfolder layout.</p>
+
+    <div class="diagram">
+<span class="note">Input:</span>              <span class="note">Output:</span>
+data/raw/           data/processed/
+├── 2024/           ├── 2024/
+│   ├── q1/         │   ├── q1/
+│   │   └── jan.csv →│   │   └── jan.csv
+│   └── q2/         │   └── q2/
+│   └── apr.csv    →│   └── apr.csv
+└── 2023/           └── 2023/
+    └── full.csv   →    └── full.csv
+    </div>
+
+<pre><span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+input_root  = <span class="fn">Path</span>(<span class="str">"data/raw"</span>)
+output_root = <span class="fn">Path</span>(<span class="str">"data/processed"</span>)
+
+<span class="kw">for</span> src <span class="kw">in</span> input_root.<span class="fn">rglob</span>(<span class="str">"*.csv"</span>):
+    <span class="comment"># e.g. src = Path("data/raw/2024/q1/jan.csv")</span>
+    rel      = src.<span class="fn">relative_to</span>(input_root)   <span class="comment"># Path("2024/q1/jan.csv")</span>
+    dest     = output_root / rel               <span class="comment"># Path("data/processed/2024/q1/jan.csv")</span>
+    dest.parent.<span class="fn">mkdir</span>(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+    <span class="comment"># ... process src, write to dest</span></pre>
+
+    <div class="ch-nav">
+      <a href="#ch3">← Chapter 3</a>
+      <a href="#ch5">Chapter 5: Reading &amp; Writing →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 5 — READING & WRITING FILES
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch5">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 5</div>
+    <div class="chapter-title">Reading &amp; Writing Files</div>
+    <div class="chapter-sub">Text · CSV · JSON</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>The open() function and file modes</h3>
+    <p>All file I/O in Python goes through <code>open(path, mode)</code>. The mode controls what you're allowed to do:</p>
+
+    <div class="kv">
+      <div class="kv-k">"r"</div>  <div class="kv-v">Read (default). File must exist.</div>
+      <div class="kv-k">"w"</div>  <div class="kv-v">Write. Creates file if missing, <strong>truncates (erases) if it exists</strong>.</div>
+      <div class="kv-k">"a"</div>  <div class="kv-v">Append. Creates if missing, writes to the <strong>end</strong> if it exists.</div>
+      <div class="kv-k">"x"</div>  <div class="kv-v">Exclusive create. Fails if file already exists — safe for new files.</div>
+      <div class="kv-k">"b"</div>  <div class="kv-v">Binary mode — add to any of the above: <code>"rb"</code>, <code>"wb"</code>, etc.</div>
+    </div>
+
+    <h3>Always use the with statement</h3>
+    <p>The <code>with</code> statement is a <strong>context manager</strong>. It guarantees the file is closed when the block exits — even if an exception is raised. Never skip it.</p>
+
+<pre><span class="comment"># ✓ Correct — file closes automatically</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"notes.txt"</span>, <span class="str">"r"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    content = f.<span class="fn">read</span>()   <span class="comment"># entire file as one string</span>
+
+<span class="comment"># ✗ Risky — if an error occurs, f.close() is never called</span>
+f = <span class="fn">open</span>(<span class="str">"notes.txt"</span>)
+content = f.<span class="fn">read</span>()
+f.<span class="fn">close</span>()</pre>
+
+    <h3>Reading methods compared</h3>
+    <table class="cmp-table">
+      <tr><th>Method</th><th>Returns</th><th>Best for</th></tr>
+      <tr><td><code>f.read()</code></td><td>Entire file as one string</td><td>Small files you need in memory at once</td></tr>
+      <tr><td><code>f.readlines()</code></td><td>List of lines (with <code>\n</code>)</td><td>When you need all lines as a list</td></tr>
+      <tr><td><code>for line in f:</code></td><td>One line at a time (iterator)</td><td>Large files — reads only one line into memory at a time</td></tr>
+    </table>
+
+<pre><span class="comment"># Memory-efficient line-by-line processing</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"big_log.txt"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    <span class="kw">for</span> line <span class="kw">in</span> f:
+        line = line.<span class="fn">strip</span>()   <span class="comment"># removes \n and surrounding whitespace</span>
+        <span class="kw">if</span> <span class="str">"ERROR"</span> <span class="kw">in</span> line:
+            <span class="fn">print</span>(line)</pre>
+
+    <h3>CSV files — the csv module</h3>
+    <p>Never split CSV lines by comma manually — a value like <code>"Smith, John"</code> contains a comma inside quotes and would be broken by naive splitting. The <code>csv</code> module handles all edge cases.</p>
+
+    <div class="diagram">
+<span class="note">Sample file: data.csv</span>
+name,amount,category
+Alice,1200.00,salary
+Bob,"2,500.00",bonus      <span class="note">← comma inside quotes — naive split breaks this</span>
+Carol,800.00,freelance
+    </div>
+
+<pre><span class="kw">import</span> csv
+
+<span class="comment"># Reading with DictReader — access fields by name, not index</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"data.csv"</span>, newline=<span class="str">""</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    reader = csv.<span class="fn">DictReader</span>(f)
+    <span class="kw">for</span> row <span class="kw">in</span> reader:
+        <span class="comment"># row is a dict: {"name": "Alice", "amount": "1200.00", ...}</span>
+        name   = row[<span class="str">"name"</span>]
+        amount = <span class="fn">float</span>(row[<span class="str">"amount"</span>])  <span class="comment"># always cast — csv gives strings</span>
+        <span class="fn">print</span>(<span class="str">f"</span>{name}<span class="str">: £</span>{amount:<span class="num">.2f</span>}<span class="str">"</span>)
+
+<span class="comment"># Writing with DictWriter</span>
+rows = [
+    {<span class="str">"name"</span>: <span class="str">"Alice"</span>, <span class="str">"total"</span>: <span class="num">1200</span>},
+    {<span class="str">"name"</span>: <span class="str">"Bob"</span>,   <span class="str">"total"</span>: <span class="num">2500</span>},
+]
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"output.csv"</span>, <span class="str">"w"</span>, newline=<span class="str">""</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    writer = csv.<span class="fn">DictWriter</span>(f, fieldnames=[<span class="str">"name"</span>, <span class="str">"total"</span>])
+    writer.<span class="fn">writeheader</span>()
+    writer.<span class="fn">writerows</span>(rows)</pre>
+
+    <div class="box box-blue">
+      <strong>Always pass <code>newline=""</code></strong> when opening CSV files. Without it, Python's newline translation can add extra blank rows — especially on Windows.
+    </div>
+
+    <h3>JSON files — the json module</h3>
+    <p>JSON maps naturally to Python dicts and lists. The four functions you need:</p>
+
+    <div class="kv">
+      <div class="kv-k">json.load(f)</div>    <div class="kv-v">Parse JSON <strong>from an open file</strong> → Python object</div>
+      <div class="kv-k">json.loads(s)</div>   <div class="kv-v">Parse JSON <strong>from a string</strong> → Python object</div>
+      <div class="kv-k">json.dump(obj, f)</div>  <div class="kv-v">Write Python object as JSON <strong>to an open file</strong></div>
+      <div class="kv-k">json.dumps(obj)</div> <div class="kv-v">Convert Python object to a JSON <strong>string</strong></div>
+    </div>
+
+<pre><span class="kw">import</span> json
+
+<span class="comment"># Reading a JSON config file</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"config.json"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    config = json.<span class="fn">load</span>(f)
+    <span class="comment"># config is now a Python dict</span>
+
+timeout = config.<span class="fn">get</span>(<span class="str">"timeout"</span>, <span class="num">30</span>)  <span class="comment"># fallback to 30 if key missing</span>
+
+<span class="comment"># Writing — indent=4 makes it human-readable</span>
+results = {<span class="str">"processed"</span>: <span class="num">142</span>, <span class="str">"errors"</span>: <span class="num">3</span>, <span class="str">"skipped"</span>: <span class="num">58</span>}
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"results.json"</span>, <span class="str">"w"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    json.<span class="fn">dump</span>(results, f, indent=<span class="num">4</span>)</pre>
+
+    <div class="box box-orange">
+      <strong>What json cannot handle:</strong> <code>datetime</code>, <code>set</code>, <code>bytes</code>, and custom objects all raise <code>TypeError</code>. Convert datetimes to <code>.isoformat()</code> strings first. Sets to lists.
+    </div>
+
+    <div class="ch-nav">
+      <a href="#ch4">← Chapter 4</a>
+      <a href="#ch6">Chapter 6: Environment →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 6 — ENVIRONMENT & PROCESSES
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch6">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 6</div>
+    <div class="chapter-title">Environment &amp; Processes</div>
+    <div class="chapter-sub">os.environ · subprocess · secrets · .env</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>What are environment variables?</h3>
+    <p>Every process running on your computer has a set of <strong>environment variables</strong> — a dictionary of key-value string pairs provided by the operating system. They are used to pass configuration to programs without hardcoding values in source code.</p>
+
+    <div class="diagram">
+OS Environment (your process's copy):
+
+  HOME          =  /home/alice
+  PATH          =  /usr/local/bin:/usr/bin:/bin
+  LANG          =  en_GB.UTF-8
+  DATABASE_URL  =  postgres://localhost:5432/mydb   <span class="note">← you set this</span>
+  API_KEY       =  sk-abc123xyz                     <span class="note">← you set this</span>
+    </div>
+
+<pre><span class="kw">import</span> os
+
+<span class="comment"># Read a variable — raises KeyError if missing</span>
+db_url = os.environ[<span class="str">"DATABASE_URL"</span>]
+
+<span class="comment"># Read with a fallback — safe for optional config</span>
+timeout = os.environ.<span class="fn">get</span>(<span class="str">"TIMEOUT"</span>, <span class="str">"30"</span>)
+timeout = <span class="fn">int</span>(timeout)   <span class="comment"># env vars are ALWAYS strings — cast explicitly</span>
+
+<span class="comment"># List all environment variables</span>
+<span class="kw">for</span> key, value <span class="kw">in</span> os.environ.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="str">f"</span>{key}<span class="str">=</span>{value}<span class="str">"</span>)</pre>
+
+    <h3>Why env vars for secrets?</h3>
+    <p>The golden rule: <strong>never put API keys, passwords, or tokens in your source code.</strong> Once committed to git, a secret lives in history forever — even after you delete it. Environment variables stay outside the codebase entirely.</p>
+
+    <div class="flow">
+      <div class="flow-box grey" style="font-size:0.75em;">API key in code</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box grey" style="background:#e74c3c; font-size:0.75em;">Committed to git</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box grey" style="background:#e74c3c; font-size:0.75em;">In git history forever</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box grey" style="background:#e74c3c; font-size:0.75em;">Leaked ☠️</div>
+    </div>
+    <div class="flow">
+      <div class="flow-box" style="font-size:0.75em;">API key in .env</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box alt" style="font-size:0.75em;">.env in .gitignore</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box alt" style="font-size:0.75em;">Never touches git ✓</div>
+    </div>
+
+    <h3>The .env pattern with python-dotenv</h3>
+
+<pre><span class="comment"># .env file (never commit this to git)</span>
+DATABASE_URL=postgres://localhost:5432/mydb
+API_KEY=sk-abc123xyz
+DEBUG=false</pre>
+
+<pre><span class="comment"># In your Python script</span>
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">import</span> os
+
+<span class="fn">load_dotenv</span>()   <span class="comment"># reads .env and injects into os.environ</span>
+
+api_key = os.environ[<span class="str">"API_KEY"</span>]   <span class="comment"># now works</span></pre>
+
+    <h3>subprocess — running shell commands from Python</h3>
+    <p>Sometimes you need to call an external program (git, ffmpeg, a CLI tool). <code>subprocess.run()</code> is the modern, safe way to do this.</p>
+
+<pre><span class="kw">import</span> subprocess
+
+<span class="comment"># Run a command and wait for it to finish</span>
+result = subprocess.<span class="fn">run</span>(
+    [<span class="str">"git"</span>, <span class="str">"log"</span>, <span class="str">"--oneline"</span>, <span class="str">"-5"</span>],
+    capture_output=<span class="kw">True</span>,   <span class="comment"># capture stdout and stderr</span>
+    text=<span class="kw">True</span>,              <span class="comment"># decode bytes to string automatically</span>
+    check=<span class="kw">True</span>              <span class="comment"># raise exception if command fails</span>
+)
+
+<span class="fn">print</span>(result.stdout)
+<span class="fn">print</span>(<span class="str">"Exit code:"</span>, result.returncode)  <span class="comment"># 0 = success</span></pre>
+
+    <div class="box box-purple">
+      <strong>Always pass a list, not a string.</strong> <code>["git", "log"]</code> is safe — each element is a separate argument. <code>shell=True</code> with a string is dangerous if any part of the command comes from user input — it opens the door to shell injection attacks.
+    </div>
+
+    <table class="cmp-table">
+      <tr><th>Parameter</th><th>What it does</th></tr>
+      <tr><td><code>capture_output=True</code></td><td>Captures stdout and stderr instead of printing them to the terminal</td></tr>
+      <tr><td><code>text=True</code></td><td>Decodes output as a string (instead of bytes)</td></tr>
+      <tr><td><code>check=True</code></td><td>Raises <code>CalledProcessError</code> if exit code is non-zero</td></tr>
+      <tr><td><code>env={...}</code></td><td>Pass a custom environment dict to the child process</td></tr>
+      <tr><td><code>cwd="path"</code></td><td>Set the working directory for the child process</td></tr>
+    </table>
+
+    <div class="ch-nav">
+      <a href="#ch5">← Chapter 5</a>
+      <a href="#ch7">Chapter 7: Automation →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     CHAPTER 7 — AUTOMATION SCRIPTS
+════════════════════════════════════════════════════ -->
+<div class="chapter" id="ch7">
+  <div class="chapter-header">
+    <div class="chapter-num">Chapter 7</div>
+    <div class="chapter-title">Automation Scripts</div>
+    <div class="chapter-sub">shutil · Batch processing · Best practices</div>
+  </div>
+  <div class="chapter-body">
+
+    <h3>shutil — high-level file operations</h3>
+    <p>The <code>os</code> module handles low-level operations (rename, delete one file). For copying, moving, and deleting entire directory trees, use <code>shutil</code> (shell utilities).</p>
+
+    <div class="kv">
+      <div class="kv-k">shutil.copy(src, dst)</div>     <div class="kv-v">Copy file content + permissions. Timestamps are <em>not</em> preserved.</div>
+      <div class="kv-k">shutil.copy2(src, dst)</div>    <div class="kv-v">Copy file content + permissions + timestamps. Use for exact duplicates.</div>
+      <div class="kv-k">shutil.copytree(src, dst)</div> <div class="kv-v">Recursively copy an entire directory tree.</div>
+      <div class="kv-k">shutil.move(src, dst)</div>     <div class="kv-v">Move or rename. Works across filesystems (unlike os.rename).</div>
+      <div class="kv-k">shutil.rmtree(path)</div>       <div class="kv-v">Delete a directory and everything inside it. <strong>Irreversible.</strong></div>
+      <div class="kv-k">shutil.disk_usage(path)</div>   <div class="kv-v">Returns (total, used, free) in bytes for the disk at path.</div>
+    </div>
+
+<pre><span class="kw">import</span> shutil, os
+
+<span class="comment"># Copy a file (preserving metadata)</span>
+shutil.<span class="fn">copy2</span>(<span class="str">"report.csv"</span>, <span class="str">"/backup/report.csv"</span>)
+
+<span class="comment"># Move a file</span>
+shutil.<span class="fn">move</span>(<span class="str">"temp/output.csv"</span>, <span class="str">"final/output.csv"</span>)
+
+<span class="comment"># Safe delete — check first!</span>
+path = <span class="str">"/tmp/old_results"</span>
+<span class="kw">if</span> os.path.<span class="fn">exists</span>(path):
+    shutil.<span class="fn">rmtree</span>(path)
+
+<span class="comment"># Check available disk space before writing</span>
+usage = shutil.<span class="fn">disk_usage</span>(<span class="str">"/"</span>)
+free_gb = usage.free / <span class="num">1024</span>**<span class="num">3</span>
+<span class="fn">print</span>(<span class="str">f"</span>{free_gb:<span class="num">.1f</span>}<span class="str"> GB free"</span>)</pre>
+
+    <h3>The batch processing pattern</h3>
+    <p>Almost every data automation task follows the same four-step pattern. Knowing it as a named pattern makes scripts easier to write and explain.</p>
+
+    <div class="flow">
+      <div class="flow-box">1 · Scan</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">2 · Filter</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">3 · Process</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box alt">4 · Write</div>
+    </div>
+
+<pre><span class="kw">import</span> os, shutil, glob
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+INPUT_DIR  = Path(<span class="str">"data/raw"</span>)
+OUTPUT_DIR = Path(<span class="str">"data/processed"</span>)
+OUTPUT_DIR.<span class="fn">mkdir</span>(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+
+moved = skipped = errors = <span class="num">0</span>
+
+<span class="comment"># ① SCAN — find all input files</span>
+all_files = <span class="fn">sorted</span>(INPUT_DIR.<span class="fn">rglob</span>(<span class="str">"*.csv"</span>))
+
+<span class="kw">for</span> src <span class="kw">in</span> all_files:
+
+    <span class="comment"># ② FILTER — skip already-processed files (idempotency)</span>
+    dest = OUTPUT_DIR / src.<span class="fn">relative_to</span>(INPUT_DIR)
+    <span class="kw">if</span> dest.<span class="fn">exists</span>():
+        skipped += <span class="num">1</span>
+        <span class="kw">continue</span>
+
+    <span class="comment"># ③ PROCESS — your logic here</span>
+    <span class="kw">try</span>:
+        dest.parent.<span class="fn">mkdir</span>(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+        <span class="comment"># (example: just copy — replace with real processing)</span>
+        shutil.<span class="fn">copy2</span>(src, dest)
+        <span class="fn">print</span>(<span class="str">f"  ✓ </span>{src.name}<span class="str">"</span>)
+        moved += <span class="num">1</span>
+
+    <span class="comment"># ④ WRITE — errors are logged, not fatal</span>
+    <span class="kw">except</span> <span class="fn">Exception</span> <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="str">f"  ✗ </span>{src.name}<span class="str">: </span>{e}<span class="str">"</span>)
+        errors += <span class="num">1</span>
+
+<span class="fn">print</span>(<span class="str">f"\nDone: </span>{moved}<span class="str"> processed, </span>{skipped}<span class="str"> skipped, </span>{errors}<span class="str"> errors"</span>)</pre>
+
+    <h3>Making scripts robust — best practices</h3>
+
+    <div class="box box-teal">
+      <strong>Idempotency:</strong> a script is idempotent if running it twice gives the same result as running it once. Check whether the output already exists before processing. This makes scripts safe to re-run after crashes.
+    </div>
+
+    <div class="box box-purple">
+      <strong>Atomic writes:</strong> write to a temp file first, then rename when done. If the script crashes mid-write, you never end up with a corrupt half-written output file.<br><br>
+      <code>with open("output.csv.tmp", "w") as f: ...</code><br>
+      <code>os.rename("output.csv.tmp", "output.csv")</code>
+    </div>
+
+    <div class="box box-orange">
+      <strong>Never overwrite originals:</strong> always write to a separate output location. Only delete or overwrite source data after you have verified the output is correct.
+    </div>
+
+    <h3>Quick-reference — the whole os ecosystem</h3>
+    <table class="cmp-table">
+      <tr><th>Task</th><th>Use this</th></tr>
+      <tr><td>Get/change working directory</td><td><code>os.getcwd()</code> / <code>os.chdir()</code></td></tr>
+      <tr><td>List folder contents</td><td><code>os.listdir()</code></td></tr>
+      <tr><td>Walk directory tree</td><td><code>os.walk()</code></td></tr>
+      <tr><td>Find files by pattern</td><td><code>glob.glob()</code> / <code>Path.rglob()</code></td></tr>
+      <tr><td>Join path components</td><td><code>os.path.join()</code> / <code>Path / "name"</code></td></tr>
+      <tr><td>Get filename / extension</td><td><code>os.path.basename()</code> / <code>Path.name</code>, <code>.stem</code>, <code>.suffix</code></td></tr>
+      <tr><td>Check existence</td><td><code>os.path.exists()</code> / <code>Path.exists()</code></td></tr>
+      <tr><td>Create directory</td><td><code>os.makedirs(p, exist_ok=True)</code> / <code>Path.mkdir(parents=True, exist_ok=True)</code></td></tr>
+      <tr><td>Read text file</td><td><code>open(p, "r", encoding="utf-8")</code></td></tr>
+      <tr><td>Read CSV</td><td><code>csv.DictReader(f)</code></td></tr>
+      <tr><td>Read JSON</td><td><code>json.load(f)</code></td></tr>
+      <tr><td>Copy file</td><td><code>shutil.copy2(src, dst)</code></td></tr>
+      <tr><td>Move / rename</td><td><code>shutil.move(src, dst)</code></td></tr>
+      <tr><td>Delete file</td><td><code>os.remove(p)</code> / <code>Path.unlink()</code></td></tr>
+      <tr><td>Delete directory tree</td><td><code>shutil.rmtree(p)</code></td></tr>
+      <tr><td>Read env variable</td><td><code>os.environ.get("KEY", "default")</code></td></tr>
+      <tr><td>Run shell command</td><td><code>subprocess.run([...], capture_output=True, text=True, check=True)</code></td></tr>
+    </table>
+
+    <div class="ch-nav">
+      <a href="#ch6">← Chapter 6</a>
+      <a href="index.html">↑ Back to OS Course</a>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../sw.js');</script>
+</body>
+</html>

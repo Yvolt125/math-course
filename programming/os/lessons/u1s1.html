@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: What is a Filesystem?</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u1s1',
+  title: 'What is a Filesystem?',
+  subtitle: 'Files · Directories · The Tree Structure',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'tf',
+      prompt: 'A filesystem is the way an operating system organises and stores data on a storage device.',
+      answer: true,
+      explanation: 'Correct. The filesystem is the layer between raw disk storage and the programs that read and write files. It decides how data is named, grouped, and retrieved.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which of the following best describes a directory?',
+      options: [
+        'A raw block of data on disk',
+        'A container that can hold files and other directories',
+        'A special type of file that cannot be moved',
+        'The physical location of bytes on a hard drive'
+      ],
+      answer: 1,
+      explanation: 'A directory (also called a folder) is a container. It holds files and can hold other directories, forming the tree structure. Directories themselves take up a tiny amount of space for their index entries.'
+    },
+    {
+      type: 'tf',
+      prompt: 'On most operating systems the filesystem has a tree structure with a single root at the top.',
+      answer: true,
+      explanation: 'Yes. Every path starts at the root — "/" on Linux/Mac, "C:\\" on Windows. All directories and files branch downward from there like an upside-down tree.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the root of the filesystem on Linux and macOS?',
+      options: ['C:\\', '~', '/', '/home'],
+      answer: 2,
+      explanation: '"/" is the root on Unix-like systems. Everything — system files, your home folder, external drives — lives somewhere under /. On Windows the root is a drive letter like C:\\'
+    },
+    {
+      type: 'fill',
+      before: 'A file is a named collection of ',
+      after: ' stored on a filesystem.',
+      answer: 'data',
+      explanation: 'A file is simply named, stored data. It can contain text, images, code, audio — anything. The filesystem records its name, size, location, and timestamps.'
+    },
+    {
+      type: 'mc',
+      prompt: 'In the path /home/alice/projects/script.py, which part is the filename?',
+      options: ['/home/alice/projects/', 'alice', 'projects', 'script.py'],
+      answer: 3,
+      explanation: 'script.py is the filename — the last component of the path. Everything before it (/home/alice/projects/) is the directory path that contains it.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Directories can contain other directories, making it possible to nest folders arbitrarily deep.',
+      answer: true,
+      explanation: 'This nesting is what gives the filesystem its tree shape. You can have /data/2024/january/week1/report.csv — four levels of directories before the file.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does the file extension (.csv, .py, .txt) tell you?',
+      options: [
+        'The exact location of the file on disk',
+        'How large the file is',
+        'A hint about the format or type of the file contents',
+        'Whether the file is read-only'
+      ],
+      answer: 2,
+      explanation: 'Extensions are conventions, not enforced rules. .csv suggests comma-separated values, .py suggests Python code, .txt suggests plain text. The OS uses them as hints; you could rename a .py file to .txt and its contents would not change.'
+    },
+    {
+      type: 'tf',
+      prompt: 'In Python, the os module provides tools for interacting with the filesystem.',
+      answer: true,
+      explanation: 'Yes. import os gives you os.listdir(), os.path.join(), os.getcwd(), os.makedirs(), and many more functions for reading, creating, and navigating files and directories.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which of the following is a valid Linux/Mac absolute path?',
+      options: ['Documents/report.csv', '.\\data\\file.txt', '/Users/alice/data/sales.csv', 'C:\\Users\\alice\\data\\sales.csv'],
+      answer: 2,
+      explanation: '/Users/alice/data/sales.csv starts with / so it is absolute — it begins at the root. Documents/report.csv is relative (no leading /). C:\\... is Windows syntax. .\\... is a Windows relative path.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

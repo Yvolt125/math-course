@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scikit-learn Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    .when-box { background: #e8f8f5; border-left: 4px solid #16a085; border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .when-box strong { display: block; font-weight: 800; margin-bottom: 8px; color: #0e6655; }
+    .when-box table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .when-box th { background: #16a085; color: white; padding: 6px 10px; text-align: left; font-size: 0.88em; }
+    .when-box td { padding: 6px 10px; border-bottom: 1px solid #d1f0eb; vertical-align: top; font-size: 0.88em; }
+    .when-box tr:last-child td { border-bottom: none; }
+    .chart-wrap { background: white; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    canvas { max-width: 100%; }
+    /* workflow diagram */
+    .workflow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 16px 0; }
+    .wf-step { background: #2c3e50; color: white; padding: 10px 16px; font-size: 0.78em; font-weight: 700; text-align: center; border-radius: 10px; min-width: 90px; }
+    .wf-arr { font-size: 1.3em; color: #bdc3c7; padding: 0 6px; }
+    /* metric grid */
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+    .metric-card { background: #f8f9fa; border-radius: 10px; padding: 14px; text-align: center; border-top: 3px solid #e67e22; }
+    .metric-card .mval { font-size: 1.6em; font-weight: 800; color: #2c3e50; }
+    .metric-card .mlbl { font-size: 0.72em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    @media(max-width:560px) { .metric-grid { grid-template-columns: 1fr 1fr; } .workflow { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← Scikit-learn</a>
+  <h1>Scikit-learn Intro — Theory Guide</h1>
+  <p>ML fundamentals · preprocessing · models · evaluation</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · The sklearn API</a>
+  <a class="toc-pill" href="#ch2">2 · Train / Test Split</a>
+  <a class="toc-pill" href="#ch3">3 · Preprocessing Pipelines</a>
+  <a class="toc-pill" href="#ch4">4 · Regression Models</a>
+  <a class="toc-pill" href="#ch5">5 · Classification Models</a>
+  <a class="toc-pill" href="#ch6">6 · Evaluation Metrics</a>
+  <a class="toc-pill" href="#ch7">7 · Cross-Validation</a>
+  <a class="toc-pill" href="#ch8">8 · Full Worked Example</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">The scikit-learn API</div>
+
+  <p>Scikit-learn has a beautifully consistent API. Every estimator (model, transformer, scaler) follows the same pattern — once you know it, you can use any algorithm.</p>
+
+  <h3>The Estimator API</h3>
+<pre>from sklearn.linear_model import LinearRegression
+
+# Every estimator has these three methods:
+model = LinearRegression()          # 1. Instantiate (set hyperparameters)
+model.fit(X_train, y_train)         # 2. Fit (learn from training data)
+predictions = model.predict(X_test) # 3. Predict (apply to new data)
+
+# Transformers also have:
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(X_train)              # learn parameters (mean, std) from training data
+X_scaled = scaler.transform(X)  # apply transformation
+# or both at once:
+X_scaled = scaler.fit_transform(X_train)</pre>
+
+  <div class="workflow">
+    <div class="wf-step">Raw Data</div><div class="wf-arr">→</div>
+    <div class="wf-step">Clean</div><div class="wf-arr">→</div>
+    <div class="wf-step">Features</div><div class="wf-arr">→</div>
+    <div class="wf-step">Split</div><div class="wf-arr">→</div>
+    <div class="wf-step">Preprocess</div><div class="wf-arr">→</div>
+    <div class="wf-step">Train</div><div class="wf-arr">→</div>
+    <div class="wf-step">Evaluate</div>
+  </div>
+
+  <h3>Supervised vs Unsupervised</h3>
+  <ul>
+    <li><strong>Supervised</strong> — you have labelled data (X → y). Regression predicts a number; classification predicts a category.</li>
+    <li><strong>Unsupervised</strong> — no labels. Clustering groups similar rows; dimensionality reduction compresses features.</li>
+  </ul>
+
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Train / Test Split</div>
+
+  <p>You train a model on one portion of your data and evaluate it on a held-out portion. This tests whether the model <em>generalises</em> to new data, not just memorises training data.</p>
+
+<pre>import pandas as pd
+from sklearn.model_selection import train_test_split
+
+df = pd.read_csv('sales.csv')
+
+X = df[['hours_worked', 'deals_closed', 'years_exp', 'region_enc']]  # features
+y = df['sales']   # target
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,       # 20% test, 80% train
+    random_state=42      # reproducible split
+)
+
+print(f"Train: {len(X_train)} rows")
+print(f"Test:  {len(X_test)} rows")</pre>
+
+  <div class="callout warn">
+    <strong>Data leakage — the most common ML mistake</strong>
+    Leakage means information from the test set influences training. It causes falsely optimistic evaluation scores that don't hold in production. Common causes:
+    <ul style="margin-top:6px;">
+      <li>Fitting a scaler on the full dataset (including test data) before splitting — always fit only on training data</li>
+      <li>Target encoding using the target value from the same row</li>
+      <li>Including future information as a feature (e.g. "next month's sales")</li>
+    </ul>
+  </div>
+
+  <h3>Stratified split (classification)</h3>
+<pre>X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y,  # keep class proportions equal in both sets
+    random_state=42
+)</pre>
+
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Preprocessing Pipelines</div>
+
+  <p>A Pipeline chains transformers and a final estimator so they act as a single unit. This prevents data leakage and makes production deployment easy.</p>
+
+<pre>import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+
+# Define column groups
+numeric_features     = ['hours_worked', 'deals_closed', 'years_exp']
+categorical_features = ['region', 'product_tier']
+
+# Numeric pipeline: impute then scale
+numeric_pipe = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler',  StandardScaler())
+])
+
+# Categorical pipeline: impute then one-hot encode
+categorical_pipe = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore'))
+])
+
+# Combine with ColumnTransformer
+preprocessor = ColumnTransformer([
+    ('num', numeric_pipe,     numeric_features),
+    ('cat', categorical_pipe, categorical_features)
+])
+
+# Full pipeline: preprocess + model
+full_pipeline = Pipeline([
+    ('preprocess', preprocessor),
+    ('model',      LinearRegression())
+])
+
+# Fit and predict — preprocessing happens automatically
+full_pipeline.fit(X_train, y_train)
+preds = full_pipeline.predict(X_test)
+print(f"R² on test: {full_pipeline.score(X_test, y_test):.3f}")</pre>
+
+  <div class="callout tip">
+    <strong>Why Pipeline is important</strong>
+    When you call <code>pipeline.fit(X_train, y_train)</code>, the scaler learns from training data only. When you call <code>pipeline.predict(X_test)</code>, it applies the already-fitted scaler — correct. Without a pipeline, it is easy to accidentally refit the scaler on test data.
+  </div>
+
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Regression Models</div>
+
+  <div class="when-box">
+    <strong>Regression vs Classification — and which model?</strong>
+    <table>
+      <tr><th>You want to predict…</th><th>Task type</th><th>Start with</th><th>Upgrade to</th></tr>
+      <tr><td>A number (revenue, price, score)</td><td>Regression</td><td>Linear Regression — fast, interpretable baseline</td><td>Random Forest or Gradient Boosting for non-linear patterns</td></tr>
+      <tr><td>A yes/no outcome (churn, fraud, click)</td><td>Binary Classification</td><td>Logistic Regression — great baseline, fast to train</td><td>Random Forest / XGBoost for better accuracy</td></tr>
+      <tr><td>One of several categories (segment, product type)</td><td>Multi-class Classification</td><td>Logistic Regression (multi-class mode)</td><td>Random Forest or Gradient Boosting</td></tr>
+    </table>
+    <p style="margin-top:10px;margin-bottom:0;"><strong style="display:inline;color:#0e6655;">Which regression model?</strong> — Linear Regression is your default. Add Ridge if features are correlated (multicollinearity). Use Lasso if you suspect only a few features truly matter (it zeros others out). Jump to Random Forest when relationships are clearly non-linear.</p>
+  </div>
+
+  <p>Regression predicts a continuous numeric value (sales amount, house price, temperature).</p>
+
+<pre>from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+
+# Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+print(f"Coefficients: {dict(zip(X_train.columns, lr.coef_))}")
+print(f"Intercept: {lr.intercept_:.2f}")
+
+# Ridge (L2 regularisation — prevents overfitting with correlated features)
+ridge = Ridge(alpha=1.0)   # alpha controls regularisation strength
+ridge.fit(X_train, y_train)
+
+# Lasso (L1 regularisation — can zero out unimportant features)
+lasso = Lasso(alpha=0.1)
+lasso.fit(X_train, y_train)
+print(f"Non-zero features: {(lasso.coef_ != 0).sum()}")
+
+# Decision Tree
+dt = DecisionTreeRegressor(max_depth=4, min_samples_leaf=5, random_state=42)
+dt.fit(X_train, y_train)
+
+# Random Forest
+rf = RandomForestRegressor(n_estimators=200, max_depth=6, random_state=42, n_jobs=-1)
+rf.fit(X_train, y_train)</pre>
+
+  <h3>Feature importance (tree models)</h3>
+<pre>import pandas as pd
+importances = pd.Series(rf.feature_importances_, index=X_train.columns)
+importances.sort_values(ascending=False).plot(kind='bar', figsize=(8,3))
+plt.title('Feature Importances — Random Forest')
+plt.tight_layout()</pre>
+
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Classification Models</div>
+
+  <p>Classification predicts a category (churn/no-churn, fraud/legitimate, high/medium/low).</p>
+
+<pre>from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
+# Target: binary — 1 = churned, 0 = retained
+y_train_cls = (y_train > y_train.median()).astype(int)
+y_test_cls  = (y_test  > y_test.median()).astype(int)
+
+# Logistic Regression
+lr = LogisticRegression(C=1.0, max_iter=1000)
+lr.fit(X_train_scaled, y_train_cls)
+print(f"Accuracy: {lr.score(X_test_scaled, y_test_cls):.3f}")
+
+# Probabilities (useful for ranking, ROC curves)
+probs = lr.predict_proba(X_test_scaled)[:, 1]  # probability of class 1
+
+# Random Forest Classifier
+rf = RandomForestClassifier(n_estimators=200, max_depth=6, random_state=42)
+rf.fit(X_train_scaled, y_train_cls)</pre>
+
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Evaluation Metrics</div>
+
+  <div class="when-box">
+    <strong>Which metric should I optimise for?</strong>
+    <table>
+      <tr><th>Metric</th><th>Use when</th><th>Real example</th></tr>
+      <tr><td>MAE (Mean Absolute Error)</td><td>You want errors in the same units as your target, outliers shouldn't dominate</td><td>Predicting delivery time in hours — a 2-hour error is a 2-hour error</td></tr>
+      <tr><td>RMSE (Root Mean Squared Error)</td><td>Large errors are disproportionately bad and should be penalised more</td><td>Forecasting energy load — a big miss causes grid instability</td></tr>
+      <tr><td>R² (R-squared)</td><td>You want to explain "how much variance does my model capture?"</td><td>Reporting to stakeholders: "our model explains 85% of the variance in sales"</td></tr>
+      <tr><td>Accuracy</td><td>Classes are balanced and all errors are equally bad</td><td>Digit recognition — equal numbers of 0–9, every wrong digit costs the same</td></tr>
+      <tr><td>Precision</td><td>False positives are costly (you can't afford to wrongly flag something)</td><td>Spam filter — wrongly blocking a legitimate email is bad</td></tr>
+      <tr><td>Recall</td><td>False negatives are costly (you can't afford to miss a real case)</td><td>Cancer screening — missing a real positive is far worse than a false alarm</td></tr>
+      <tr><td>F1 Score</td><td>Imbalanced classes and you need balance between precision and recall</td><td>Fraud detection — frauds are rare but both types of error matter</td></tr>
+      <tr><td>ROC-AUC</td><td>You want threshold-independent ranking quality</td><td>Credit scoring — rank customers by risk across all possible cut-offs</td></tr>
+    </table>
+  </div>
+
+  <h3>Regression metrics</h3>
+<pre>from sklearn.metrics import (
+    mean_absolute_error, mean_squared_error, r2_score
+)
+import numpy as np
+
+y_pred = model.predict(X_test)
+
+mae  = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2   = r2_score(y_test, y_pred)
+
+print(f"MAE:  ${mae:,.0f}")     # average error in $ — easy to interpret
+print(f"RMSE: ${rmse:,.0f}")    # penalises large errors more
+print(f"R²:   {r2:.3f}")       # 1.0 = perfect, 0 = predicts mean, <0 = worse than mean</pre>
+
+  <div class="metric-grid">
+    <div class="metric-card"><div class="mval">MAE</div><div class="mlbl">Mean Absolute Error — avg $ error</div></div>
+    <div class="metric-card"><div class="mval">RMSE</div><div class="mlbl">Root Mean Square Error — penalises outliers</div></div>
+    <div class="metric-card"><div class="mval">R²</div><div class="mlbl">Explained variance — 0 to 1</div></div>
+  </div>
+
+  <h3>Classification metrics</h3>
+<pre>from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, classification_report, roc_auc_score
+)
+
+y_pred_cls = rf.predict(X_test_scaled)
+probs = rf.predict_proba(X_test_scaled)[:, 1]
+
+print(classification_report(y_test_cls, y_pred_cls))
+
+# Confusion matrix
+cm = confusion_matrix(y_test_cls, y_pred_cls)
+print(cm)
+# [[TN  FP]
+#  [FN  TP]]
+
+auc = roc_auc_score(y_test_cls, probs)
+print(f"AUC: {auc:.3f}")</pre>
+
+  <div class="callout info">
+    <strong>Accuracy is often the wrong metric</strong>
+    If 95% of your data is class 0, a model that always predicts 0 achieves 95% accuracy. Check precision, recall, and F1 — especially for imbalanced datasets like fraud detection or churn prediction.
+    <ul style="margin-top:6px;">
+      <li><strong>Precision</strong> — of all predicted positives, how many were actually positive?</li>
+      <li><strong>Recall</strong> — of all actual positives, how many did we catch?</li>
+      <li><strong>F1</strong> — harmonic mean of precision and recall</li>
+    </ul>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="evalChart" height="200"></canvas>
+  </div>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Cross-Validation</div>
+
+  <p>A single train/test split can give a misleading evaluation score — you might get lucky or unlucky with which rows go into the test set. Cross-validation averages across multiple splits.</p>
+
+<pre>from sklearn.model_selection import cross_val_score, KFold
+
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+scores = cross_val_score(
+    full_pipeline,
+    X, y,
+    cv=kf,
+    scoring='r2'
+)
+
+print(f"CV R² scores: {scores.round(3)}")
+print(f"Mean: {scores.mean():.3f} ± {scores.std():.3f}")</pre>
+
+  <p>In 5-fold CV, the data is split into 5 equal parts. The model is trained on 4 parts and evaluated on the remaining 1, rotating 5 times. You get 5 scores and average them.</p>
+
+<pre>from sklearn.model_selection import cross_validate
+
+results = cross_validate(
+    full_pipeline, X, y, cv=5,
+    scoring=['r2', 'neg_mean_absolute_error'],
+    return_train_score=True
+)
+print(pd.DataFrame(results).mean())</pre>
+
+  <h3>Hyperparameter Tuning</h3>
+<pre>from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'model__n_estimators': [100, 200, 300],
+    'model__max_depth':    [3, 5, 7, None],
+    'model__min_samples_leaf': [1, 5, 10]
+}
+
+grid_search = GridSearchCV(
+    full_pipeline,
+    param_grid,
+    cv=5,
+    scoring='r2',
+    n_jobs=-1,
+    verbose=1
+)
+grid_search.fit(X_train, y_train)
+
+print(f"Best params: {grid_search.best_params_}")
+print(f"Best CV R²: {grid_search.best_score_:.3f}")
+best_model = grid_search.best_estimator_</pre>
+
+</div>
+
+<!-- Ch 8 -->
+<div class="chapter" id="ch8">
+  <div class="ch-label">Chapter 8</div>
+  <div class="ch-title">Full Worked Example — Sales Prediction</div>
+
+  <p>End-to-end: load data, clean, engineer features, build a pipeline, evaluate, save the model.</p>
+
+<pre>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import joblib
+
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+
+# ── 1. Load ────────────────────────────────────────────────────────────────
+df = pd.read_csv('sales.csv', parse_dates=['date'])
+
+# ── 2. Feature engineering ─────────────────────────────────────────────────
+df['month']       = df['date'].dt.month
+df['quarter']     = df['date'].dt.quarter
+df['is_weekend']  = (df['date'].dt.dayofweek >= 5).astype(int)
+df['log_exp']     = np.log1p(df['years_experience'])
+
+# ── 3. Define X and y ──────────────────────────────────────────────────────
+numeric_cols     = ['hours_worked','deals_closed','log_exp','month','quarter','is_weekend']
+categorical_cols = ['region', 'product_tier']
+
+X = df[numeric_cols + categorical_cols]
+y = df['sales']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ── 4. Build pipeline ──────────────────────────────────────────────────────
+num_pipe = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler',  StandardScaler())
+])
+cat_pipe = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('ohe',     OneHotEncoder(drop='first', handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer([
+    ('num', num_pipe, numeric_cols),
+    ('cat', cat_pipe, categorical_cols)
+])
+
+pipeline = Pipeline([
+    ('preprocess', preprocessor),
+    ('model', RandomForestRegressor(n_estimators=200, max_depth=8, random_state=42, n_jobs=-1))
+])
+
+# ── 5. Train ───────────────────────────────────────────────────────────────
+pipeline.fit(X_train, y_train)
+
+# ── 6. Evaluate ────────────────────────────────────────────────────────────
+y_pred = pipeline.predict(X_test)
+mae  = mean_absolute_error(y_test, y_pred)
+r2   = r2_score(y_test, y_pred)
+cv   = cross_val_score(pipeline, X, y, cv=5, scoring='r2')
+
+print(f"Test MAE:     ${mae:,.0f}")
+print(f"Test R²:      {r2:.3f}")
+print(f"CV R²:        {cv.mean():.3f} ± {cv.std():.3f}")
+
+# ── 7. Residual plot ───────────────────────────────────────────────────────
+residuals = y_test - y_pred
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+axes[0].scatter(y_pred, residuals, alpha=0.4, color='#3498db')
+axes[0].axhline(0, color='red', linestyle='--')
+axes[0].set_title('Residuals vs Predicted')
+axes[0].set_xlabel('Predicted Sales'); axes[0].set_ylabel('Residual')
+
+axes[1].scatter(y_test, y_pred, alpha=0.4, color='#27ae60')
+lims = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
+axes[1].plot(lims, lims, 'r--')
+axes[1].set_title(f'Actual vs Predicted  (R²={r2:.3f})')
+axes[1].set_xlabel('Actual Sales'); axes[1].set_ylabel('Predicted Sales')
+
+for ax in axes:
+    ax.spines[['top','right']].set_visible(False)
+
+plt.tight_layout()
+plt.savefig('model_evaluation.png', dpi=150)
+
+# ── 8. Save model ──────────────────────────────────────────────────────────
+joblib.dump(pipeline, 'sales_model.pkl')
+print("Model saved to sales_model.pkl")
+
+# Load and use later
+# model = joblib.load('sales_model.pkl')
+# new_pred = model.predict(new_data)</pre>
+
+  <div class="callout key">
+    <strong>Next steps after this guide</strong>
+    <ul style="margin-top:6px;">
+      <li><strong>Gradient boosting</strong> — XGBoost, LightGBM: usually beat Random Forest on tabular data</li>
+      <li><strong>SHAP values</strong> — explain individual predictions ("why did the model predict $18k for this rep?")</li>
+      <li><strong>MLflow / Weights &amp; Biases</strong> — experiment tracking for comparing multiple model runs</li>
+      <li><strong>Class imbalance</strong> — SMOTE, class_weight='balanced' for skewed classification targets</li>
+    </ul>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Ch6 — Evaluation: actual vs predicted scatter
+const actual = [9700,11500,12400,13200,13800,14200,15100,15800,16800,18300,22000];
+const predicted = actual.map(v => v * (0.85 + Math.random() * 0.3));
+
+new Chart(document.getElementById('evalChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Actual vs Predicted',
+      data: actual.map((a, i) => ({x: a, y: predicted[i]})),
+      backgroundColor: 'rgba(39,174,96,0.7)',
+      pointRadius: 7
+    }, {
+      label: 'Perfect prediction',
+      data: [{x: 9000, y: 9000}, {x: 23000, y: 23000}],
+      type: 'line',
+      borderColor: '#e74c3c',
+      borderDash: [6, 3],
+      borderWidth: 2,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Actual vs Predicted Sales (closer to red line = better)', font: { size: 12, weight: '700' } },
+      legend: { position: 'bottom' }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Actual Sales ($)' }, ticks: { callback: v => '$' + v.toLocaleString() } },
+      y: { title: { display: true, text: 'Predicted Sales ($)' }, ticks: { callback: v => '$' + v.toLocaleString() } }
+    }
+  }
+});
+</script>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

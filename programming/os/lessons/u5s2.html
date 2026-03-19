@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Batch Processing Pattern</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u5s2',
+  title: 'Batch Processing Pattern',
+  subtitle: 'Scan → Filter → Process → Write Results',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What is the "batch processing" pattern in data scripting?',
+      options: [
+        'Running a script on a schedule (e.g. every night)',
+        'Scanning a folder for files, filtering to those you want, processing each one, and writing results',
+        'Splitting a single large file into many small files',
+        'Using multiple CPU cores to process files simultaneously'
+      ],
+      answer: 1,
+      explanation: 'Batch processing means: (1) discover input files, (2) filter to those that match your criteria, (3) process each one, (4) write output. This four-step pattern is universal — from renaming photos to transforming thousands of CSVs.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which is the best tool for the Scan step when you need all CSV files in a folder and its subfolders?',
+      options: [
+        'os.listdir() with a for loop',
+        'glob.glob("**/*.csv", recursive=True) or Path(folder).rglob("*.csv")',
+        'os.walk() with manual string checking',
+        'subprocess.run(["find", folder, "-name", "*.csv"])'
+      ],
+      answer: 1,
+      explanation: 'glob or rglob with a wildcard pattern is the most concise and readable. os.walk() also works but requires more code. The subprocess/find approach is platform-specific and unnecessary in Python.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Logging the name of each file as it is processed is a good practice in batch scripts.',
+      answer: true,
+      explanation: 'Logging progress (even just print(f"Processing {f}...")) lets you see where a script is when it runs for minutes and tells you exactly which file caused an error if one occurs. Silent scripts are hard to debug.'
+    },
+    {
+      type: 'fill',
+      before: 'Wrapping each file\'s processing in a try/except block lets the script ',
+      after: ' errors and continue with remaining files.',
+      answer: 'skip',
+      explanation: 'try/except around the per-file work means one bad file does not abort the whole batch. Log the error and continue: except Exception as e: print(f"Error on {f}: {e}"). Review the error log after the run.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You want to skip files that have already been processed (idempotency). What is the simplest check?',
+      options: [
+        'Keep a database of processed file hashes',
+        'Check whether the output file already exists before processing',
+        'Delete input files after processing',
+        'Use a global counter variable'
+      ],
+      answer: 1,
+      explanation: 'if output_path.exists(): continue is the simplest idempotency check. If the output is already there, skip the input. This makes scripts safe to re-run after interruptions without reprocessing files unnecessarily.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the correct order of steps in a robust batch processing script?',
+      options: [
+        'Process → Scan → Filter → Write',
+        'Scan → Filter → Process → Write',
+        'Write → Filter → Scan → Process',
+        'Filter → Write → Scan → Process'
+      ],
+      answer: 1,
+      explanation: 'Always: (1) Scan — find the files. (2) Filter — keep only those you want to process. (3) Process — transform each file. (4) Write — save results to the output location. Separating these steps makes each one testable independently.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Creating the output directory at the start of the script (before the loop) is better than creating it inside the loop for each file.',
+      answer: true,
+      explanation: 'Create the output dir once before the loop with Path(out_dir).mkdir(parents=True, exist_ok=True). Creating it inside the loop means calling mkdir() thousands of times — it still works but is wasteful. Some structures need nested dirs per file — for those, create the parent inside the loop.'
+    },
+    {
+      type: 'mc',
+      prompt: 'After a batch run, you want a summary. What should you track?',
+      options: [
+        'Nothing — the files speak for themselves',
+        'A count of processed, skipped, and errored files',
+        'The total size of all output files only',
+        'The name of the last file processed'
+      ],
+      answer: 1,
+      explanation: 'Track processed, skipped (already done), and error counts. Print a summary at the end: "Done: 142 processed, 58 skipped, 3 errors." This is far more useful than silence and lets you quickly assess whether the run succeeded.'
+    },
+    {
+      type: 'fill',
+      before: 'Writing results to a temporary file and renaming it when complete avoids ',
+      after: ' output files if the script crashes mid-write.',
+      answer: 'corrupt',
+      explanation: 'Write to output.csv.tmp, then rename to output.csv when done. If the script crashes, you have either the complete old file or no file — never a half-written one. This atomic write pattern is important for data integrity.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You run a batch script on 1000 files. 50 fail. What is the best next step?',
+      options: [
+        'Re-run the full script from scratch',
+        'Review the error log, fix the issues, then re-run — the idempotency check will skip the 950 already done',
+        'Manually process the 50 failed files one by one',
+        'Accept the loss of 50 files'
+      ],
+      answer: 1,
+      explanation: 'This is why idempotency and error logging matter. Fix the root cause of the failures, then re-run the script. The 950 successes already have output files, so they are skipped. Only the 50 failures are retried automatically.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

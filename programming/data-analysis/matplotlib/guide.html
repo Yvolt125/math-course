@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matplotlib & Seaborn Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    .when-box { background: #e8f8f5; border-left: 4px solid #16a085; border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .when-box strong { display: block; font-weight: 800; margin-bottom: 8px; color: #0e6655; }
+    .when-box table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .when-box th { background: #16a085; color: white; padding: 6px 10px; text-align: left; font-size: 0.88em; }
+    .when-box td { padding: 6px 10px; border-bottom: 1px solid #d1f0eb; vertical-align: top; font-size: 0.88em; }
+    .when-box tr:last-child td { border-bottom: none; }
+    .when-box ul { margin: 6px 0 0 18px; }
+    .when-box li { font-size: 0.88em; line-height: 1.8; }
+    .chart-wrap { background: white; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    canvas { max-width: 100%; }
+    .anatomy { background: #1e2b38; border-radius: 14px; padding: 20px; margin: 16px 0; position: relative; font-size: 0.8em; }
+    .anat-label { position: absolute; background: #e67e22; color: white; font-size: 0.75em; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+    .compare-box { background: #f8f9fa; border-radius: 10px; padding: 14px 16px; }
+    .compare-box h4 { font-size: 0.8em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 8px; }
+    /* Colour swatches */
+    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .swatch { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6em; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← Matplotlib &amp; Seaborn</a>
+  <h1>Matplotlib &amp; Seaborn — Theory Guide</h1>
+  <p>Every chart type · styling · statistical plots · real-world examples</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · Matplotlib Architecture</a>
+  <a class="toc-pill" href="#ch2">2 · Line &amp; Scatter Charts</a>
+  <a class="toc-pill" href="#ch3">3 · Bar &amp; Histogram</a>
+  <a class="toc-pill" href="#ch4">4 · Styling &amp; Annotations</a>
+  <a class="toc-pill" href="#ch5">5 · Subplots &amp; Layouts</a>
+  <a class="toc-pill" href="#ch6">6 · Seaborn — Statistical Plots</a>
+  <a class="toc-pill" href="#ch7">7 · Heatmaps &amp; Pairplots</a>
+  <a class="toc-pill" href="#ch8">8 · Real-World Chart Workflows</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">Matplotlib Architecture</div>
+
+  <p>Matplotlib has two interfaces. The <strong>pyplot</strong> interface (<code>plt.plot()</code>) is quick and good for exploration. The <strong>object-oriented</strong> interface (<code>fig, ax = plt.subplots()</code>) gives you full control and is what you use in production code.</p>
+
+  <h3>Figure and Axes — the core objects</h3>
+  <div style="background:#1e2b38; border-radius:14px; padding:24px 20px; margin:16px 0; color:#e8f0fe; font-family:Consolas, monospace; font-size:0.82em; position:relative; min-height:180px;">
+    <div style="border:2px dashed #e67e22; border-radius:8px; padding:14px; margin:0;">
+      <div style="font-size:0.8em; color:#e67e22; font-weight:700; margin-bottom:10px;">Figure  (the whole canvas)</div>
+      <div style="border:2px dashed #2980b9; border-radius:8px; padding:14px;">
+        <div style="font-size:0.8em; color:#2980b9; font-weight:700; margin-bottom:10px;">Axes  (one plot area)</div>
+        <div style="display:flex; gap:20px; align-items:flex-end; height:80px; padding:0 10px;">
+          <div style="flex:1; background:rgba(41,128,185,0.3); border-radius:4px; height:60%"></div>
+          <div style="flex:1; background:rgba(41,128,185,0.3); border-radius:4px; height:80%"></div>
+          <div style="flex:1; background:rgba(41,128,185,0.3); border-radius:4px; height:45%"></div>
+          <div style="flex:1; background:rgba(41,128,185,0.3); border-radius:4px; height:90%"></div>
+          <div style="flex:1; background:rgba(41,128,185,0.3); border-radius:4px; height:70%"></div>
+        </div>
+        <div style="font-size:0.72em; color:#a0aec0; margin-top:8px;">Title · X-axis · Y-axis · Legend · Ticks · Labels</div>
+      </div>
+    </div>
+    <div style="font-size:0.72em; color:#a0aec0; margin-top:10px;">A Figure can contain multiple Axes (subplots).</div>
+  </div>
+
+<pre>import matplotlib.pyplot as plt
+import numpy as np
+
+# Object-oriented interface (recommended)
+fig, ax = plt.subplots(figsize=(10, 5))  # width=10", height=5"
+
+x = [1, 2, 3, 4, 5]
+y = [12400, 15800, 9700, 18300, 14200]
+
+ax.plot(x, y)
+ax.set_title('Monthly Sales')
+ax.set_xlabel('Month')
+ax.set_ylabel('Sales ($)')
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('chart.png', dpi=150, bbox_inches='tight')
+plt.show()</pre>
+
+  <h3>pyplot shortcut (quick exploration)</h3>
+<pre>plt.plot(x, y, marker='o', color='steelblue')
+plt.title('Sales')
+plt.xlabel('Month')
+plt.ylabel('Sales ($)')
+plt.show()</pre>
+
+  <div class="callout tip">
+    <strong>Always use the OO interface in scripts and notebooks</strong>
+    When building charts inside functions or loops, <code>fig, ax = plt.subplots()</code> prevents charts from bleeding into each other. The <code>plt.xxx()</code> shortcut always operates on the "current" Axes — which can be surprising in complex layouts.
+  </div>
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Line & Scatter Charts</div>
+
+  <div class="when-box">
+    <strong>Which chart type for which question?</strong>
+    <table>
+      <tr><th>Your question</th><th>Chart type</th><th>Real example</th></tr>
+      <tr><td>How has X changed over time?</td><td>Line chart</td><td>Monthly revenue Jan–Dec, daily active users</td></tr>
+      <tr><td>How do categories compare?</td><td>Bar chart</td><td>Sales by region, headcount by department</td></tr>
+      <tr><td>What is the distribution of a variable?</td><td>Histogram</td><td>Order value spread, customer ages</td></tr>
+      <tr><td>Is there a relationship between two variables?</td><td>Scatter chart</td><td>Ad spend vs conversions, hours worked vs sales</td></tr>
+      <tr><td>How does a distribution differ across groups?</td><td>Box / violin plot</td><td>Salary by department, delivery time by carrier</td></tr>
+      <tr><td>What pattern exists in a matrix of values?</td><td>Heatmap</td><td>Correlation matrix, sales by region × month</td></tr>
+      <tr><td>What share does each part contribute?</td><td>Pie / stacked bar</td><td>Revenue by product category (use stacked bar if &gt;4 segments)</td></tr>
+    </table>
+  </div>
+
+  <h3>Line Chart — trends over time</h3>
+<pre>months = ['Jan','Feb','Mar','Apr','May','Jun']
+north  = [22100, 19400, 24600, 21800, 23500, 25800]
+south  = [30000, 27500, 31800, 29300, 33400, 35600]
+
+fig, ax = plt.subplots(figsize=(9, 4))
+
+ax.plot(months, north, marker='o', linewidth=2, label='North',
+        color='#2980b9', markersize=6)
+ax.plot(months, south, marker='s', linewidth=2, label='South',
+        color='#27ae60', markersize=6, linestyle='--')
+
+ax.set_title('Regional Sales by Month', fontsize=14, fontweight='bold', pad=12)
+ax.set_ylabel('Sales ($)')
+ax.legend()
+ax.grid(True, axis='y', alpha=0.4)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x:,.0f}'))
+
+plt.tight_layout()
+plt.savefig('line_chart.png', dpi=150)</pre>
+
+  <h3>Scatter Chart — relationships between two variables</h3>
+<pre># Hours studied vs exam score
+hours  = [2, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9]
+scores = [42, 51, 55, 63, 70, 72, 75, 80, 83, 85, 91, 94]
+sizes  = [40]*12   # bubble size; can vary to add 3rd dimension
+
+fig, ax = plt.subplots(figsize=(8, 5))
+scatter = ax.scatter(hours, scores, s=80, c=scores, cmap='RdYlGn',
+                     alpha=0.8, edgecolors='white', linewidths=0.8)
+plt.colorbar(scatter, ax=ax, label='Score')
+
+# Trend line
+m, b = np.polyfit(hours, scores, 1)
+ax.plot(hours, [m*h+b for h in hours], 'k--', alpha=0.5, label=f'Trend: y={m:.1f}x+{b:.0f}')
+
+ax.set_title('Study Hours vs Exam Score', fontsize=13, fontweight='bold')
+ax.set_xlabel('Hours studied')
+ax.set_ylabel('Score')
+ax.legend()
+plt.tight_layout()</pre>
+
+  <div class="chart-wrap">
+    <canvas id="lineChart" height="180"></canvas>
+  </div>
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Bar & Histogram</div>
+
+  <h3>Bar Chart — comparing categories</h3>
+<pre>regions = ['North', 'South', 'East', 'West']
+sales   = [145200, 198700, 132400, 87300]
+colours = ['#2980b9','#27ae60','#f39c12','#8e44ad']
+
+fig, ax = plt.subplots(figsize=(8, 4))
+bars = ax.bar(regions, sales, color=colours, width=0.55, edgecolor='white', linewidth=0.8)
+
+# Data labels on top of bars
+ax.bar_label(bars, fmt='${:,.0f}', padding=4, fontsize=9, fontweight='bold')
+
+ax.set_title('Annual Sales by Region', fontsize=13, fontweight='bold', pad=10)
+ax.set_ylabel('Sales ($)')
+ax.set_ylim(0, max(sales) * 1.18)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x/1e3:.0f}k'))
+ax.spines[['top', 'right']].set_visible(False)
+plt.tight_layout()</pre>
+
+  <h3>Grouped Bar Chart</h3>
+<pre>import numpy as np
+
+months   = ['Q1', 'Q2', 'Q3', 'Q4']
+budget   = [45000, 52000, 49000, 61000]
+actual   = [43200, 55800, 47600, 64200]
+x = np.arange(len(months))
+width = 0.35
+
+fig, ax = plt.subplots(figsize=(9, 4))
+b1 = ax.bar(x - width/2, budget, width, label='Budget', color='#aed6f1', edgecolor='#2980b9')
+b2 = ax.bar(x + width/2, actual, width, label='Actual', color='#a9dfbf', edgecolor='#27ae60')
+ax.bar_label(b1, fmt='${:,.0f}', fontsize=8)
+ax.bar_label(b2, fmt='${:,.0f}', fontsize=8)
+ax.set_xticks(x)
+ax.set_xticklabels(months)
+ax.set_title('Budget vs Actual by Quarter')
+ax.legend()
+ax.spines[['top','right']].set_visible(False)
+plt.tight_layout()</pre>
+
+  <h3>Horizontal Bar — long category names</h3>
+<pre>products = ['Product Alpha', 'Product Beta', 'Product Gamma', 'Product Delta', 'Product Epsilon']
+revenue  = [98400, 143200, 67800, 112500, 89100]
+
+# Sort for readability
+pairs = sorted(zip(revenue, products))
+revenue, products = zip(*pairs)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+bars = ax.barh(products, revenue, color='#5dade2', height=0.6)
+ax.bar_label(bars, fmt='${:,.0f}', padding=4, fontsize=9)
+ax.set_xlabel('Revenue ($)')
+ax.set_title('Revenue by Product')
+ax.spines[['top','right','left']].set_visible(False)
+ax.tick_params(left=False)
+plt.tight_layout()</pre>
+
+  <h3>Histogram — distribution of values</h3>
+<pre>np.random.seed(42)
+order_values = np.random.lognormal(mean=3.5, sigma=0.6, size=1000)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+n, bins, patches = ax.hist(order_values, bins=40, color='#aed6f1',
+                            edgecolor='white', linewidth=0.5)
+
+ax.axvline(np.median(order_values), color='#e74c3c', linestyle='--',
+           label=f'Median: ${np.median(order_values):.2f}')
+ax.axvline(np.mean(order_values), color='#f39c12', linestyle='-',
+           label=f'Mean: ${np.mean(order_values):.2f}')
+
+ax.set_title('Distribution of Order Values')
+ax.set_xlabel('Order Value ($)')
+ax.set_ylabel('Frequency')
+ax.legend()
+ax.spines[['top','right']].set_visible(False)
+plt.tight_layout()</pre>
+
+  <div class="chart-wrap">
+    <canvas id="barChart" height="180"></canvas>
+  </div>
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Styling & Annotations</div>
+
+  <h3>Built-in Styles</h3>
+<pre>plt.style.use('seaborn-v0_8-whitegrid')  # clean with grid
+plt.style.use('ggplot')                  # R-style
+plt.style.use('fivethirtyeight')         # bold, journalistic
+plt.style.use('dark_background')         # dark mode
+
+print(plt.style.available)   # list all available styles</pre>
+
+  <h3>Colour Palettes</h3>
+  <p>Use named CSS colours, hex codes, or matplotlib colourmaps.</p>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#2ecc71;">2ecc71</div>
+    <div class="swatch" style="background:#3498db;">3498db</div>
+    <div class="swatch" style="background:#e74c3c;">e74c3c</div>
+    <div class="swatch" style="background:#f39c12;">f39c12</div>
+    <div class="swatch" style="background:#9b59b6;">9b59b6</div>
+    <div class="swatch" style="background:#1abc9c;">1abc9c</div>
+    <div class="swatch" style="background:#e67e22;">e67e22</div>
+    <div class="swatch" style="background:#34495e;">34495e</div>
+  </div>
+<pre>colors = plt.cm.tab10.colors        # 10-colour categorical palette
+colors = plt.cm.Set2.colors         # pastel
+cmap   = plt.cm.RdYlGn             # diverging: red→yellow→green
+
+# Generate N evenly spaced colours from a colormap
+n = 6
+cols = [plt.cm.Blues(i/n) for i in range(2, n+2)]</pre>
+
+  <h3>Annotations</h3>
+<pre>fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(months, north, marker='o', color='#2980b9')
+
+# Annotate a specific point
+ax.annotate(
+    'Campaign launched',
+    xy=(3, north[3]),           # point to annotate
+    xytext=(4, north[3] + 3000),  # text position
+    arrowprops=dict(arrowstyle='->', color='#e74c3c', lw=1.5),
+    fontsize=9, color='#e74c3c', fontweight='bold'
+)
+
+# Add a horizontal reference line
+ax.axhline(y=22000, color='gray', linestyle=':', alpha=0.6, label='Target')
+
+# Shaded region
+ax.axvspan(2, 4, alpha=0.1, color='green', label='High season')</pre>
+
+  <h3>Publication-Ready Customisation</h3>
+<pre>fig, ax = plt.subplots(figsize=(9, 5))
+# ... plot ...
+
+# Fonts
+ax.set_title('Chart Title', fontsize=14, fontweight='bold', pad=14)
+ax.set_xlabel('X Label', fontsize=11, labelpad=8)
+ax.set_ylabel('Y Label', fontsize=11, labelpad=8)
+
+# Tick sizes
+ax.tick_params(axis='both', labelsize=9)
+
+# Grid — subtle
+ax.grid(True, axis='y', color='#e0e0e0', linewidth=0.8)
+ax.set_axisbelow(True)    # grid behind bars
+
+# Remove top and right spines (common in data journalism)
+ax.spines[['top', 'right']].set_visible(False)
+
+# Legend
+ax.legend(frameon=False, fontsize=9, loc='upper left')
+
+# Save high-resolution
+plt.tight_layout()
+plt.savefig('chart.png', dpi=200, bbox_inches='tight',
+            facecolor='white', transparent=False)</pre>
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Subplots & Layouts</div>
+
+  <h3>Multiple Plots on One Figure</h3>
+<pre>fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
+
+# axes is a 2D array
+axes[0, 0].plot(x, y1, color='#2980b9')
+axes[0, 0].set_title('Sales Trend')
+
+axes[0, 1].bar(regions, totals, color='#27ae60')
+axes[0, 1].set_title('By Region')
+
+axes[1, 0].hist(values, bins=30, color='#9b59b6')
+axes[1, 0].set_title('Distribution')
+
+axes[1, 1].scatter(hours, scores, alpha=0.7)
+axes[1, 1].set_title('Correlation')
+
+fig.suptitle('Sales Dashboard', fontsize=16, fontweight='bold', y=1.02)
+plt.tight_layout()
+plt.savefig('dashboard.png', dpi=150, bbox_inches='tight')</pre>
+
+  <h3>Unequal Subplot Sizes — GridSpec</h3>
+<pre>from matplotlib.gridspec import GridSpec
+
+fig = plt.figure(figsize=(12, 6))
+gs  = GridSpec(2, 3, figure=fig, hspace=0.4, wspace=0.35)
+
+ax_main  = fig.add_subplot(gs[:, :2])    # spans all rows, left 2 cols
+ax_top   = fig.add_subplot(gs[0, 2])     # top-right
+ax_bot   = fig.add_subplot(gs[1, 2])     # bottom-right
+
+ax_main.plot(dates, revenue)
+ax_main.set_title('Revenue Trend (main)')
+
+ax_top.bar(regions, q1_sales)
+ax_top.set_title('Q1 by Region')
+
+ax_bot.bar(regions, q2_sales, color='#27ae60')
+ax_bot.set_title('Q2 by Region')</pre>
+
+  <div class="callout tip">
+    <strong>plt.tight_layout() vs fig.tight_layout()</strong>
+    Both do the same thing — automatically adjust subplot spacing so labels don't overlap. Call it just before <code>plt.savefig()</code> or <code>plt.show()</code>.
+  </div>
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Seaborn — Statistical Plots</div>
+
+  <div class="when-box">
+    <strong>When to reach for Seaborn first</strong>
+    Open Seaborn instead of Matplotlib when you have a DataFrame and want a statistical view quickly:
+    <ul>
+      <li>Distribution of a column — <code>sns.histplot(df, x='sales')</code></li>
+      <li>Compare distributions across groups — add <code>hue='region'</code> to almost any Seaborn call</li>
+      <li>Correlation matrix — <code>sns.heatmap(df.corr(), annot=True)</code></li>
+      <li>Relationship between two numeric columns — <code>sns.regplot()</code> adds a regression line automatically</li>
+      <li>Spot outliers across groups — <code>sns.boxplot()</code> or <code>sns.violinplot()</code></li>
+    </ul>
+    Switch to Matplotlib when you need precise control: exact positioning, custom annotations, complex multi-panel layouts, or pixel-perfect output for a report. Use both together with <code>sns.xxx(ax=ax)</code>.
+  </div>
+
+  <p>Seaborn is built on top of Matplotlib and is designed for statistical visualisation. It understands Pandas DataFrames natively — you just pass column names.</p>
+
+<pre>import seaborn as sns
+
+sns.set_theme(style='whitegrid', palette='muted')  # global style</pre>
+
+  <h3>Distribution Plots</h3>
+<pre>df = pd.read_csv('orders.csv')
+
+# Histogram with KDE (kernel density estimate)
+fig, ax = plt.subplots(figsize=(8, 4))
+sns.histplot(df['order_value'], kde=True, bins=40, color='#5dade2', ax=ax)
+ax.set_title('Order Value Distribution')
+
+# Separate distributions per group
+sns.histplot(data=df, x='order_value', hue='region',
+             kde=True, alpha=0.5)
+
+# KDE only (smooth density curve)
+sns.kdeplot(data=df, x='order_value', hue='region', fill=True, alpha=0.3)</pre>
+
+  <h3>Box & Violin Plots — spread and outliers</h3>
+<pre>fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+sns.boxplot(data=df, x='region', y='sales', palette='Set2', ax=axes[0])
+axes[0].set_title('Sales Distribution by Region (Box)')
+
+sns.violinplot(data=df, x='region', y='sales', palette='Set2',
+               inner='quartile', ax=axes[1])
+axes[1].set_title('Sales Distribution by Region (Violin)')
+
+plt.tight_layout()</pre>
+
+  <div class="chart-wrap">
+    <canvas id="distChart" height="200"></canvas>
+  </div>
+
+  <h3>Bar & Point Plots with Error Bars</h3>
+<pre># barplot shows mean + 95% CI by default
+sns.barplot(data=df, x='region', y='sales', palette='Blues_d', errorbar='ci')
+
+# Pointplot — good for showing trends across categories
+sns.pointplot(data=df, x='month', y='sales', hue='region',
+              markers=['o','s','D'], linestyles=['-','--','-.'])</pre>
+
+  <h3>Regression Plot</h3>
+<pre>fig, ax = plt.subplots(figsize=(7, 5))
+sns.regplot(data=df, x='hours_studied', y='exam_score',
+            scatter_kws={'alpha':0.5}, line_kws={'color':'#e74c3c'}, ax=ax)
+ax.set_title('Study Hours vs Exam Score (with regression line)')</pre>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Heatmaps & Pairplots</div>
+
+  <h3>Heatmap — correlation or pivot table</h3>
+<pre>import pandas as pd, seaborn as sns, matplotlib.pyplot as plt
+
+# Correlation heatmap
+numeric_cols = df.select_dtypes(include='number')
+corr = numeric_cols.corr()
+
+fig, ax = plt.subplots(figsize=(8, 6))
+sns.heatmap(
+    corr,
+    annot=True,           # show numbers in cells
+    fmt='.2f',            # 2 decimal places
+    cmap='RdYlGn',        # diverging colormap
+    center=0,             # 0 is neutral colour
+    vmin=-1, vmax=1,
+    linewidths=0.5,
+    ax=ax
+)
+ax.set_title('Feature Correlation Matrix', pad=14)
+plt.tight_layout()</pre>
+
+<pre>
+# Pivot table heatmap — e.g. sales by region × month
+pivot = df.pivot_table(values='sales', index='region', columns='month', aggfunc='sum')
+
+fig, ax = plt.subplots(figsize=(10, 4))
+sns.heatmap(pivot, annot=True, fmt=',d', cmap='YlOrRd', linewidths=0.5, ax=ax)
+ax.set_title('Sales Heatmap: Region × Month')
+plt.tight_layout()</pre>
+
+  <div class="chart-wrap">
+    <canvas id="heatChart" height="220"></canvas>
+  </div>
+
+  <h3>Pairplot — all combinations at once</h3>
+<pre># Great for initial exploration of a multi-column dataset
+g = sns.pairplot(
+    df[['sales','commission','hours_worked','deals_closed']],
+    diag_kind='kde',           # diagonal: KDE instead of histogram
+    plot_kws={'alpha': 0.5},
+    hue='region'               # colour by category
+)
+g.fig.suptitle('Pairwise Relationships', y=1.02)
+plt.savefig('pairplot.png', dpi=120, bbox_inches='tight')</pre>
+
+</div>
+
+<!-- Ch 8 -->
+<div class="chapter" id="ch8">
+  <div class="ch-label">Chapter 8</div>
+  <div class="ch-title">Real-World Chart Workflows</div>
+
+  <h3>Workflow 1 — Monthly Sales Dashboard (saved to PNG)</h3>
+<pre>import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from pathlib import Path
+
+df = pd.read_csv('sales.csv', parse_dates=['date'])
+df['month'] = df['date'].dt.to_period('M').astype(str)
+
+monthly   = df.groupby('month')['sales'].sum()
+by_region = df.groupby('region')['sales'].sum().sort_values()
+top_reps  = df.groupby('rep_name')['sales'].sum().nlargest(5)
+
+fig = plt.figure(figsize=(14, 8), facecolor='#f8f9fa')
+gs  = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
+
+ax1 = fig.add_subplot(gs[0, :2])   # wide trend
+ax2 = fig.add_subplot(gs[0, 2])    # region bars
+ax3 = fig.add_subplot(gs[1, :])    # full-width top reps
+
+# Trend
+ax1.plot(monthly.index, monthly.values, color='#2980b9', linewidth=2.5, marker='o')
+ax1.fill_between(range(len(monthly)), monthly.values, alpha=0.15, color='#2980b9')
+ax1.set_title('Monthly Revenue', fontweight='bold')
+ax1.set_ylabel('Sales ($)')
+ax1.tick_params(axis='x', rotation=45)
+
+# Region
+ax2.barh(by_region.index, by_region.values, color='#5dade2')
+ax2.set_title('By Region', fontweight='bold')
+
+# Top reps
+bars = ax3.bar(top_reps.index, top_reps.values, color='#1abc9c', edgecolor='white')
+ax3.bar_label(bars, fmt='${:,.0f}', padding=4, fontsize=9)
+ax3.set_title('Top 5 Sales Reps', fontweight='bold')
+ax3.tick_params(axis='x', rotation=20)
+
+for ax in [ax1, ax2, ax3]:
+    ax.spines[['top','right']].set_visible(False)
+    ax.grid(True, axis='y', alpha=0.3)
+
+fig.suptitle('Sales Dashboard', fontsize=16, fontweight='bold', y=1.01)
+plt.savefig('dashboard.png', dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
+print("Saved dashboard.png")</pre>
+
+  <h3>Workflow 2 — Automated Chart per Region</h3>
+<pre>from pathlib import Path
+
+Path('charts').mkdir(exist_ok=True)
+
+for region, group in df.groupby('region'):
+    monthly = group.groupby('month')['sales'].sum()
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(monthly.index, monthly.values, marker='o', linewidth=2, color='#3498db')
+    ax.fill_between(range(len(monthly)), monthly.values, alpha=0.2)
+    ax.set_title(f'{region} Region — Monthly Sales', fontweight='bold')
+    ax.set_ylabel('Sales ($)')
+    ax.tick_params(axis='x', rotation=45)
+    ax.spines[['top','right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(f'charts/{region.lower()}_sales.png', dpi=150, bbox_inches='tight')
+    plt.close()   # ← important: free memory when generating many charts
+    print(f"Saved chart for {region}")</pre>
+
+  <div class="callout warn">
+    <strong>Always plt.close() in loops</strong>
+    If you generate charts in a loop without closing them, Matplotlib accumulates open figures in memory. Use <code>plt.close()</code> or <code>plt.close('all')</code> after saving.
+  </div>
+
+  <div class="callout key">
+    <strong>Matplotlib vs Seaborn — when to use which</strong>
+    <ul style="margin-top:6px;">
+      <li><strong>Matplotlib</strong> — full control over every pixel; best for dashboards, custom styling, complex layouts</li>
+      <li><strong>Seaborn</strong> — statistical plots in one line; best for EDA, distributions, correlations when the DataFrame structure matches directly</li>
+      <li>They compose: use <code>sns.xxx(ax=ax)</code> to draw Seaborn plots onto a Matplotlib Axes object</li>
+    </ul>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Ch2 Line chart
+new Chart(document.getElementById('lineChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+    datasets: [
+      { label: 'North', data: [22100,19400,24600,21800,23500,25800], borderColor:'#2980b9', backgroundColor:'rgba(41,128,185,0.1)', tension:0.3, fill:true, pointRadius:5 },
+      { label: 'South', data: [30000,27500,31800,29300,33400,35600], borderColor:'#27ae60', backgroundColor:'rgba(39,174,96,0.1)', tension:0.3, fill:true, pointRadius:5, borderDash:[6,3] }
+    ]
+  },
+  options: {
+    responsive:true,
+    plugins: { title:{ display:true, text:'Regional Sales Trend (line chart example)', font:{size:13,weight:'700'} }, legend:{position:'bottom'} },
+    scales: { y:{ ticks:{ callback: v => '$'+v.toLocaleString() } } }
+  }
+});
+
+// Ch3 Bar chart
+new Chart(document.getElementById('barChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['North','South','East','West'],
+    datasets: [
+      { label: 'Q1', data:[22100,30000,18300,11200], backgroundColor:'rgba(41,128,185,0.7)', borderRadius:4 },
+      { label: 'Q2', data:[24600,31800,21400,13600], backgroundColor:'rgba(39,174,96,0.7)', borderRadius:4 },
+      { label: 'Q3', data:[23500,33400,22300,14800], backgroundColor:'rgba(243,156,18,0.7)', borderRadius:4 }
+    ]
+  },
+  options: {
+    responsive:true,
+    plugins: { title:{ display:true, text:'Grouped Bar Chart — Sales by Region & Quarter', font:{size:13,weight:'700'} }, legend:{position:'bottom'} },
+    scales: { y:{ stacked:false, ticks:{ callback: v => '$'+v.toLocaleString() } } }
+  }
+});
+
+// Ch6 boxplot simulation — show distribution per region as points
+new Chart(document.getElementById('distChart').getContext('2d'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'North', data: [{x:1,y:12400},{x:1,y:15200},{x:1,y:9700},{x:1,y:18300},{x:1,y:14100},{x:1,y:11800},{x:1,y:16500},{x:1,y:13200}], backgroundColor:'rgba(41,128,185,0.6)', pointRadius:7 },
+      { label: 'South', data: [{x:2,y:28000},{x:2,y:31200},{x:2,y:24600},{x:2,y:35800},{x:2,y:29400},{x:2,y:33100},{x:2,y:26700},{x:2,y:30900}], backgroundColor:'rgba(39,174,96,0.6)', pointRadius:7 },
+      { label: 'East', data: [{x:3,y:17800},{x:3,y:21300},{x:3,y:15600},{x:3,y:24100},{x:3,y:19200},{x:3,y:22800},{x:3,y:18400},{x:3,y:20100}], backgroundColor:'rgba(243,156,18,0.6)', pointRadius:7 }
+    ]
+  },
+  options: {
+    responsive:true,
+    plugins: { title:{ display:true, text:'Sales Distribution per Region (scatter approximation of boxplot)', font:{size:12,weight:'700'} }, legend:{position:'bottom'} },
+    scales: {
+      x: { min:0, max:4, ticks:{ callback: v => ['','North','South','East',''][v] } },
+      y: { ticks:{ callback: v => '$'+v.toLocaleString() } }
+    }
+  }
+});
+
+// Ch7 Heatmap — fake via matrix of coloured cells rendered as a grouped bar
+const heatCtx = document.getElementById('heatChart').getContext('2d');
+const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+const regions = ['North','South','East'];
+const data = [
+  [22100,19400,24600,21800,23500,25800],
+  [30000,27500,31800,29300,33400,35600],
+  [18300,16800,21400,19700,22300,24600]
+];
+const heatColors = ['#2980b9','#27ae60','#f39c12'];
+new Chart(heatCtx, {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: regions.map((r,i) => ({
+      label: r,
+      data: data[i],
+      backgroundColor: heatColors[i] + 'BB',
+      borderColor: heatColors[i],
+      borderWidth: 1,
+      borderRadius: 3
+    }))
+  },
+  options: {
+    responsive: true,
+    plugins: { title:{ display:true, text:'Heatmap data shown as grouped bars — Region × Month Sales', font:{size:12,weight:'700'} }, legend:{position:'bottom'} },
+    scales: { y:{ ticks:{ callback: v => '$'+v.toLocaleString() } } }
+  }
+});
+</script>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

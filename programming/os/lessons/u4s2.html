@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Running Shell Commands</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u4s2',
+  title: 'Running Shell Commands',
+  subtitle: 'subprocess · Capturing Output · Pipes',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'Which Python module is the modern, recommended way to run shell commands?',
+      options: ['os.system()', 'subprocess', 'shell', 'commands'],
+      answer: 1,
+      explanation: 'subprocess is the standard library module for launching processes. os.system() is older and limited — it cannot capture output. The commands module was removed in Python 3. Use subprocess for anything non-trivial.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does subprocess.run(["ls", "-l"]) do?',
+      options: [
+        'Runs ls -l in the shell and prints the output automatically',
+        'Runs the ls program with argument -l and waits for it to finish',
+        'Returns a string containing the output of ls -l',
+        'Raises an error — lists are not valid arguments'
+      ],
+      answer: 1,
+      explanation: 'subprocess.run() launches the process and waits for it to finish (blocking). Passing a list avoids shell injection. By default output is not captured — it goes straight to the terminal. Use capture_output=True to capture it.'
+    },
+    {
+      type: 'fill',
+      before: 'To capture the output of a subprocess as a string, pass ',
+      after: '=True to subprocess.run().',
+      answer: 'capture_output',
+      explanation: 'subprocess.run(["git", "status"], capture_output=True, text=True) captures stdout and stderr. Access them via result.stdout and result.stderr. Adding text=True decodes bytes to a string automatically.'
+    },
+    {
+      type: 'tf',
+      prompt: 'subprocess.run() with check=True raises an exception if the command returns a non-zero exit code.',
+      answer: true,
+      explanation: 'check=True raises subprocess.CalledProcessError if the command fails (exit code != 0). Without it, failures are silently ignored. For scripts where errors must not go unnoticed, always use check=True.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the exit code of a successfully completed Unix command?',
+      options: ['1', '-1', '0', 'None'],
+      answer: 2,
+      explanation: 'Exit code 0 means success on Unix/Linux/Mac. Any non-zero value indicates an error. You can check it via result.returncode after subprocess.run(). This convention is used by all command-line tools.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Why is passing a list (["git", "commit", "-m", "msg"]) safer than a string ("git commit -m msg") with shell=True?',
+      options: [
+        'Lists are faster to parse',
+        'Lists prevent shell injection — special characters in arguments are not interpreted by the shell',
+        'Strings only work on Windows',
+        'There is no difference'
+      ],
+      answer: 1,
+      explanation: 'With shell=True the string is passed to the shell for interpretation. If any argument contains user input with characters like ; or &&, an attacker could inject extra commands. Lists are passed directly to the OS — no shell, no injection risk.'
+    },
+    {
+      type: 'tf',
+      prompt: 'result.stdout from subprocess.run() is a bytes object by default (unless text=True is passed).',
+      answer: true,
+      explanation: 'By default subprocess returns bytes. Pass text=True (or encoding="utf-8") to get a string. Without it you would need to decode manually: result.stdout.decode("utf-8"). text=True is almost always what you want.'
+    },
+    {
+      type: 'mc',
+      prompt: 'How do you run a command and get its output in one line (Python 3.7+)?',
+      options: [
+        'output = os.run("git log --oneline")',
+        'output = subprocess.run(["git","log","--oneline"], capture_output=True, text=True).stdout',
+        'output = subprocess.call(["git","log"])',
+        'output = subprocess.output(["git","log"])'
+      ],
+      answer: 1,
+      explanation: 'subprocess.run(..., capture_output=True, text=True) runs the command and captures its output. Accessing .stdout gives the result as a string. .strip() removes the trailing newline: result.stdout.strip().'
+    },
+    {
+      type: 'fill',
+      before: 'To redirect a command\'s stderr to the same stream as stdout, pass stderr=subprocess.',
+      after: ' to subprocess.run().',
+      answer: 'STDOUT',
+      explanation: 'stderr=subprocess.STDOUT merges error output into stdout, so both are captured together in result.stdout. Useful when a tool writes important info to stderr (e.g. ffmpeg, curl with progress).'
+    },
+    {
+      type: 'tf',
+      prompt: 'You should avoid using shell=True when any part of the command comes from user input or external data.',
+      answer: true,
+      explanation: 'shell=True is a security risk whenever input is not fully trusted. An attacker who controls part of the command string can inject arbitrary shell commands. Always use a list and avoid shell=True unless you have no alternative and fully control all inputs.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

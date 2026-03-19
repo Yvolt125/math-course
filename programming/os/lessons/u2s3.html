@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Building Output Paths</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u2s3',
+  title: 'Building Output Paths',
+  subtitle: 'Patterns for Read → Process → Write',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'You read from /data/raw/sales.csv and want to save results in /data/processed/sales.csv. Which pathlib approach is cleanest?',
+      options: [
+        'output = "/data/processed/" + p.name',
+        'output = Path("/data/processed") / p.name',
+        'output = p.replace("raw", "processed")',
+        'output = p.parent.parent / "processed" / p.name'
+      ],
+      answer: 1,
+      explanation: 'Path("/data/processed") / p.name joins the output directory with the same filename. Option D also works but requires knowing the depth. Option C uses string replace which is fragile if "raw" appears elsewhere in the path.'
+    },
+    {
+      type: 'fill',
+      before: 'To change a file extension from .csv to .parquet you can use p.with_',
+      after: '(".parquet").',
+      answer: 'suffix',
+      explanation: 'p.with_suffix(".parquet") returns a new Path with the extension replaced. For Path("data/sales.csv").with_suffix(".parquet") you get Path("data/sales.parquet"). The dot must be included.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You are processing many files and want to mirror the input directory structure under an output folder. What is the best approach?',
+      options: [
+        'Hardcode each output path manually',
+        'Use os.walk() on input, build the relative path from input root, then join with output root',
+        'Use shutil.copy() — it handles the structure automatically',
+        'Save everything flat in one output folder to keep it simple'
+      ],
+      answer: 1,
+      explanation: 'Walk the input tree, compute the relative path of each file (using Path.relative_to() or os.path.relpath()), then join that relative path with your output root. This mirrors the structure perfectly regardless of depth.'
+    },
+    {
+      type: 'tf',
+      prompt: 'p.with_name("summary.csv") replaces the filename (including extension) and returns a new Path object.',
+      answer: true,
+      explanation: 'with_name() swaps out the entire final component. Path("/data/2024/report.csv").with_name("summary.csv") gives Path("/data/2024/summary.csv"). The parent directory stays the same.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Before writing to an output path, you should always…',
+      options: [
+        'Delete the file if it exists first',
+        'Ensure the parent directory exists, creating it if necessary',
+        'Check that the input file is larger than 0 bytes',
+        'Ask the user for permission via input()'
+      ],
+      answer: 1,
+      explanation: 'Writing to a path whose parent does not exist raises FileNotFoundError. Always call output_path.parent.mkdir(parents=True, exist_ok=True) before writing. This is a fundamental pattern in any data pipeline.'
+    },
+    {
+      type: 'fill',
+      before: 'Path("/data/raw/jan.csv").relative_to("/data/raw") returns Path(',
+      after: ').',
+      answer: '"jan.csv"',
+      explanation: 'relative_to() strips the prefix and gives you just the relative part. This is key for mirroring directory structures: get the relative path from the input root, then join it with the output root.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is a common pattern for adding a timestamp suffix to an output filename?',
+      options: [
+        'p.name + datetime.now()',
+        'p.with_suffix(f"_{stamp}.csv") — but this replaces the extension',
+        'p.with_name(f"{p.stem}_{stamp}{p.suffix}")',
+        'p.parent / (p.stem + stamp)'
+      ],
+      answer: 2,
+      explanation: 'p.with_name(f"{p.stem}_{stamp}{p.suffix}") builds a new filename from parts: stem (no extension), underscore and timestamp, then the original extension. Result for p=report.csv, stamp=20240315: report_20240315.csv.'
+    },
+    {
+      type: 'tf',
+      prompt: 'It is good practice to overwrite the original input file with the processed output to save disk space.',
+      answer: false,
+      explanation: 'Overwriting originals is risky — if the script crashes mid-write, you lose data. Best practice is to write to a separate output location. Only delete or overwrite originals after confirming the output is correct.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You want to process /data/raw/2024/q1/sales.csv and write to /data/processed/2024/q1/sales.csv. Which correctly builds the output path?',
+      options: [
+        'Path("/data/processed") / p.name',
+        'Path("/data/processed") / p.relative_to("/data/raw")',
+        'p.replace("/data/raw", "/data/processed")',
+        'Path("/data/processed/" + str(p))'
+      ],
+      answer: 1,
+      explanation: 'p.relative_to("/data/raw") gives Path("2024/q1/sales.csv"). Joining that with Path("/data/processed") gives the correct output path with the full subdirectory structure preserved.'
+    },
+    {
+      type: 'tf',
+      prompt: 'Naming output files with a consistent convention (e.g. always adding "_processed") makes pipelines easier to debug and re-run.',
+      answer: true,
+      explanation: 'Clear naming conventions let you immediately see which files are raw vs processed, identify partial runs, and avoid accidentally using processed files as inputs to later stages. Consistency pays off when debugging at 2am.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

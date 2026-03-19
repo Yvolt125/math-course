@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pandas · Merging &amp; Joining</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1a252f; color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    .hdr-title { font-size: 0.82em; font-weight: 700; color: rgba(255,255,255,0.85); }
+    .hearts { font-size: 1.05em; letter-spacing: 2px; min-width: 60px; text-align: right; }
+    .progress-bar { height: 5px; background: #2c3e50; flex-shrink: 0; }
+    .progress-fill { height: 100%; background: #e67e22; transition: width .3s; }
+    .screen { flex: 1; display: none; flex-direction: column; }
+    .screen.active { display: flex; }
+    .center-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; gap: 14px; text-align: center; }
+    .big-icon { font-size: 3.2em; }
+    h2 { font-size: 1.25em; font-weight: 800; color: #2c3e50; }
+    .sub { font-size: 0.88em; color: #7f8c8d; max-width: 300px; line-height: 1.5; }
+    .btn-primary { padding: 14px 36px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+    .btn-secondary { padding: 12px 28px; background: #f0f2f5; color: #7f8c8d; border: none; border-radius: 14px; font-size: 0.88em; cursor: pointer; text-decoration: none; display: inline-block; }
+    #screen-q { padding: 18px 16px 24px; gap: 14px; align-items: stretch; }
+    .q-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; text-align: center; }
+    .q-prompt { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-top: 4px solid #e67e22; }
+    .prompt-code { font-family: Consolas, monospace; font-size: 0.92em; line-height: 1.6; white-space: pre; text-align: left; background: #1e2b38; color: #e8f0fe; border-radius: 8px; padding: 12px 16px; display: inline-block; max-width: 100%; overflow-x: auto; }
+    .prompt-text { font-size: 1.05em; font-weight: 700; color: #2c3e50; line-height: 1.4; }
+    .prompt-hint { font-size: 0.82em; color: #7f8c8d; margin-top: 8px; line-height: 1.4; }
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn { width: 100%; padding: 15px 18px; background: white; color: #2c3e50; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.88em; font-weight: 600; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; font-family: inherit; }
+    .choice-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .choice-btn:disabled { cursor: default; }
+    .choice-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .choice-btn.wrong   { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+    .choice-btn.reveal  { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .feedback { border-radius: 14px; padding: 14px 16px; display: none; flex-direction: column; gap: 4px; }
+    .feedback.correct { display: flex; background: #eafaf1; border: 2px solid #27ae60; }
+    .feedback.wrong   { display: flex; background: #fdedec; border: 2px solid #e74c3c; }
+    .fb-head { font-weight: 700; font-size: 0.9em; }
+    .feedback.correct .fb-head { color: #27ae60; }
+    .feedback.wrong   .fb-head { color: #e74c3c; }
+    .fb-body { font-size: 0.82em; color: #555; line-height: 1.5; }
+    .btn-continue { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; display: none; }
+    .btn-continue.visible { display: block; }
+    .stars { font-size: 2.4em; letter-spacing: 6px; }
+    .score-row { display: flex; gap: 24px; justify-content: center; }
+    .sc { text-align: center; }
+    .sc-num { font-size: 2em; font-weight: 800; color: #e67e22; }
+    .sc-lbl { font-size: 0.75em; color: #7f8c8d; margin-top: 2px; }
+    .fill-row { display: flex; gap: 10px; }
+    .fill-input { flex: 1; padding: 14px 16px; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.9em; font-family: inherit; outline: none; }
+    .fill-input:focus { border-color: #e67e22; }
+    .fill-input.correct { border-color: #27ae60; background: #eafaf1; }
+    .fill-input.wrong { border-color: #e74c3c; background: #fdedec; }
+    .fill-submit { padding: 14px 20px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.9em; font-weight: 700; cursor: pointer; }
+    .tf-btns { display: flex; gap: 12px; }
+    .tf-btn { flex: 1; padding: 18px; background: white; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; color: #2c3e50; transition: border-color .15s, background .15s; }
+    .tf-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .tf-btn:disabled { cursor: default; }
+    .tf-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .tf-btn.wrong { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+  </style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Pandas</a>
+  <div class="hdr-title">Merging &amp; Joining</div>
+  <span class="hearts" id="hearts">❤️❤️❤️</span>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+<div class="screen active" id="screen-start">
+  <div class="center-box">
+    <div class="big-icon">🔗</div>
+    <h2>Merging &amp; Joining</h2>
+    <p class="sub">10 questions · 3 lives · merge, concat, join types, keys</p>
+    <button class="btn-primary" onclick="startLesson()">Begin</button>
+    <a class="btn-secondary" href="index.html">Back</a>
+  </div>
+</div>
+<div class="screen" id="screen-q">
+  <div class="q-label" id="q-label"></div>
+  <div class="q-prompt" id="q-prompt"></div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback">
+    <div class="fb-head" id="fb-head"></div>
+    <div class="fb-body" id="fb-body"></div>
+  </div>
+  <button class="btn-continue" id="btn-continue" onclick="nextQuestion()">Continue →</button>
+</div>
+<div class="screen" id="screen-finish">
+  <div class="center-box">
+    <div class="stars" id="finish-stars">⭐⭐⭐</div>
+    <h2>Lesson complete!</h2>
+    <div class="score-row">
+      <div class="sc"><div class="sc-num" id="fin-correct">0</div><div class="sc-lbl">Correct</div></div>
+      <div class="sc"><div class="sc-num" id="fin-wrong">0</div><div class="sc-lbl">Wrong</div></div>
+      <div class="sc"><div class="sc-num" id="fin-xp">0</div><div class="sc-lbl">XP</div></div>
+    </div>
+    <button class="btn-primary" onclick="startLesson()">Play Again</button>
+    <a class="btn-secondary" href="index.html">Back to Hub</a>
+  </div>
+</div>
+<script>
+const SESSION_SIZE = 10;
+const QUESTIONS = [
+  { label:"Key concept", prompt:"pd.merge(df1, df2, on='id') — what join type is the default?", isCode:false, options:["Inner join — keeps only rows with matching keys in both","Left join","Right join","Outer join"], answer:"Inner join — keeps only rows with matching keys in both", explain:"The default is how='inner'. Change with how='left', 'right', or 'outer'." },
+  { label:"Key concept", prompt:"pd.merge(df1, df2, on='id', how='left') — what does this keep?", isCode:false, options:["All rows from df1; NaN for columns from df2 where no match","Only matching rows","All rows from df2","All rows from both"], answer:"All rows from df1; NaN for columns from df2 where no match", explain:"Left join preserves the left DataFrame completely. Use this when df1 is your 'master' table." },
+  { label:"Key concept", prompt:"pd.merge(df1, df2, on='id', how='outer') — what does this return?", isCode:false, options:["All rows from both — NaN where there is no match on either side","Only matching rows","All left rows","All right rows"], answer:"All rows from both — NaN where there is no match on either side", explain:"Outer join is a full join — every row from both DataFrames appears, with NaN filling any gaps." },
+  { label:"What does this do?", prompt:"pd.concat([df1, df2])", isCode:true, options:["Stacks rows vertically — df2 appended below df1","Stacks columns horizontally","Merges on a shared key","Error"], answer:"Stacks rows vertically — df2 appended below df1", explain:"concat default axis=0 stacks rows. Both DataFrames should have the same columns for this to be meaningful." },
+  { label:"What does this do?", prompt:"pd.concat([df1, df2], axis=1)", isCode:true, options:["Stacks columns side by side (horizontal concatenation)","Stacks rows","Merges on shared key","Error"], answer:"Stacks columns side by side (horizontal concatenation)", explain:"axis=1 aligns on the row index. Use this to combine DataFrames that describe the same rows from different sources." },
+  { label:"Key concept", prompt:"What does suffixes=('_left', '_right') do in pd.merge()?", isCode:false, options:["Renames overlapping column names that aren't the join key","Adds suffixes to all columns","Error","Adds suffixes to the index"], answer:"Renames overlapping column names that aren't the join key", explain:"If both DataFrames have a 'name' column that isn't the join key, the result gets 'name_left' and 'name_right'." },
+  { label:"What does this do?", prompt:"pd.merge(orders, customers,\n         left_on='cust_id',\n         right_on='customer_id')", isCode:true, options:["Merges on different column names from each DataFrame","Error — keys must have same name","Merges on both keys simultaneously","Creates two key columns"], answer:"Merges on different column names from each DataFrame", explain:"left_on/right_on lets you join tables where the key column has different names in each DataFrame." },
+  { label:"Key concept", prompt:"When should you use pd.concat instead of pd.merge?", isCode:false, options:["When you want to stack DataFrames with the same structure (no key needed)","Always use merge instead","When you want an inner join","When merging on index"], answer:"When you want to stack DataFrames with the same structure (no key needed)", explain:"Concat is for stacking (appending rows or columns). Merge is for relational joins based on key columns." },
+  { label:"Key concept", prompt:"What does an inner join return?", isCode:false, options:["Only rows where the key exists in BOTH DataFrames","All rows from the left","All rows from both","Only rows unique to each side"], answer:"Only rows where the key exists in BOTH DataFrames", explain:"Inner join = intersection. Rows with keys that don't appear in both tables are dropped." },
+  { label:"Key concept", prompt:"validate='one_to_one' in pd.merge() does what?", isCode:false, options:["Raises an error if the merge keys are not unique in both DataFrames","Required for all merges","Validates that the output has one row","Checks for NaN keys"], answer:"Raises an error if the merge keys are not unique in both DataFrames", explain:"validate catches data quality bugs early. '1:m' checks left is unique; 'm:1' checks right is unique." },
+  { label:"What does this do?", prompt:"pd.concat([df1, df2], ignore_index=True)", isCode:true, options:["Resets the row index to 0, 1, 2, ... in the combined result","Ignores matching rows","Error","Drops the index column"], answer:"Resets the row index to 0, 1, 2, ... in the combined result", explain:"Without ignore_index, the original indices are preserved, which can cause duplicate index values." },
+  { label:"Key concept", prompt:"df1.join(df2) — what does it join on by default?", isCode:false, options:["The row index of both DataFrames","Column 'id'","The first column","Nothing — you must specify on="], answer:"The row index of both DataFrames", explain:"join() aligns on the index by default. Use df1.join(df2, on='col') to join df1's column to df2's index." },
+  { label:"Key concept", prompt:"A many-to-many merge can result in how many rows compared to the inputs?", isCode:false, options:["More rows than either input — every matching pair is expanded","Exactly as many rows as the left","Fewer rows always","Raises an error always"], answer:"More rows than either input — every matching pair is expanded", explain:"If customer 1 has 3 orders and matches 2 products, the result has 6 rows. This is called a Cartesian product effect." },
+  { label:"Key concept", prompt:"pd.merge(df1, df2, on='id', left_index=True, right_index=True) — what does this mean?", isCode:false, options:["Merge on the row index of both DataFrames","Error — conflicting parameters","Merge using both id column and index","Use only left index"], answer:"Merge on the row index of both DataFrames", explain:"left_index=True and right_index=True tells merge to use the DataFrame index as the key for both sides." }
+  ,
+  { type: 'tf', label: "True or False", prompt: "pd.merge performs an inner join by default.", isCode: false, answer: "True", explain: "The default how='inner' keeps only rows where the key exists in both DataFrames." },
+  { type: 'tf', label: "True or False", prompt: "pd.concat stacks DataFrames either row-wise or column-wise.", isCode: false, answer: "True", explain: "axis=0 (default) stacks rows; axis=1 stacks columns side by side." },
+  { type: 'tf', label: "True or False", prompt: "An outer join returns only rows that match in both DataFrames.", isCode: false, answer: "False", explain: "Outer join returns ALL rows from both sides, filling unmatched positions with NaN." },
+  { type: 'fill', label: "Short answer", prompt: "Which merge type keeps all rows from the left DataFrame, with NaN for non-matches on the right?", isCode: false, answer: "left", explain: "how='left' keeps every left row; unmatched right-side values become NaN." },
+  { type: 'fill', label: "Fill in the blank", prompt: "pd.merge(df1, df2, on='id', how='___')   # keep all rows from both sides", isCode: true, answer: "outer", explain: "how='outer' is a full outer join — all rows from both DataFrames, NaN where there is no match." },
+  { type: 'fill', label: "Short answer", prompt: "Which pandas function stacks multiple DataFrames vertically (or horizontally with axis=1)?", isCode: false, answer: "concat", explain: "pd.concat([df1, df2]) stacks rows by default. Use axis=1 for column stacking." }
+];
+let questions=[], qIndex=0, hearts=3, correctCount=0, wrongCount=0, answered=false, currentQ=null;
+function startLesson() {
+  questions = shuffle([...QUESTIONS]).slice(0, SESSION_SIZE).map(q => ({...q, options: q.options ? shuffle([...q.options]) : q.options}));
+  qIndex=0; hearts=3; correctCount=0; wrongCount=0;
+  updateHearts(); updateProgress(); showScreen('screen-q'); showQuestion();
+}
+function showQuestion() {
+  if (qIndex >= questions.length || hearts <= 0) { showFinish(); return; }
+  currentQ = questions[qIndex]; answered = false;
+  document.getElementById('q-label').textContent = currentQ.label;
+  const p = document.getElementById('q-prompt');
+  p.innerHTML = (currentQ.isCode ? '<div class="prompt-code">'+escHtml(currentQ.prompt)+'</div>' : '<div class="prompt-text">'+escHtml(currentQ.prompt)+'</div>') + (currentQ.hint?'<div class="prompt-hint">'+currentQ.hint+'</div>':'');
+  const ch = document.getElementById('choices');
+  if (!currentQ.type || currentQ.type === 'mcq') {
+    ch.innerHTML = currentQ.options.map((opt,i) =>
+      '<button class="choice-btn" id="c'+i+'" onclick="choose('+i+')">' + escHtml(opt) + '</button>'
+    ).join('');
+  } else if (currentQ.type === 'tf') {
+    ch.innerHTML = '<div class="tf-btns"><button class="tf-btn" id="tf-true" onclick="chooseTF(\'True\')">True</button><button class="tf-btn" id="tf-false" onclick="chooseTF(\'False\')">False</button></div>';
+  } else if (currentQ.type === 'fill') {
+    ch.innerHTML = '<div class="fill-row"><input class="fill-input" id="fill-inp" type="text" placeholder="Type your answer\u2026" onkeydown="if(event.key===\'Enter\')submitFill()"><button class="fill-submit" onclick="submitFill()">Check</button></div>';
+    setTimeout(function(){ var el=document.getElementById('fill-inp'); if(el) el.focus(); }, 50);
+  }
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btn-continue').classList.remove('visible');
+  updateProgress();
+}
+function choose(i) {
+  if (answered) return;
+  answered = true;
+  const chosen = currentQ.options[i];
+  const isRight = chosen === currentQ.answer;
+  currentQ.options.forEach((_,j) => {
+    const b = document.getElementById('c'+j);
+    b.disabled = true;
+    if (currentQ.options[j] === currentQ.answer) b.classList.add('reveal');
+  });
+  if (!isRight) document.getElementById('c'+i).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function chooseTF(val) {
+  if (answered) return;
+  answered = true;
+  const isRight = val === currentQ.answer;
+  ['True','False'].forEach(function(v) {
+    const b = document.getElementById('tf-'+v.toLowerCase());
+    b.disabled = true;
+    if (v === currentQ.answer) b.classList.add('correct');
+  });
+  if (!isRight) document.getElementById('tf-'+val.toLowerCase()).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function submitFill() {
+  if (answered) return;
+  const inp = document.getElementById('fill-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) return;
+  answered = true;
+  const isRight = val.toLowerCase() === currentQ.answer.toLowerCase();
+  inp.disabled = true;
+  inp.classList.add(isRight ? 'correct' : 'wrong');
+  const sb = document.querySelector('.fill-submit');
+  if (sb) sb.disabled = true;
+  showFeedback(isRight);
+}
+
+function showFeedback(isRight) {
+  const fb = document.getElementById('feedback');
+  document.getElementById('fb-head').textContent = isRight ? 'Correct!' : 'Not quite';
+  document.getElementById('fb-body').textContent = currentQ.explain;
+  fb.className = 'feedback ' + (isRight ? 'correct' : 'wrong');
+  if (isRight) correctCount++; else { wrongCount++; hearts = Math.max(0,hearts-1); updateHearts(); }
+  document.getElementById('btn-continue').classList.add('visible');
+  qIndex++;
+}
+function nextQuestion() { if(hearts<=0||qIndex>=questions.length)showFinish(); else showQuestion(); }
+function showFinish() {
+  const pct=correctCount/Math.max(1,correctCount+wrongCount);
+  document.getElementById('finish-stars').textContent=pct>=0.9?'⭐⭐⭐':pct>=0.7?'⭐⭐':'⭐';
+  document.getElementById('fin-correct').textContent=correctCount;
+  document.getElementById('fin-wrong').textContent=wrongCount;
+  document.getElementById('fin-xp').textContent=correctCount*10;
+  showScreen('screen-finish');
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateHearts(){document.getElementById('hearts').textContent='❤️'.repeat(hearts)+'🖤'.repeat(3-hearts);}
+function updateProgress(){document.getElementById('prog-fill').style.width=(qIndex/SESSION_SIZE*100)+'%';}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

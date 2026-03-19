@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: CSV Files</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u3s2',
+  title: 'CSV Files',
+  subtitle: 'csv.reader · DictReader · Writing',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'Why use the csv module instead of splitting lines by comma manually?',
+      options: [
+        'csv.reader is faster',
+        'csv.reader correctly handles quoted fields that contain commas and newlines',
+        'Manual splitting works fine for all CSV files',
+        'The csv module compresses the file automatically'
+      ],
+      answer: 1,
+      explanation: 'A value like "Smith, John" or "line1\\nline2" is valid CSV — the comma and newline are inside quotes. Splitting on "," naively breaks these. csv.reader follows the RFC 4180 standard and handles all edge cases.'
+    },
+    {
+      type: 'fill',
+      before: 'import ',
+      after: ' is the standard library module for reading and writing CSV files.',
+      answer: 'csv',
+      explanation: 'Python ships with the csv module — no installation needed. It provides csv.reader, csv.DictReader, csv.writer, and csv.DictWriter for all common CSV operations.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does csv.reader return for each row?',
+      options: [
+        'A dictionary with column names as keys',
+        'A list of strings — one per field in the row',
+        'A tuple of typed values (int, float, str)',
+        'A single string with fields separated by tabs'
+      ],
+      answer: 1,
+      explanation: 'csv.reader yields each row as a list of strings. Values are never automatically converted to int or float — you must cast them explicitly. csv.DictReader yields each row as an OrderedDict/dict using the header row as keys.'
+    },
+    {
+      type: 'tf',
+      prompt: 'When opening a CSV file for csv.reader on Windows, you should pass newline="" to open().',
+      answer: true,
+      explanation: 'Without newline="", Python\'s universal newline translation can interfere with the csv module\'s own newline handling, producing extra blank rows. Always use open("file.csv", "r", newline="", encoding="utf-8").'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the main advantage of csv.DictReader over csv.reader?',
+      options: [
+        'DictReader is faster',
+        'DictReader uses the header row as keys so you access fields by name instead of index',
+        'DictReader automatically converts numbers to int/float',
+        'DictReader can handle larger files'
+      ],
+      answer: 1,
+      explanation: 'With csv.reader you write row[2] to get the third column. With csv.DictReader you write row["price"] — far more readable and robust to column reordering. The first row is consumed as the header automatically.'
+    },
+    {
+      type: 'fill',
+      before: 'To write CSV data, use csv.',
+      after: '(f) and call its writerow() method.',
+      answer: 'writer',
+      explanation: 'csv.writer(f) creates a writer object. Call writer.writerow(["a","b","c"]) for one row, or writer.writerows(list_of_rows) for many. It handles quoting automatically.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which is the correct way to read a CSV file with a semicolon delimiter?',
+      options: [
+        'csv.reader(f, delimiter=";")',
+        'csv.reader(f, sep=";")',
+        'csv.reader(f, separator=";")',
+        'csv.semiread(f)'
+      ],
+      answer: 0,
+      explanation: 'The delimiter parameter controls the field separator. Common non-comma delimiters: ";" (European CSVs), "\\t" (TSV files), "|" (pipe-delimited). Both csv.reader and csv.writer accept this parameter.'
+    },
+    {
+      type: 'tf',
+      prompt: 'csv.DictWriter requires you to specify the fieldnames (column headers) before writing.',
+      answer: true,
+      explanation: 'You must pass fieldnames=["col1","col2",...] when creating DictWriter. Then call writer.writeheader() to write the header row, followed by writer.writerow({"col1": val, ...}) for each data row.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You need to read a CSV and sum the "amount" column. What is the correct approach?',
+      options: [
+        'total = sum(row["amount"] for row in reader)',
+        'total = sum(float(row["amount"]) for row in reader)',
+        'total = sum(row[2] for row in reader)',
+        'total = reader["amount"].sum()'
+      ],
+      answer: 1,
+      explanation: 'csv.DictReader gives strings, so row["amount"] is "42.5" not 42.5. You must cast: float(row["amount"]). Option A would try to sum strings and fail. For data analysis with many columns, pandas is usually easier.'
+    },
+    {
+      type: 'tf',
+      prompt: 'For serious data analysis work, pandas pd.read_csv() is generally more convenient than the csv module.',
+      answer: true,
+      explanation: 'pd.read_csv() automatically infers types, handles encoding, allows column selection, and returns a DataFrame for analysis. The csv module is best when pandas is not available or when you need a lightweight approach without dependencies.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

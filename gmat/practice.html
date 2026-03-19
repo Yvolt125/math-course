@@ -20,8 +20,9 @@
         .sep { color: rgba(255,255,255,0.2); }
         .test-logo { font-size: 0.75em; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.85); }
         .section-label { flex: 1; text-align: center; font-size: 0.8em; color: rgba(255,255,255,0.6); letter-spacing: 1px; }
-        .timer { font-family: 'Courier New', monospace; font-size: 0.9em; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 5px; color: white; cursor: pointer; min-width: 64px; text-align: center; user-select: none; }
-        .timer.paused { opacity: 0.45; }
+        .timer { font-family: 'Courier New', monospace; font-size: 0.9em; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 5px; color: white; cursor: pointer; min-width: 64px; text-align: center; user-select: none; transition: opacity 0.2s; }
+        .timer.idle   { opacity: 0.35; letter-spacing: 1px; }
+        .timer.paused { opacity: 0.5; }
         .timer-label { font-size: 0.72em; color: rgba(255,255,255,0.45); margin-right: 2px; }
 
         /* Filter bar */
@@ -178,6 +179,76 @@
         .btn-clear-log { padding: 7px 14px; border-radius: 7px; border: 1.5px solid #e74c3c; background: white; color: #c0392b; font-size: 0.8em; font-weight: 600; cursor: pointer; }
         .btn-clear-log:hover { background: #fdf2f2; }
 
+        /* New feature styles */
+        .hdr-icon-btn { background:none; border:none; cursor:pointer; font-size:0.75em; color:rgba(255,255,255,0.5); padding:4px 8px; border-radius:4px; }
+        .hdr-icon-btn:hover { color:white; }
+        .due-badge { background:#e74c3c; color:white; border-radius:8px; padding:1px 6px; font-size:0.75em; font-weight:700; margin-left:3px; display:inline-block; line-height:1.5; vertical-align:middle; }
+        .mode-banner { background:#8e44ad; color:white; padding:7px 16px; font-size:0.8em; font-weight:700; flex-shrink:0; display:none; align-items:center; justify-content:center; gap:10px; }
+        .mode-banner.show { display:flex; }
+        .mode-end-btn { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.5); color:white; border-radius:6px; padding:3px 10px; font-size:0.9em; cursor:pointer; }
+        .mode-end-btn:hover { background:rgba(255,255,255,0.35); }
+        .set-open-btn { padding:5px 10px; border-radius:5px; border:1.5px solid #27ae60; font-size:0.75em; font-weight:700; cursor:pointer; background:white; color:#27ae60; margin-left:4px; }
+        .set-open-btn:hover { background:#eafaf1; }
+        .set-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1001; align-items:center; justify-content:center; }
+        .set-modal-bg.open { display:flex; }
+        .set-modal { background:white; border-radius:14px; width:min(420px,94vw); padding:22px; box-shadow:0 8px 40px rgba(0,0,0,0.25); }
+        .set-modal h2 { font-size:1em; font-weight:800; color:#2c3e50; margin-bottom:16px; }
+        .set-row { margin-bottom:12px; }
+        .set-label { font-size:0.72em; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#7f8c8d; margin-bottom:6px; }
+        .set-chips { display:flex; gap:6px; flex-wrap:wrap; }
+        .set-chip { padding:7px 13px; border:1.5px solid #dde3ea; border-radius:8px; background:white; font-size:0.83em; font-weight:600; cursor:pointer; color:#2c3e50; }
+        .set-chip.active { border-color:#2c3e50; background:#2c3e50; color:white; }
+        .set-pool-info { font-size:0.77em; color:#7f8c8d; margin:6px 0 10px; }
+        .set-start-btn { width:100%; padding:12px; background:#27ae60; color:white; border:none; border-radius:10px; font-size:0.92em; font-weight:700; cursor:pointer; margin-top:4px; }
+        .set-start-btn:disabled { background:#bdc3c7; cursor:default; }
+        .set-start-btn:not(:disabled):hover { background:#219a52; }
+        .set-cancel-btn { width:100%; padding:9px; background:white; color:#7f8c8d; border:1.5px solid #dde3ea; border-radius:10px; font-size:0.85em; font-weight:600; cursor:pointer; margin-top:6px; }
+        .stats-bg { display:none; position:fixed; inset:0; background:#f0f2f5; z-index:1002; flex-direction:column; }
+        .stats-bg.open { display:flex; }
+        .stats-hdr { background:#1a252f; color:white; padding:13px 18px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+        .stats-hdr h2 { flex:1; font-size:0.95em; font-weight:700; letter-spacing:1px; margin:0; }
+        .stats-close { background:none; border:none; color:rgba(255,255,255,0.65); font-size:1.4em; cursor:pointer; line-height:1; }
+        .stats-close:hover { color:white; }
+        .stats-tabs-bar { background:white; border-bottom:1px solid #dde3ea; display:flex; flex-shrink:0; }
+        .stats-tab-btn { flex:1; padding:12px 8px; border:none; background:transparent; font-size:0.82em; font-weight:700; color:#7f8c8d; cursor:pointer; border-bottom:3px solid transparent; }
+        .stats-tab-btn.active { color:#2c3e50; border-bottom-color:#2c3e50; }
+        .stats-body { flex:1; overflow-y:auto; padding:16px; }
+        .stats-tab-panel { display:none; }
+        .stats-tab-panel.active { display:block; }
+        .stat-cards { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+        .stat-card { background:white; border-radius:10px; padding:13px 16px; flex:1; min-width:80px; box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center; }
+        .stat-card-val { font-size:1.5em; font-weight:800; color:#2c3e50; }
+        .stat-card-lbl { font-size:0.68em; color:#7f8c8d; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+        .stats-tbl { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); font-size:0.81em; }
+        .stats-tbl th { background:#f8f9fa; padding:9px 11px; text-align:left; font-size:0.72em; text-transform:uppercase; letter-spacing:1px; color:#7f8c8d; font-weight:700; border-bottom:1px solid #e1e8ed; }
+        .stats-tbl td { padding:9px 11px; border-bottom:1px solid #f0f2f5; color:#2c3e50; }
+        .stats-tbl tr:last-child td { border-bottom:none; }
+        .stats-tbl tr:hover td { background:#f8f9fa; cursor:pointer; }
+        .stats-tbl .c-wrong { color:#e74c3c; font-weight:700; }
+        .stats-tbl .c-good  { color:#27ae60; font-weight:700; }
+        .review-start-btn { display:block; width:100%; padding:13px; background:#8e44ad; color:white; border:none; border-radius:10px; font-size:0.92em; font-weight:700; cursor:pointer; margin-bottom:16px; }
+        .review-start-btn:hover:not(:disabled) { background:#7d3c98; }
+        .review-start-btn:disabled { background:#bdc3c7; cursor:default; }
+        .due-group-lbl { font-size:0.7em; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#7f8c8d; margin:14px 0 6px; }
+        .due-item { background:white; border-radius:8px; padding:10px 13px; margin-bottom:5px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; }
+        .due-item:hover { background:#f0f7ff; }
+        .due-item-info { flex:1; min-width:0; }
+        .due-item-topic { font-size:0.78em; font-weight:700; color:#2c3e50; }
+        .due-item-stem  { font-size:0.73em; color:#7f8c8d; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .due-badge-pill { font-size:0.7em; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+        .due-badge-pill.over  { background:#fdecea; color:#e74c3c; }
+        .due-badge-pill.today { background:#fef9e7; color:#f39c12; }
+        .due-badge-pill.soon  { background:#eafaf1; color:#27ae60; }
+        .stats-empty { text-align:center; color:#aab7c4; padding:40px 0; font-size:0.88em; }
+
+        /* Set complete screen */
+        .set-complete { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#2c3e50; text-align:center; padding:40px; background:white; }
+        .set-complete-icon { font-size:3em; margin-bottom:16px; }
+        .set-complete-title { font-size:1.3em; font-weight:800; margin-bottom:8px; }
+        .set-complete-sub { font-size:0.88em; color:#7f8c8d; margin-bottom:24px; line-height:1.7; }
+        .set-complete-btn { padding:11px 28px; background:#27ae60; color:white; border:none; border-radius:10px; font-size:0.9em; font-weight:700; cursor:pointer; }
+        .set-complete-btn:hover { background:#219a52; }
+
         /* Mobile question strip */
         .mobile-strip { display: none; }
         @media (max-width: 640px) {
@@ -203,9 +274,9 @@
     <span class="sep">|</span>
     <span class="test-logo">Practice</span>
     <div class="section-label" id="section-label">All Sections</div>
-    <button onclick="showErrorLog()" style="background:none;border:none;cursor:pointer;font-size:0.75em;color:rgba(255,255,255,0.5);padding:4px 8px;border-radius:4px;" title="View error log" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Error Log</button>
-    <span class="timer-label">⏱</span>
-    <div class="timer" id="timer" onclick="toggleTimer()" title="Click to pause / resume">00:00</div>
+    <button class="hdr-icon-btn" onclick="openStatsModal()" title="Stats &amp; Review">📊 Stats</button>
+    <button class="hdr-icon-btn" id="due-btn" onclick="startReviewSession()" title="Due for Review">📅 Review<span class="due-badge" id="due-badge" style="display:none">0</span></button>
+    <div class="timer idle" id="timer" onclick="toggleTimer()" title="Click to start timing">▶ 00:00</div>
 </div>
 
 <div class="filter-bar">
@@ -239,6 +310,13 @@
         <button class="diff-btn" onclick="setDiff(this,'medium')">Medium</button>
         <button class="diff-btn" onclick="setDiff(this,'hard')">Hard</button>
     </div>
+    <button class="set-open-btn" onclick="openSetModal()">🎯 Set</button>
+</div>
+
+<!-- Mode banner -->
+<div class="mode-banner" id="mode-banner">
+    <span id="mode-banner-text"></span>
+    <button class="mode-end-btn" onclick="endSession()">End Session</button>
 </div>
 
 <div class="mobile-strip" id="mobile-strip"></div>
@@ -265,10 +343,11 @@
 
 <div class="test-footer">
     <button class="fbt flag"       id="btn-flag"   onclick="toggleFlag()"   disabled>🚩 Flag</button>
-    <button class="fbt report-err" id="btn-report" onclick="reportError()"  disabled title="Report a problem with this question">Log Error</button>
+    <button class="fbt report-err" id="btn-report" onclick="reportError()"  disabled title="Report a problem with this question">Report</button>
     <button class="fbt"            id="btn-back"   onclick="navigate(-1)"   disabled>← Back</button>
     <div class="counter" id="counter">Select a section above</div>
     <button class="fbt submit" id="btn-submit" onclick="submitAnswer()" style="display:none" disabled>Submit</button>
+    <button class="fbt"        id="btn-reset"  onclick="resetAnswer()"  style="display:none">↺ Retry</button>
     <button class="fbt primary" id="btn-next"  onclick="navigate(1)"    disabled>Next →</button>
 </div>
 
@@ -283,6 +362,79 @@
         <div class="modal-foot">
             <button class="btn-clear-log" onclick="clearErrorLog()">Clear All</button>
         </div>
+    </div>
+</div>
+
+<!-- Set Modal -->
+<div class="set-modal-bg" id="set-modal-bg" onclick="closeSetModalOutside(event)">
+    <div class="set-modal">
+        <h2>🎯 Practice Set</h2>
+        <div class="set-row">
+            <div class="set-label">Count</div>
+            <div class="set-chips" id="set-count-chips">
+                <div class="set-chip active" data-val="10" onclick="setChipClick(this,'count')">10</div>
+                <div class="set-chip" data-val="20" onclick="setChipClick(this,'count')">20</div>
+                <div class="set-chip" data-val="30" onclick="setChipClick(this,'count')">30</div>
+                <div class="set-chip" data-val="all" onclick="setChipClick(this,'count')">All</div>
+                <div class="set-chip" data-val="custom" onclick="setChipClick(this,'count')">Custom</div>
+            </div>
+            <input type="number" id="set-custom-input" min="1" max="999" placeholder="e.g. 15"
+                style="display:none;margin-top:8px;width:100%;padding:7px 10px;border:1.5px solid #dde3ea;border-radius:8px;font-size:0.9em;font-family:inherit;"
+                oninput="updateSetPoolInfo()">
+        </div>
+        <div class="set-row">
+            <div class="set-label">Pool</div>
+            <div class="set-chips" id="set-pool-chips">
+                <div class="set-chip active" data-val="all" onclick="setChipClick(this,'pool')">All Questions</div>
+                <div class="set-chip" data-val="notmastered" onclick="setChipClick(this,'pool')">Not Mastered</div>
+                <div class="set-chip" data-val="due" onclick="setChipClick(this,'pool')">Due for Review</div>
+            </div>
+        </div>
+        <div class="set-row">
+            <div class="set-label">Section</div>
+            <select class="fsel" id="set-section" onchange="onSetSectionChange()" style="width:100%">
+                <option value="all">All Sections</option>
+                <option value="verbal">Verbal</option>
+                <option value="quant">Quantitative</option>
+                <option value="di">Data Insights</option>
+            </select>
+        </div>
+        <div class="set-row">
+            <div class="set-label">Topic</div>
+            <select class="fsel" id="set-topic" onchange="updateSetPoolInfo()" style="width:100%">
+                <option value="all">All Topics</option>
+            </select>
+        </div>
+        <div class="set-row">
+            <div class="set-label">Status</div>
+            <select class="fsel" id="set-status" onchange="updateSetPoolInfo()" style="width:100%">
+                <option value="all">All</option>
+                <option value="unanswered">Unanswered</option>
+                <option value="correct">Correct</option>
+                <option value="incorrect">Incorrect</option>
+            </select>
+        </div>
+        <div class="set-pool-info" id="set-pool-info">Loading…</div>
+        <button class="set-start-btn" id="set-start-btn" onclick="startSet()">Start</button>
+        <button class="set-cancel-btn" onclick="closeSetModal()">Cancel</button>
+    </div>
+</div>
+
+<!-- Stats Modal (full-screen) -->
+<div class="stats-bg" id="stats-bg">
+    <div class="stats-hdr">
+        <h2>📊 Stats &amp; Review</h2>
+        <button class="stats-close" onclick="closeStatsModal()">✕</button>
+    </div>
+    <div class="stats-tabs-bar">
+        <button class="stats-tab-btn active" onclick="statsTab(this,'errors')">Errors</button>
+        <button class="stats-tab-btn" onclick="statsTab(this,'activity')">Activity</button>
+        <button class="stats-tab-btn" onclick="statsTab(this,'review')">Review Queue</button>
+    </div>
+    <div class="stats-body">
+        <div class="stats-tab-panel active" id="stats-panel-errors"></div>
+        <div class="stats-tab-panel" id="stats-panel-activity"></div>
+        <div class="stats-tab-panel" id="stats-panel-review"></div>
     </div>
 </div>
 
@@ -368,9 +520,10 @@ const TOPIC_MAP = {
 const SECTION_NAMES = { all:'All Sections', verbal:'Verbal Reasoning', quant:'Quantitative Reasoning', di:'Data Insights' };
 
 // ─── Persistence keys ────────────────────────────────────────────────────────
-const LS_ANSWERS = 'gmat_practice_answers';
-const LS_FLAGGED = 'gmat_practice_flagged';
-const LS_ERRORS  = 'gmat_error_log';
+const LS_ANSWERS  = 'gmat_practice_answers';
+const LS_FLAGGED  = 'gmat_practice_flagged';
+const LS_ERRORS   = 'gmat_error_log';
+const LS_QSTATS   = 'gmat_qstats';
 
 function saveState() {
   try {
@@ -379,14 +532,149 @@ function saveState() {
   } catch(e) {}
 }
 
+function loadQStats() {
+  try { return JSON.parse(localStorage.getItem(LS_QSTATS) || '{}'); } catch(e) { return {}; }
+}
+function saveQStats(qs) {
+  try { localStorage.setItem(LS_QSTATS, JSON.stringify(qs)); } catch(e) {}
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let filteredQs = [], currentIdx = 0;
 let answers = {};
 let flagged = new Set();
 try { answers = JSON.parse(localStorage.getItem(LS_ANSWERS) || '{}'); } catch(e) {}
 try { flagged = new Set(JSON.parse(localStorage.getItem(LS_FLAGGED) || '[]')); } catch(e) {}
-let activeDiff = 'all', timerSecs = 0, timerOn = false, timerHandle = null;
+let activeDiff = 'all', timerPaused = false, timerHandle = null, qTimerSecs = 0, timerStarted = false;
 let tpaSel = [null, null], ynSel = [], ddSel = [];
+
+// ─── Session / set mode ───────────────────────────────────────────────────────
+// mode: null | 'review' | 'set'
+let sessionMode = null;
+let sessionQs   = [];   // question list for current session
+let sessionIdx  = 0;    // index within session
+let setCorrect  = 0;
+let setWrong    = 0;
+
+// ─── SRS intervals (days) ────────────────────────────────────────────────────
+const SRS_INTERVALS = [1, 3, 7, 14, 30];
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function daysFromNow(daysOffset) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysBetween(dateStr) {
+  // positive = in future, negative = overdue
+  const now  = new Date(todayStr());
+  const due  = new Date(dateStr);
+  return Math.round((due - now) / 86400000);
+}
+
+function getDueCount() {
+  const qstats = loadQStats();
+  const today  = todayStr();
+  let count = 0;
+  for (const stat of Object.values(qstats)) {
+    if (stat.nextDue && stat.nextDue <= today) count++;
+  }
+  return count;
+}
+
+function updateDueBadge() {
+  const count = getDueCount();
+  const badge = document.getElementById('due-badge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function updateQStat(qid, correct, timeSecs) {
+  const qstats = loadQStats();
+  const today  = todayStr();
+  if (!qstats[qid]) {
+    qstats[qid] = { attempts:0, correct:0, wrong:0, times:[], nextDue:null, interval:1, streak:0, lastAttempt:null, lastResult:null };
+  }
+  const s = qstats[qid];
+  s.attempts++;
+  if (timeSecs !== null) s.times.push(timeSecs);
+  s.lastAttempt = today;
+  if (correct) {
+    s.correct++;
+    s.streak++;
+    s.lastResult = 'correct';
+    // Advance interval along SRS scale
+    const curIdx = SRS_INTERVALS.indexOf(s.interval);
+    if (curIdx === -1 || curIdx >= SRS_INTERVALS.length - 1) {
+      s.interval = SRS_INTERVALS[SRS_INTERVALS.length - 1];
+    } else {
+      s.interval = SRS_INTERVALS[curIdx + 1];
+    }
+  } else {
+    s.wrong++;
+    s.streak = 0;
+    s.lastResult = 'wrong';
+    s.interval = SRS_INTERVALS[0]; // reset to 1 day
+  }
+  s.nextDue = daysFromNow(s.interval);
+  saveQStats(qstats);
+}
+
+// ─── Per-question timer ───────────────────────────────────────────────────────
+function resetQTimer() {
+  clearInterval(timerHandle);
+  timerHandle = null;
+  qTimerSecs = 0;
+  timerStarted = false;
+  timerPaused = false;
+  const el = document.getElementById('timer');
+  el.textContent = '▶ 00:00';
+  el.className = 'timer idle';
+  el.title = 'Click to start timing';
+}
+
+function toggleTimer() {
+  const el = document.getElementById('timer');
+  if (!timerStarted) {
+    // First click — start the timer
+    timerStarted = true;
+    timerPaused = false;
+    el.className = 'timer';
+    el.title = 'Click to pause';
+    timerHandle = setInterval(() => {
+      qTimerSecs++;
+      const m = String(Math.floor(qTimerSecs / 60)).padStart(2, '0');
+      const s = String(qTimerSecs % 60).padStart(2, '0');
+      el.textContent = m + ':' + s;
+    }, 1000);
+  } else {
+    // Subsequent clicks — pause / resume
+    timerPaused = !timerPaused;
+    if (timerPaused) {
+      clearInterval(timerHandle);
+      timerHandle = null;
+      el.classList.add('paused');
+      el.title = 'Click to resume';
+    } else {
+      el.classList.remove('paused');
+      el.title = 'Click to pause';
+      timerHandle = setInterval(() => {
+        qTimerSecs++;
+        const m = String(Math.floor(qTimerSecs / 60)).padStart(2, '0');
+        const s = String(qTimerSecs % 60).padStart(2, '0');
+        el.textContent = m + ':' + s;
+      }, 1000);
+    }
+  }
+}
 
 // ─── Filters ─────────────────────────────────────────────────────────────────
 function onSectionChange() {
@@ -403,6 +691,8 @@ function onSectionChange() {
 }
 
 function applyFilters() {
+  // Don't apply filters while in a session mode — session manages its own question list
+  if (sessionMode) return;
   const sec    = document.getElementById('sel-section').value;
   const topic  = document.getElementById('sel-topic').value;
   const status = document.getElementById('sel-status').value;
@@ -424,7 +714,6 @@ function applyFilters() {
   currentIdx = 0;
   buildGrid(filteredQs);
   goTo(0);
-  if (!timerOn) startTimer();
 }
 
 function setDiff(btn, d) {
@@ -479,15 +768,24 @@ function refreshGrid() {
 // ─── Navigation ──────────────────────────────────────────────────────────────
 function navigate(dir) { const n = currentIdx + dir; if (n >= 0 && n < filteredQs.length) goTo(n); }
 
-function goTo(i) { currentIdx = i; renderQ(i); updateFooter(i); refreshGrid(); }
+function goTo(i) {
+  currentIdx = i;
+  resetQTimer();
+  renderQ(i);
+  updateFooter(i);
+  refreshGrid();
+  updateModeBanner();
+}
 
 function updateFooter(i) {
   const back   = document.getElementById('btn-back'),   next   = document.getElementById('btn-next');
   const flag   = document.getElementById('btn-flag'),   submit = document.getElementById('btn-submit');
   const report = document.getElementById('btn-report'), ctr    = document.getElementById('counter');
+  const reset  = document.getElementById('btn-reset');
   if (i < 0 || !filteredQs.length) {
     [back,next,flag,submit,report].forEach(b => b.disabled = true);
     submit.style.display = 'none';
+    reset.style.display = 'none';
     ctr.textContent = 'Select a section above'; return;
   }
   const q = filteredQs[i];
@@ -499,8 +797,8 @@ function updateFooter(i) {
   report.classList.toggle('logged', errLog.some(e => e.qid === q.id));
   ctr.textContent = `Question ${i + 1} of ${filteredQs.length}`;
   const st = answers[q.id];
-  if (st?.submitted) { submit.style.display = 'none'; }
-  else { submit.style.display = 'block'; submit.disabled = true; }
+  if (st?.submitted) { submit.style.display = 'none'; reset.style.display = 'block'; }
+  else { submit.style.display = 'block'; submit.disabled = true; reset.style.display = 'none'; }
 }
 
 // ─── Context renderer ────────────────────────────────────────────────────────
@@ -745,6 +1043,22 @@ function pick(qId, choice) {
   document.getElementById('btn-submit').disabled = false;
 }
 
+function resetAnswer() {
+  if (!filteredQs.length) return;
+  const q = filteredQs[currentIdx];
+  delete answers[q.id];
+  saveState();
+  tpaSel = [null, null];
+  ynSel  = q.type === 'yn'       ? new Array((q.options||[]).length).fill(null) : [];
+  ddSel  = q.type === 'dropdown' ? new Array((q.dropdowns||[]).length).fill(null) : [];
+  renderQ(currentIdx);
+  refreshGrid();
+  resetQTimer();
+  document.getElementById('btn-reset').style.display = 'none';
+  document.getElementById('btn-submit').style.display = 'block';
+  document.getElementById('btn-submit').disabled = true;
+}
+
 function submitAnswer() {
   if (!filteredQs.length) return;
   const q = filteredQs[currentIdx];
@@ -754,15 +1068,37 @@ function submitAnswer() {
   if (q.type === 'yn' && ynSel.some(v => v === null)) return;
   if (q.type === 'dropdown' && ddSel.some(v => v === null)) return;
 
-  answers[q.id] = { ...st, submitted: true };
+  // Only record time if the timer was manually started
+  const timeSecs = (timerStarted && qTimerSecs > 0) ? qTimerSecs : null;
+
+  answers[q.id] = { ...st, submitted: true, timeSecs };
   if (q.type === 'tpa')      { answers[q.id].part1 = tpaSel[0]; answers[q.id].part2 = tpaSel[1]; }
   if (q.type === 'yn')       { answers[q.id].ynSel = [...ynSel]; }
   if (q.type === 'dropdown') { answers[q.id].ddSel = [...ddSel]; }
+
+  const correct = isCorrect(q);
+  updateQStat(q.id, correct === true, timeSecs);
+
+  // Track set score
+  if (sessionMode === 'set') {
+    if (correct === true) setCorrect++;
+    else setWrong++;
+  }
 
   saveState();
   renderQ(currentIdx);
   refreshGrid();
   document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-reset').style.display = 'block';
+  updateDueBadge();
+
+  // Check if set is complete
+  if (sessionMode === 'set') {
+    const allSubmitted = filteredQs.every(fq => answers[fq.id]?.submitted);
+    if (allSubmitted) {
+      showSetComplete();
+    }
+  }
 }
 
 function toggleFlag() {
@@ -774,22 +1110,417 @@ function toggleFlag() {
   refreshGrid();
 }
 
-// ─── Timer ───────────────────────────────────────────────────────────────────
-function startTimer() {
-  if (timerHandle) clearInterval(timerHandle);
-  timerOn = true;
-  document.getElementById('timer').classList.remove('paused');
-  timerHandle = setInterval(() => {
-    timerSecs++;
-    const m = String(Math.floor(timerSecs/60)).padStart(2,'0');
-    const s = String(timerSecs%60).padStart(2,'0');
-    document.getElementById('timer').textContent = `${m}:${s}`;
-  }, 1000);
+// ─── Mode banner ──────────────────────────────────────────────────────────────
+function updateModeBanner() {
+  const banner = document.getElementById('mode-banner');
+  const txt    = document.getElementById('mode-banner-text');
+  if (!sessionMode) {
+    banner.classList.remove('show');
+    return;
+  }
+  banner.classList.add('show');
+  const pos = `${currentIdx + 1} / ${filteredQs.length}`;
+  if (sessionMode === 'review') {
+    txt.textContent = `📅 Review Session · ${pos}`;
+  } else {
+    txt.textContent = `🎯 Practice Set · ${pos}`;
+  }
 }
 
-function toggleTimer() {
-  if (timerOn) { clearInterval(timerHandle); timerOn = false; document.getElementById('timer').classList.add('paused'); }
-  else startTimer();
+function endSession() {
+  sessionMode = null;
+  sessionQs   = [];
+  document.getElementById('mode-banner').classList.remove('show');
+  // Restore normal filter view
+  applyFiltersForReal();
+}
+
+// applyFiltersForReal bypasses the session guard
+function applyFiltersForReal() {
+  sessionMode = null; // ensure guard is off
+  const sec    = document.getElementById('sel-section').value;
+  const topic  = document.getElementById('sel-topic').value;
+  const status = document.getElementById('sel-status').value;
+  filteredQs = QBANK.filter(q => {
+    if (sec   !== 'all' && q.section !== sec)   return false;
+    if (topic !== 'all' && q.topic   !== topic) return false;
+    if (activeDiff !== 'all' && q.difficulty !== activeDiff) return false;
+    if (status !== 'all') {
+      const answered = answers[q.id] !== undefined;
+      const correct  = answered && isCorrect(q);
+      if (status === 'unanswered' && answered)  return false;
+      if (status === 'correct'    && !correct)  return false;
+      if (status === 'incorrect'  && (!answered || correct)) return false;
+    }
+    return true;
+  });
+  document.getElementById('section-label').textContent = SECTION_NAMES[sec] || 'All Sections';
+  if (!filteredQs.length) { showEmpty('No questions match your filters.'); buildGrid([]); updateFooter(-1); return; }
+  currentIdx = 0;
+  buildGrid(filteredQs);
+  goTo(0);
+}
+
+// ─── Review session ───────────────────────────────────────────────────────────
+function getDueQuestions() {
+  const qstats = loadQStats();
+  const today  = todayStr();
+  return QBANK.filter(q => {
+    const s = qstats[q.id];
+    return s && s.nextDue && s.nextDue <= today;
+  });
+}
+
+function startReviewSession() {
+  const dueQs = getDueQuestions();
+  if (!dueQs.length) { alert('No questions are due for review right now!'); return; }
+  // Shuffle
+  const shuffled = dueQs.slice().sort(() => Math.random() - 0.5);
+  sessionMode = 'review';
+  sessionQs   = shuffled;
+  filteredQs  = shuffled;
+  currentIdx  = 0;
+  setCorrect  = 0;
+  setWrong    = 0;
+  buildGrid(filteredQs);
+  goTo(0);
+}
+
+// ─── Set modal ────────────────────────────────────────────────────────────────
+let setCount   = '10';
+let setPool    = 'all';
+let setSection = 'all';
+let setTopic   = 'all';
+let setStatus  = 'all';
+
+function openSetModal() {
+  setCount = '10'; setPool = 'all'; setSection = 'all'; setTopic = 'all'; setStatus = 'all';
+  document.querySelectorAll('#set-count-chips .set-chip').forEach(c => c.classList.toggle('active', c.dataset.val === setCount));
+  document.querySelectorAll('#set-pool-chips .set-chip').forEach(c => c.classList.toggle('active', c.dataset.val === setPool));
+  document.getElementById('set-custom-input').style.display = 'none';
+  document.getElementById('set-custom-input').value = '';
+  document.getElementById('set-section').value = 'all';
+  document.getElementById('set-status').value = 'all';
+  onSetSectionChange(false);
+  document.getElementById('set-modal-bg').classList.add('open');
+}
+
+function onSetSectionChange(doUpdate = true) {
+  setSection = document.getElementById('set-section').value;
+  const topicSel = document.getElementById('set-topic');
+  topicSel.innerHTML = '<option value="all">All Topics</option>';
+  const pool = setSection === 'all' ? TOPIC_MAP : { [setSection]: TOPIC_MAP[setSection] };
+  Object.values(pool).forEach(group =>
+    Object.entries(group).forEach(([k, name]) => {
+      topicSel.innerHTML += `<option value="${k}">${name}</option>`;
+    })
+  );
+  setTopic = 'all';
+  if (doUpdate) updateSetPoolInfo();
+}
+
+function closeSetModal() {
+  document.getElementById('set-modal-bg').classList.remove('open');
+}
+
+function closeSetModalOutside(e) {
+  if (e.target === document.getElementById('set-modal-bg')) closeSetModal();
+}
+
+function setChipClick(el, group) {
+  const container = group === 'count' ? '#set-count-chips' : '#set-pool-chips';
+  document.querySelectorAll(container + ' .set-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (group === 'count') {
+    setCount = el.dataset.val;
+    const customInput = document.getElementById('set-custom-input');
+    customInput.style.display = setCount === 'custom' ? 'block' : 'none';
+    if (setCount === 'custom') { customInput.focus(); }
+  } else {
+    setPool = el.dataset.val;
+  }
+  updateSetPoolInfo();
+}
+
+function getSetPool() {
+  // Base pool
+  let pool;
+  if (setPool === 'notmastered') {
+    const qstats = loadQStats();
+    pool = QBANK.filter(q => { const s = qstats[q.id]; return !s || s.wrong > 0 || s.attempts === 0; });
+  } else if (setPool === 'due') {
+    pool = getDueQuestions();
+  } else {
+    pool = QBANK.slice();
+  }
+  // Apply section / topic / status filters
+  const qstats = setStatus !== 'all' ? loadQStats() : null;
+  pool = pool.filter(q => {
+    if (setSection !== 'all' && q.section !== setSection) return false;
+    if (setTopic   !== 'all' && q.topic   !== setTopic)   return false;
+    if (setStatus  !== 'all') {
+      const s = qstats[q.id];
+      const attempted = s && s.attempts > 0;
+      const lastCorrect = s && s.lastResult === 'correct';
+      if (setStatus === 'unanswered' && attempted)   return false;
+      if (setStatus === 'correct'    && !lastCorrect) return false;
+      if (setStatus === 'incorrect'  && (!attempted || lastCorrect)) return false;
+    }
+    return true;
+  });
+  return pool;
+}
+
+function updateSetPoolInfo() {
+  setSection = document.getElementById('set-section').value;
+  setTopic   = document.getElementById('set-topic').value;
+  setStatus  = document.getElementById('set-status').value;
+  const pool  = getSetPool();
+  const avail = pool.length;
+  let n;
+  if (setCount === 'all') n = avail;
+  else if (setCount === 'custom') n = Math.min(parseInt(document.getElementById('set-custom-input').value) || 0, avail);
+  else n = Math.min(parseInt(setCount), avail);
+  const infoEl   = document.getElementById('set-pool-info');
+  const startBtn = document.getElementById('set-start-btn');
+  infoEl.textContent = avail + ' questions available · will load ' + (n || 0);
+  startBtn.disabled = avail === 0 || n === 0;
+}
+
+function startSet() {
+  const pool    = getSetPool();
+  if (!pool.length) return;
+  const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+  let count;
+  if (setCount === 'all') count = shuffled.length;
+  else if (setCount === 'custom') count = Math.min(parseInt(document.getElementById('set-custom-input').value) || shuffled.length, shuffled.length);
+  else count = Math.min(parseInt(setCount), shuffled.length);
+  const selected = shuffled.slice(0, count);
+
+  sessionMode = 'set';
+  sessionQs   = selected;
+  filteredQs  = selected;
+  currentIdx  = 0;
+  setCorrect  = 0;
+  setWrong    = 0;
+
+  closeSetModal();
+  buildGrid(filteredQs);
+  goTo(0);
+}
+
+// ─── Set complete ─────────────────────────────────────────────────────────────
+function showSetComplete() {
+  const total    = filteredQs.length;
+  const accuracy = total > 0 ? Math.round((setCorrect / total) * 100) : 0;
+  const qstats   = loadQStats();
+  let totalTime  = 0, timeCount = 0;
+  filteredQs.forEach(q => {
+    const st = answers[q.id];
+    if (st?.timeSecs !== undefined) { totalTime += st.timeSecs; timeCount++; }
+  });
+  const avgTime = timeCount > 0 ? Math.round(totalTime / timeCount) : 0;
+  const avgMin  = String(Math.floor(avgTime / 60)).padStart(2, '0');
+  const avgSec  = String(avgTime % 60).padStart(2, '0');
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="set-complete">
+      <div class="set-complete-icon">🎉</div>
+      <div class="set-complete-title">Set Complete!</div>
+      <div class="set-complete-sub">
+        ${setCorrect} / ${total} correct &nbsp;·&nbsp; ${accuracy}% accuracy<br>
+        Avg time per question: ${avgMin}:${avgSec}
+      </div>
+      <button class="set-complete-btn" onclick="endSession()">Back to Practice</button>
+    </div>`;
+  document.getElementById('mode-banner').classList.remove('show');
+}
+
+// ─── Stats modal ──────────────────────────────────────────────────────────────
+function openStatsModal() {
+  renderStatsErrors();
+  renderStatsActivity();
+  renderStatsReview();
+  document.getElementById('stats-bg').classList.add('open');
+}
+
+function closeStatsModal() {
+  document.getElementById('stats-bg').classList.remove('open');
+}
+
+function statsTab(btn, panel) {
+  document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.stats-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('stats-panel-' + panel).classList.add('active');
+}
+
+function fmtTime(secs) {
+  if (!secs && secs !== 0) return '—';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+}
+
+function renderStatsErrors() {
+  const qstats = loadQStats();
+  const panel  = document.getElementById('stats-panel-errors');
+  const rows   = QBANK.filter(q => qstats[q.id]?.wrong > 0)
+    .map(q => ({ q, s: qstats[q.id] }))
+    .sort((a, b) => b.s.wrong - a.s.wrong);
+
+  if (!rows.length) {
+    panel.innerHTML = '<div class="stats-empty">No errors yet. Keep practicing!</div>';
+    return;
+  }
+  panel.innerHTML = `<table class="stats-tbl">
+    <thead><tr>
+      <th>Topic</th><th>Diff</th><th>Wrong</th><th>Accuracy</th><th>Avg Time</th><th>Last Attempt</th>
+    </tr></thead>
+    <tbody>
+    ${rows.map(({q, s}) => {
+      const acc = s.attempts > 0 ? Math.round((s.correct / s.attempts) * 100) : 0;
+      const avg = s.times.length > 0 ? Math.round(s.times.reduce((a,b)=>a+b,0)/s.times.length) : null;
+      return `<tr onclick="goFromStats('${q.id}')">
+        <td>${q.topicName}</td>
+        <td>${q.difficulty}</td>
+        <td class="c-wrong">${s.wrong}</td>
+        <td>${acc}%</td>
+        <td>${avg !== null ? fmtTime(avg) : '—'}</td>
+        <td>${fmtDate(s.lastAttempt)}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderStatsActivity() {
+  const qstats = loadQStats();
+  const panel  = document.getElementById('stats-panel-activity');
+  const tried  = Object.keys(qstats);
+
+  const totalAttempts = tried.reduce((sum, id) => sum + qstats[id].attempts, 0);
+  const totalCorrect  = tried.reduce((sum, id) => sum + qstats[id].correct, 0);
+  const allTimes      = tried.flatMap(id => qstats[id].times);
+  const avgTime       = allTimes.length > 0 ? Math.round(allTimes.reduce((a,b)=>a+b,0)/allTimes.length) : null;
+  const accuracy      = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+
+  const sorted = tried
+    .map(id => ({ id, s: qstats[id], q: QBANK.find(q => q.id === id) }))
+    .filter(x => x.q)
+    .sort((a, b) => (b.s.lastAttempt || '').localeCompare(a.s.lastAttempt || ''));
+
+  panel.innerHTML = `
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-val">${tried.length}</div><div class="stat-card-lbl">Questions Tried</div></div>
+      <div class="stat-card"><div class="stat-card-val">${accuracy}%</div><div class="stat-card-lbl">Accuracy</div></div>
+      <div class="stat-card"><div class="stat-card-val">${avgTime !== null ? fmtTime(avgTime) : '—'}</div><div class="stat-card-lbl">Avg Time</div></div>
+    </div>
+    ${sorted.length === 0 ? '<div class="stats-empty">No activity yet.</div>' :
+    `<table class="stats-tbl">
+      <thead><tr>
+        <th>Topic</th><th>Diff</th><th>Attempts</th><th>Correct</th><th>Accuracy</th><th>Avg Time</th><th>Last</th>
+      </tr></thead>
+      <tbody>
+      ${sorted.map(({q, s}) => {
+        const acc = s.attempts > 0 ? Math.round((s.correct / s.attempts) * 100) : 0;
+        const avg = s.times.length > 0 ? Math.round(s.times.reduce((a,b)=>a+b,0)/s.times.length) : null;
+        return `<tr onclick="goFromStats('${q.id}')">
+          <td>${q.topicName}</td>
+          <td>${q.difficulty}</td>
+          <td>${s.attempts}</td>
+          <td class="c-good">${s.correct}</td>
+          <td>${acc}%</td>
+          <td>${avg !== null ? fmtTime(avg) : '—'}</td>
+          <td>${fmtDate(s.lastAttempt)}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>`}`;
+}
+
+function renderStatsReview() {
+  const qstats  = loadQStats();
+  const today   = todayStr();
+  const panel   = document.getElementById('stats-panel-review');
+  const dueQs   = getDueQuestions();
+
+  // Build groups
+  const overdue = [], dueToday = [], upcoming = [];
+  Object.entries(qstats).forEach(([id, s]) => {
+    if (!s.nextDue) return;
+    const q = QBANK.find(q => q.id === id);
+    if (!q) return;
+    const diff = daysBetween(s.nextDue);
+    if (diff < 0)      overdue.push({ q, s, diff });
+    else if (diff === 0) dueToday.push({ q, s, diff });
+    else if (diff <= 14) upcoming.push({ q, s, diff });
+  });
+  overdue.sort((a,b)  => a.diff - b.diff);
+  dueToday.sort((a,b) => a.diff - b.diff);
+  upcoming.sort((a,b) => a.diff - b.diff);
+
+  const dueCount = overdue.length + dueToday.length;
+  let html = `<button class="review-start-btn" ${dueCount===0?'disabled':''} onclick="closeStatsModal();startReviewSession()">
+    Start Review Session (${dueCount} due)
+  </button>`;
+
+  function groupHTML(label, items, pillClass, pillText) {
+    if (!items.length) return '';
+    return `<div class="due-group-lbl">${label}</div>` +
+      items.map(({q, s, diff}) => {
+        const stem = q.q.replace(/<[^>]+>/g,'').slice(0, 80);
+        const pill = typeof pillText === 'function' ? pillText(diff) : pillText;
+        return `<div class="due-item" onclick="closeStatsModal();goFromStats('${q.id}')">
+          <div class="due-item-info">
+            <div class="due-item-topic">${q.topicName} · ${q.difficulty}</div>
+            <div class="due-item-stem">${stem}…</div>
+          </div>
+          <span class="due-badge-pill ${pillClass}">${pill}</span>
+        </div>`;
+      }).join('');
+  }
+
+  html += groupHTML('Due Now (Overdue)', overdue, 'over', d => `${Math.abs(d)}d overdue`);
+  html += groupHTML('Due Today', dueToday, 'today', 'Today');
+  html += groupHTML('Coming Up', upcoming, 'soon', d => `In ${d}d`);
+
+  if (!overdue.length && !dueToday.length && !upcoming.length) {
+    html += '<div class="stats-empty">No questions scheduled for review yet.</div>';
+  }
+
+  panel.innerHTML = html;
+}
+
+function goFromStats(qid) {
+  closeStatsModal();
+  const q = QBANK.find(fq => fq.id === qid);
+  if (!q) return;
+
+  // Clear session mode
+  sessionMode = null;
+  document.getElementById('mode-banner').classList.remove('show');
+
+  // Set section + topic filters
+  const secSel   = document.getElementById('sel-section');
+  const topicSel = document.getElementById('sel-topic');
+  secSel.value = q.section;
+  onSectionChange(); // rebuilds topic dropdown
+  topicSel.value = q.topic;
+
+  // Reset difficulty to 'all'
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.diff-btn[onclick*="all"]').classList.add('active');
+  activeDiff = 'all';
+
+  applyFiltersForReal();
+
+  const idx = filteredQs.findIndex(fq => fq.id === qid);
+  if (idx >= 0) goTo(idx);
 }
 
 // ─── Error log ───────────────────────────────────────────────────────────────
@@ -854,6 +1585,10 @@ function goToErrorQuestion(qid) {
   const q = QBANK.find(q => q.id === qid);
   if (!q) return;
 
+  // Clear session mode
+  sessionMode = null;
+  document.getElementById('mode-banner').classList.remove('show');
+
   // Set section + topic filters to match the question
   const secSel   = document.getElementById('sel-section');
   const topicSel = document.getElementById('sel-topic');
@@ -866,7 +1601,7 @@ function goToErrorQuestion(qid) {
   document.querySelector('.diff-btn[onclick*="all"]').classList.add('active');
   activeDiff = 'all';
 
-  applyFilters(); // rebuilds filteredQs
+  applyFiltersForReal(); // rebuilds filteredQs
 
   // Navigate to the question
   const idx = filteredQs.findIndex(fq => fq.id === qid);
@@ -891,6 +1626,7 @@ function clearErrorLog() {
 }
 
 onSectionChange();
+updateDueBadge();
 </script>
 </body>
 </html>

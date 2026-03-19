@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pandas · Series &amp; DataFrames</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1a252f; color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    .hdr-title { font-size: 0.82em; font-weight: 700; color: rgba(255,255,255,0.85); }
+    .hearts { font-size: 1.05em; letter-spacing: 2px; min-width: 60px; text-align: right; }
+    .progress-bar { height: 5px; background: #2c3e50; flex-shrink: 0; }
+    .progress-fill { height: 100%; background: #e67e22; transition: width .3s; }
+    .screen { flex: 1; display: none; flex-direction: column; }
+    .screen.active { display: flex; }
+    .center-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; gap: 14px; text-align: center; }
+    .big-icon { font-size: 3.2em; }
+    h2 { font-size: 1.25em; font-weight: 800; color: #2c3e50; }
+    .sub { font-size: 0.88em; color: #7f8c8d; max-width: 300px; line-height: 1.5; }
+    .btn-primary { padding: 14px 36px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+    .btn-secondary { padding: 12px 28px; background: #f0f2f5; color: #7f8c8d; border: none; border-radius: 14px; font-size: 0.88em; cursor: pointer; text-decoration: none; display: inline-block; }
+    #screen-q { padding: 18px 16px 24px; gap: 14px; align-items: stretch; }
+    .q-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; text-align: center; }
+    .q-prompt { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-top: 4px solid #e67e22; }
+    .prompt-code { font-family: Consolas, monospace; font-size: 0.95em; line-height: 1.6; white-space: pre; text-align: left; background: #1e2b38; color: #e8f0fe; border-radius: 8px; padding: 12px 16px; display: inline-block; max-width: 100%; overflow-x: auto; }
+    .prompt-text { font-size: 1.05em; font-weight: 700; color: #2c3e50; line-height: 1.4; }
+    .prompt-hint { font-size: 0.82em; color: #7f8c8d; margin-top: 8px; line-height: 1.4; }
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn { width: 100%; padding: 15px 18px; background: white; color: #2c3e50; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.9em; font-weight: 600; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; font-family: inherit; }
+    .choice-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .choice-btn:disabled { cursor: default; }
+    .choice-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .choice-btn.wrong   { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+    .choice-btn.reveal  { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .feedback { border-radius: 14px; padding: 14px 16px; display: none; flex-direction: column; gap: 4px; }
+    .feedback.correct { display: flex; background: #eafaf1; border: 2px solid #27ae60; }
+    .feedback.wrong   { display: flex; background: #fdedec; border: 2px solid #e74c3c; }
+    .fb-head { font-weight: 700; font-size: 0.9em; }
+    .feedback.correct .fb-head { color: #27ae60; }
+    .feedback.wrong   .fb-head { color: #e74c3c; }
+    .fb-body { font-size: 0.82em; color: #555; line-height: 1.5; }
+    .btn-continue { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; display: none; }
+    .btn-continue.visible { display: block; }
+    .stars { font-size: 2.4em; letter-spacing: 6px; }
+    .score-row { display: flex; gap: 24px; justify-content: center; }
+    .sc { text-align: center; }
+    .sc-num { font-size: 2em; font-weight: 800; color: #e67e22; }
+    .sc-lbl { font-size: 0.75em; color: #7f8c8d; margin-top: 2px; }
+    .fill-row { display: flex; gap: 10px; }
+    .fill-input { flex: 1; padding: 14px 16px; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 0.9em; font-family: inherit; outline: none; }
+    .fill-input:focus { border-color: #e67e22; }
+    .fill-input.correct { border-color: #27ae60; background: #eafaf1; }
+    .fill-input.wrong { border-color: #e74c3c; background: #fdedec; }
+    .fill-submit { padding: 14px 20px; background: #e67e22; color: white; border: none; border-radius: 14px; font-size: 0.9em; font-weight: 700; cursor: pointer; }
+    .tf-btns { display: flex; gap: 12px; }
+    .tf-btn { flex: 1; padding: 18px; background: white; border: 2px solid #e1e8ed; border-radius: 14px; font-size: 1em; font-weight: 700; cursor: pointer; color: #2c3e50; transition: border-color .15s, background .15s; }
+    .tf-btn:hover:not(:disabled) { border-color: #e67e22; background: #fef5e7; }
+    .tf-btn:disabled { cursor: default; }
+    .tf-btn.correct { border-color: #27ae60 !important; background: #eafaf1 !important; color: #27ae60; }
+    .tf-btn.wrong { border-color: #e74c3c !important; background: #fdedec !important; color: #e74c3c; }
+  </style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Pandas</a>
+  <div class="hdr-title">Series &amp; DataFrames</div>
+  <span class="hearts" id="hearts">❤️❤️❤️</span>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+<div class="screen active" id="screen-start">
+  <div class="center-box">
+    <div class="big-icon">🐼</div>
+    <h2>Series &amp; DataFrames</h2>
+    <p class="sub">10 questions · 3 lives · creating, inspecting, dtypes, head/tail</p>
+    <button class="btn-primary" onclick="startLesson()">Begin</button>
+    <a class="btn-secondary" href="index.html">Back</a>
+  </div>
+</div>
+<div class="screen" id="screen-q">
+  <div class="q-label" id="q-label"></div>
+  <div class="q-prompt" id="q-prompt"></div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback">
+    <div class="fb-head" id="fb-head"></div>
+    <div class="fb-body" id="fb-body"></div>
+  </div>
+  <button class="btn-continue" id="btn-continue" onclick="nextQuestion()">Continue →</button>
+</div>
+<div class="screen" id="screen-finish">
+  <div class="center-box">
+    <div class="stars" id="finish-stars">⭐⭐⭐</div>
+    <h2>Lesson complete!</h2>
+    <div class="score-row">
+      <div class="sc"><div class="sc-num" id="fin-correct">0</div><div class="sc-lbl">Correct</div></div>
+      <div class="sc"><div class="sc-num" id="fin-wrong">0</div><div class="sc-lbl">Wrong</div></div>
+      <div class="sc"><div class="sc-num" id="fin-xp">0</div><div class="sc-lbl">XP</div></div>
+    </div>
+    <button class="btn-primary" onclick="startLesson()">Play Again</button>
+    <a class="btn-secondary" href="index.html">Back to Hub</a>
+  </div>
+</div>
+<script>
+const SESSION_SIZE = 10;
+const QUESTIONS = [
+  { label:"Key concept", prompt:"What is a pandas Series?", isCode:false, options:["A 1D labelled array","A 2D table","A Python dict","A NumPy array alias"], answer:"A 1D labelled array", explain:"A Series is 1D — like a single column with an index. A DataFrame is a collection of Series." },
+  { label:"What does this return?", prompt:"pd.Series([1, 2, 3]).dtype", isCode:true, options:["int64","float64","object","int32"], answer:"int64", explain:"Integer lists become int64 Series by default on 64-bit systems." },
+  { label:"What does this return?", prompt:"df.shape   # df has 5 rows and 3 columns", isCode:true, options:["(5, 3)","(3, 5)","15","(5,)"], answer:"(5, 3)", explain:"shape returns (rows, columns). First value is always rows." },
+  { label:"Syntax", prompt:"How do you access the column 'age' as a Series?", isCode:false, options:["df['age']","df.age()","df[age]","df.column('age')"], answer:"df['age']", explain:"Square bracket notation is the standard way. df.age also works but fails if the column name has spaces or matches a method name." },
+  { label:"What does this return?", prompt:"df.head(3)", isCode:true, options:["First 3 rows","Last 3 rows","3 random rows","Row at index 3"], answer:"First 3 rows", explain:"head(n) returns the first n rows. With no argument, head() returns 5 rows." },
+  { label:"Key concept", prompt:"What does df.dtypes show?", isCode:false, options:["The data type of each column","The first row's data types","Column names only","The shape"], answer:"The data type of each column", explain:"dtypes returns a Series of dtype objects indexed by column name — essential for spotting mixed types." },
+  { label:"Key concept", prompt:"What does df.columns return?", isCode:false, options:["An Index of column names","The first column's values","The number of columns","Column dtypes"], answer:"An Index of column names", explain:"df.columns is an Index object listing all column names. Useful for looping or renaming." },
+  { label:"What does this return?", prompt:"pd.DataFrame({'a':[1,2],'b':[3,4]}).shape", isCode:true, options:["(2, 2)","(2,)","(4,)","(1, 4)"], answer:"(2, 2)", explain:"2 rows (list length) and 2 columns (dict keys). Always (rows, cols)." },
+  { label:"Key concept", prompt:"What is the key difference between a Series and a DataFrame?", isCode:false, options:["Series is 1D with one index; DataFrame is 2D with row and column labels","Series is faster","DataFrame is always read-only","No difference — just different names"], answer:"Series is 1D with one index; DataFrame is 2D with row and column labels", explain:"A DataFrame is essentially a dict of Series sharing the same index." },
+  { label:"Key concept", prompt:"What can a Series index contain?", isCode:false, options:["Integers, strings, or dates — any hashable type","Only integers","Always 0-based integers","Only strings"], answer:"Integers, strings, or dates — any hashable type", explain:"The default index is RangeIndex (integers), but you can set any hashable values as labels." },
+  { label:"What does this return?", prompt:"df['new_col'] = 0", isCode:true, options:["Adds a column of zeros to df","Raises a KeyError","Deletes the column","Changes the index"], answer:"Adds a column of zeros to df", explain:"Assigning to a new column key creates that column. The scalar 0 is broadcast to all rows." },
+  { label:"Key concept", prompt:"What does df.index return?", isCode:false, options:["The row labels","The column names","The number of rows","The dtype"], answer:"The row labels", explain:"df.index is the row labels (default is RangeIndex 0,1,2,...). df.columns is for column labels." },
+  { label:"What does this return?", prompt:"df.tail()", isCode:true, options:["Last 5 rows (default)","First 5 rows","Last row only","Random 5 rows"], answer:"Last 5 rows (default)", explain:"tail() with no argument returns the last 5 rows, same as tail(5)." },
+  { label:"Key concept", prompt:"What does df.info() show?", isCode:false, options:["Column names, dtypes, non-null counts, and memory usage","First 5 rows","Statistical summary (mean, std, etc.)","Only the index"], answer:"Column names, dtypes, non-null counts, and memory usage", explain:"info() is the fastest way to spot missing values and wrong dtypes on a new dataset." }
+  ,
+  { type: 'tf', label: "True or False", prompt: "A pandas Series is a one-dimensional labelled array.", isCode: false, answer: "True", explain: "A Series has an index (labels) and a values array — it's essentially a labelled 1D NumPy array." },
+  { type: 'tf', label: "True or False", prompt: "df.shape returns (rows, columns) for a DataFrame.", isCode: false, answer: "True", explain: "shape follows the (rows, cols) convention, identical to 2D NumPy arrays." },
+  { type: 'tf', label: "True or False", prompt: "df.dtypes returns a single data type shared by all columns.", isCode: false, answer: "False", explain: "df.dtypes returns a Series showing each column's dtype separately — columns can have different types." },
+  { type: 'fill', label: "Short answer", prompt: "What attribute returns the number of rows and columns as a tuple?", isCode: false, answer: "shape", explain: "df.shape returns (n_rows, n_cols)." },
+  { type: 'fill', label: "Fill in the blank", prompt: "df.___(5)   # show first 5 rows", isCode: true, answer: "head", explain: "df.head(n) returns the first n rows. Default is 5." },
+  { type: 'fill', label: "Short answer", prompt: "What attribute returns the column labels of a DataFrame?", isCode: false, answer: "columns", explain: "df.columns returns an Index of column names." }
+];
+let questions=[], qIndex=0, hearts=3, correctCount=0, wrongCount=0, answered=false, currentQ=null;
+function startLesson() {
+  questions = shuffle([...QUESTIONS]).slice(0, SESSION_SIZE).map(q => ({...q, options: q.options ? shuffle([...q.options]) : q.options}));
+  qIndex=0; hearts=3; correctCount=0; wrongCount=0;
+  updateHearts(); updateProgress(); showScreen('screen-q'); showQuestion();
+}
+function showQuestion() {
+  if (qIndex >= questions.length || hearts <= 0) { showFinish(); return; }
+  currentQ = questions[qIndex]; answered = false;
+  document.getElementById('q-label').textContent = currentQ.label;
+  const p = document.getElementById('q-prompt');
+  p.innerHTML = (currentQ.isCode ? '<div class="prompt-code">'+escHtml(currentQ.prompt)+'</div>' : '<div class="prompt-text">'+escHtml(currentQ.prompt)+'</div>') + (currentQ.hint?'<div class="prompt-hint">'+currentQ.hint+'</div>':'');
+  const ch = document.getElementById('choices');
+  if (!currentQ.type || currentQ.type === 'mcq') {
+    ch.innerHTML = currentQ.options.map((opt,i) =>
+      '<button class="choice-btn" id="c'+i+'" onclick="choose('+i+')">' + escHtml(opt) + '</button>'
+    ).join('');
+  } else if (currentQ.type === 'tf') {
+    ch.innerHTML = '<div class="tf-btns"><button class="tf-btn" id="tf-true" onclick="chooseTF(\'True\')">True</button><button class="tf-btn" id="tf-false" onclick="chooseTF(\'False\')">False</button></div>';
+  } else if (currentQ.type === 'fill') {
+    ch.innerHTML = '<div class="fill-row"><input class="fill-input" id="fill-inp" type="text" placeholder="Type your answer\u2026" onkeydown="if(event.key===\'Enter\')submitFill()"><button class="fill-submit" onclick="submitFill()">Check</button></div>';
+    setTimeout(function(){ var el=document.getElementById('fill-inp'); if(el) el.focus(); }, 50);
+  }
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btn-continue').classList.remove('visible');
+  updateProgress();
+}
+function choose(i) {
+  if (answered) return;
+  answered = true;
+  const chosen = currentQ.options[i];
+  const isRight = chosen === currentQ.answer;
+  currentQ.options.forEach((_,j) => {
+    const b = document.getElementById('c'+j);
+    b.disabled = true;
+    if (currentQ.options[j] === currentQ.answer) b.classList.add('reveal');
+  });
+  if (!isRight) document.getElementById('c'+i).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function chooseTF(val) {
+  if (answered) return;
+  answered = true;
+  const isRight = val === currentQ.answer;
+  ['True','False'].forEach(function(v) {
+    const b = document.getElementById('tf-'+v.toLowerCase());
+    b.disabled = true;
+    if (v === currentQ.answer) b.classList.add('correct');
+  });
+  if (!isRight) document.getElementById('tf-'+val.toLowerCase()).classList.add('wrong');
+  showFeedback(isRight);
+}
+
+function submitFill() {
+  if (answered) return;
+  const inp = document.getElementById('fill-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) return;
+  answered = true;
+  const isRight = val.toLowerCase() === currentQ.answer.toLowerCase();
+  inp.disabled = true;
+  inp.classList.add(isRight ? 'correct' : 'wrong');
+  const sb = document.querySelector('.fill-submit');
+  if (sb) sb.disabled = true;
+  showFeedback(isRight);
+}
+
+function showFeedback(isRight) {
+  const fb = document.getElementById('feedback');
+  document.getElementById('fb-head').textContent = isRight ? 'Correct!' : 'Not quite';
+  document.getElementById('fb-body').textContent = currentQ.explain;
+  fb.className = 'feedback ' + (isRight ? 'correct' : 'wrong');
+  if (isRight) correctCount++; else { wrongCount++; hearts = Math.max(0,hearts-1); updateHearts(); }
+  document.getElementById('btn-continue').classList.add('visible');
+  qIndex++;
+}
+function nextQuestion() { if(hearts<=0||qIndex>=questions.length)showFinish(); else showQuestion(); }
+function showFinish() {
+  const pct=correctCount/Math.max(1,correctCount+wrongCount);
+  document.getElementById('finish-stars').textContent=pct>=0.9?'⭐⭐⭐':pct>=0.7?'⭐⭐':'⭐';
+  document.getElementById('fin-correct').textContent=correctCount;
+  document.getElementById('fin-wrong').textContent=wrongCount;
+  document.getElementById('fin-xp').textContent=correctCount*10;
+  showScreen('screen-finish');
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateHearts(){document.getElementById('hearts').textContent='❤️'.repeat(hearts)+'🖤'.repeat(3-hearts);}
+function updateProgress(){document.getElementById('prog-fill').style.width=(qIndex/SESSION_SIZE*100)+'%';}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

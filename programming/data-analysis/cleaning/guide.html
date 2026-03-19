@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Cleaning Guide — Data Analysis</title>
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p { font-size: 0.82em; opacity: 0.55; }
+    .toc-strip { background: white; border-bottom: 1px solid #dde3ea; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+    .toc-pill { font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef5e7; color: #e67e22; text-decoration: none; white-space: nowrap; }
+    .toc-pill:hover { background: #e67e22; color: white; }
+    .content { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+    .chapter { background: white; border-radius: 18px; padding: 28px 26px; margin-bottom: 24px; box-shadow: 0 3px 16px rgba(0,0,0,0.07); }
+    .ch-label { font-size: 0.68em; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e67e22; margin-bottom: 6px; }
+    .ch-title { font-size: 1.25em; font-weight: 800; color: #2c3e50; margin-bottom: 16px; }
+    h3 { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin: 22px 0 10px; }
+    p  { font-size: 0.88em; line-height: 1.75; color: #444; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 0.87em; line-height: 1.8; color: #444; }
+    pre { background: #1e2b38; color: #e8f0fe; border-radius: 12px; padding: 18px 20px; font-size: 0.82em; line-height: 1.7; overflow-x: auto; margin: 14px 0; font-family: Consolas, monospace; }
+    code { font-family: Consolas, monospace; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    .callout { border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .callout.tip  { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f39c12; }
+    .callout.info { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .callout.key  { background: #fdf2f8; border-left: 4px solid #8e44ad; }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+    .when-box { background: #e8f8f5; border-left: 4px solid #16a085; border-radius: 12px; padding: 14px 18px; margin: 16px 0; font-size: 0.85em; line-height: 1.7; }
+    .when-box strong { display: block; font-weight: 800; margin-bottom: 8px; color: #0e6655; }
+    .when-box table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .when-box th { background: #16a085; color: white; padding: 6px 10px; text-align: left; font-size: 0.88em; }
+    .when-box td { padding: 6px 10px; border-bottom: 1px solid #d1f0eb; vertical-align: top; font-size: 0.88em; }
+    .when-box tr:last-child td { border-bottom: none; }
+    .chart-wrap { background: white; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    canvas { max-width: 100%; }
+    /* before/after table */
+    .ba-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+    .ba-table { border-collapse: collapse; font-size: 0.8em; font-family: Consolas, monospace; width: 100%; }
+    .ba-table th { background: #2c3e50; color: white; padding: 6px 10px; text-align: left; }
+    .ba-table td { padding: 5px 10px; border-bottom: 1px solid #eaecee; }
+    .bad-cell { background: #ffe0e0; }
+    .good-cell { background: #e0ffe0; }
+    @media(max-width:560px) { .ba-wrap { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← Data Cleaning</a>
+  <h1>Data Cleaning — Theory Guide</h1>
+  <p>Missing values · outliers · encoding · feature engineering</p>
+</header>
+
+<div class="toc-strip">
+  <a class="toc-pill" href="#ch1">1 · Auditing a Dataset</a>
+  <a class="toc-pill" href="#ch2">2 · Missing Values</a>
+  <a class="toc-pill" href="#ch3">3 · Inconsistent Data</a>
+  <a class="toc-pill" href="#ch4">4 · Outlier Detection</a>
+  <a class="toc-pill" href="#ch5">5 · Type Conversion</a>
+  <a class="toc-pill" href="#ch6">6 · Encoding Categoricals</a>
+  <a class="toc-pill" href="#ch7">7 · Feature Engineering</a>
+</div>
+
+<div class="content">
+
+<!-- Ch 1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-label">Chapter 1</div>
+  <div class="ch-title">Auditing a Dataset</div>
+
+  <p>The first step in any data project is a <em>data audit</em> — a systematic inspection to understand what is wrong before you fix it. Cleaning without auditing leads to silent errors.</p>
+
+<pre>import pandas as pd
+import numpy as np
+
+df = pd.read_csv('raw_sales.csv')
+
+# ── Shape & types ───────────────────────────────────────────────────
+print(df.shape)
+print(df.dtypes)
+df.info()
+
+# ── Missing data ────────────────────────────────────────────────────
+missing = df.isnull().sum()
+missing_pct = missing / len(df) * 100
+print(pd.DataFrame({'missing': missing, 'pct': missing_pct.round(1)}))
+
+# ── Duplicate rows ───────────────────────────────────────────────────
+print(f"Duplicates: {df.duplicated().sum()}")
+print(df[df.duplicated(keep=False)].head())   # show all copies
+
+# ── Value ranges ─────────────────────────────────────────────────────
+print(df.describe())
+
+# ── Unexpected values in categoricals ────────────────────────────────
+for col in df.select_dtypes('object').columns:
+    print(f"\n{col}: {df[col].nunique()} unique")
+    print(df[col].value_counts().head(10))</pre>
+
+  <div class="callout info">
+    <strong>Common issues to look for</strong>
+    <ul style="margin-top:6px;">
+      <li>Columns that should be numeric stored as <code>object</code> (contains non-numeric text)</li>
+      <li>Date columns stored as strings</li>
+      <li>Categories with typos: "North", "north", "NORTH" treated as different values</li>
+      <li>Negative values where they make no sense (e.g. negative age, negative quantity)</li>
+      <li>Future dates in columns that should be historical</li>
+      <li>Zip codes / IDs stored as floats (losing leading zeros)</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Ch 2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-label">Chapter 2</div>
+  <div class="ch-title">Missing Values</div>
+
+  <div class="when-box">
+    <strong>Drop rows vs impute — when to choose which</strong>
+    <table>
+      <tr><th>Situation</th><th>Strategy</th><th>Real example</th></tr>
+      <tr><td>Less than 1–2% of rows missing, random pattern</td><td>Drop rows</td><td>A few customers skipped the age field at checkout</td></tr>
+      <tr><td>Important numeric column, missing randomly</td><td>Impute with median</td><td>Household income survey — median is robust to outliers</td></tr>
+      <tr><td>Missing because of another column (e.g. no purchase = no amount)</td><td>Impute with constant (0 or "None")</td><td>Transaction amount is NaN because customer never bought</td></tr>
+      <tr><td>Missing pattern contains signal</td><td>Keep + add <code>was_missing</code> flag</td><td>Credit applications — missing income field predicts default risk</td></tr>
+      <tr><td>High missingness (&gt;50% of column)</td><td>Drop column</td><td>Optional survey field almost nobody answered</td></tr>
+    </table>
+  </div>
+
+  <h3>Three strategies — choose carefully</h3>
+
+  <div class="chart-wrap">
+    <canvas id="missingChart" height="160"></canvas>
+  </div>
+
+<pre>df.isnull().sum()                  # count per column
+df.isnull().mean() * 100           # percentage
+
+# ── Strategy 1: Drop ─────────────────────────────────────────────────
+# Drop rows where a specific column is null (key column)
+df = df.dropna(subset=['sale_id', 'date'])
+
+# Drop columns with too many missing values (>40%)
+threshold = 0.4
+cols_to_drop = df.columns[df.isnull().mean() > threshold]
+df = df.drop(columns=cols_to_drop)
+
+# ── Strategy 2: Fill with a fixed value ──────────────────────────────
+df['region'].fillna('Unknown', inplace=True)
+df['discount'].fillna(0, inplace=True)
+
+# ── Strategy 3: Statistical imputation ───────────────────────────────
+df['sales'].fillna(df['sales'].median(), inplace=True)
+df['age'].fillna(df['age'].mean(), inplace=True)
+
+# Group-level imputation (fill missing sales with regional mean)
+df['sales'] = df.groupby('region')['sales'].transform(
+    lambda x: x.fillna(x.mean())
+)
+
+# ── Forward fill (time-series: carry last value forward) ─────────────
+df = df.sort_values('date')
+df['price'] = df['price'].ffill()
+df['price'] = df['price'].bfill()  # backward fill</pre>
+
+  <div class="callout warn">
+    <strong>Imputation is an assumption</strong>
+    Filling with the mean assumes the data is missing randomly and that the mean is a reasonable substitute. That assumption can be wrong. Always document what you imputed and why, and consider creating a binary <code>was_missing</code> flag column so models can learn from the missingness pattern.
+  </div>
+
+  <h3>Advanced imputation with scikit-learn</h3>
+<pre>from sklearn.impute import SimpleImputer, KNNImputer
+
+# Simple imputer
+imp = SimpleImputer(strategy='median')   # or 'mean', 'most_frequent', 'constant'
+df[numeric_cols] = imp.fit_transform(df[numeric_cols])
+
+# KNN imputer — fills based on k nearest neighbours
+knn_imp = KNNImputer(n_neighbors=5)
+df[numeric_cols] = knn_imp.fit_transform(df[numeric_cols])</pre>
+
+</div>
+
+<!-- Ch 3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-label">Chapter 3</div>
+  <div class="ch-title">Inconsistent Data</div>
+
+  <h3>String cleaning</h3>
+
+  <div class="ba-wrap">
+    <div>
+      <p style="font-size:0.78em; color:#e74c3c; font-weight:700; margin-bottom:6px;">Before</p>
+      <table class="ba-table">
+        <tr><th>region</th><th>email</th></tr>
+        <tr><td class="bad-cell"> North </td><td class="bad-cell">Alice@GMAIL.COM</td></tr>
+        <tr><td class="bad-cell">SOUTH</td><td class="bad-cell">bob@gmail.com  </td></tr>
+        <tr><td class="bad-cell">north</td><td class="bad-cell">CAROL@outlook.com</td></tr>
+      </table>
+    </div>
+    <div>
+      <p style="font-size:0.78em; color:#27ae60; font-weight:700; margin-bottom:6px;">After</p>
+      <table class="ba-table">
+        <tr><th>region</th><th>email</th></tr>
+        <tr><td class="good-cell">North</td><td class="good-cell">alice@gmail.com</td></tr>
+        <tr><td class="good-cell">South</td><td class="good-cell">bob@gmail.com</td></tr>
+        <tr><td class="good-cell">North</td><td class="good-cell">carol@outlook.com</td></tr>
+      </table>
+    </div>
+  </div>
+
+<pre>df['region'] = df['region'].str.strip().str.title()   # strip whitespace, Title Case
+df['email']  = df['email'].str.strip().str.lower()
+
+# Normalise phone numbers (keep digits only)
+df['phone'] = df['phone'].str.replace(r'\D', '', regex=True)
+
+# Remove currency symbols from numbers
+df['sales'] = df['sales'].str.replace(r'[$,]', '', regex=True).astype(float)
+
+# Standardise boolean-like columns
+df['is_active'] = df['is_active'].map({'Yes':True,'No':False,'Y':True,'N':False,1:True,0:False})
+
+# Fix typos with a mapping dict
+region_fix = {'Noth':'North', 'Sth':'South', 'EAST':'East'}
+df['region'] = df['region'].replace(region_fix)
+
+# Fuzzy matching for larger datasets (requires rapidfuzz package)
+from rapidfuzz import process, fuzz
+
+valid = ['North', 'South', 'East', 'West']
+def correct_region(val):
+    match, score, _ = process.extractOne(val, valid, scorer=fuzz.WRatio)
+    return match if score > 80 else val
+
+df['region'] = df['region'].apply(correct_region)</pre>
+
+  <h3>Deduplication</h3>
+<pre>print(f"Duplicate rows: {df.duplicated().sum()}")
+df = df.drop_duplicates()             # exact duplicates
+
+# Duplicate on key columns (keep most recent)
+df = df.sort_values('updated_at', ascending=False)
+df = df.drop_duplicates(subset=['customer_id'], keep='first')
+df = df.reset_index(drop=True)</pre>
+
+</div>
+
+<!-- Ch 4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-label">Chapter 4</div>
+  <div class="ch-title">Outlier Detection</div>
+
+  <p>Outliers can skew your analysis, break models, or be the most interesting data points — context determines which. First detect them, then decide what to do.</p>
+
+  <div class="when-box">
+    <strong>Which outlier detection method should I use?</strong>
+    <table>
+      <tr><th>Method</th><th>Use when</th><th>Real example</th></tr>
+      <tr><td>IQR (1.5 × IQR rule)</td><td>Data is not normally distributed; quick sanity check on numeric columns</td><td>Sales figures with a few huge enterprise deals skewing the distribution</td></tr>
+      <tr><td>Z-score (±3 std)</td><td>Data is roughly normal; outlier = statistically extreme value</td><td>Website load times — flag requests taking &gt;3 std above mean</td></tr>
+      <tr><td>Isolation Forest</td><td>Multi-dimensional data; you want ML to find anomalies automatically</td><td>Fraud detection — unusual combination of transaction amount, location, time</td></tr>
+      <tr><td>Domain rule</td><td>You know the valid range from business logic</td><td>Age must be 0–120; negative revenue is always an error</td></tr>
+    </table>
+  </div>
+
+  <h3>IQR method</h3>
+
+  <div class="chart-wrap">
+    <canvas id="outlierChart" height="180"></canvas>
+  </div>
+
+<pre>Q1  = df['sales'].quantile(0.25)
+Q3  = df['sales'].quantile(0.75)
+IQR = Q3 - Q1
+
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+
+outliers = df[(df['sales'] < lower) | (df['sales'] > upper)]
+print(f"Outliers: {len(outliers)} rows")
+print(outliers[['rep_name','sales']])
+
+# Remove outliers
+df_clean = df[(df['sales'] >= lower) & (df['sales'] <= upper)]
+
+# Or cap/clip (Winsorisation)
+df['sales_capped'] = df['sales'].clip(lower=lower, upper=upper)</pre>
+
+  <h3>Z-score method</h3>
+<pre>from scipy import stats
+z_scores = stats.zscore(df['sales'].dropna())
+outliers_z = df[np.abs(z_scores) > 3]   # beyond 3 std from mean</pre>
+
+  <h3>Isolation Forest (multivariate)</h3>
+<pre>from sklearn.ensemble import IsolationForest
+
+features = df[['sales', 'hours_worked', 'deals_closed']].dropna()
+iso = IsolationForest(contamination=0.05, random_state=42)  # expect 5% outliers
+labels = iso.fit_predict(features)   # -1 = outlier, 1 = normal
+df.loc[features.index, 'is_outlier'] = labels == -1
+
+print(df['is_outlier'].value_counts())</pre>
+
+  <div class="callout key">
+    <strong>What to do with outliers</strong>
+    <ul style="margin-top:6px;">
+      <li><strong>Investigate first</strong> — is it a data entry error, a genuine exceptional event, or a fraud signal?</li>
+      <li><strong>Remove</strong> if they are clearly erroneous (e.g. age = 999)</li>
+      <li><strong>Cap/Winsorise</strong> if you want to keep the row but limit influence</li>
+      <li><strong>Flag and keep</strong> if they are genuine but you want models to treat them differently</li>
+      <li><strong>Use robust statistics</strong> (median, IQR) if outliers are expected</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Ch 5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-label">Chapter 5</div>
+  <div class="ch-title">Type Conversion</div>
+
+<pre>import pandas as pd
+
+df['sales']       = pd.to_numeric(df['sales'], errors='coerce')   # 'coerce' → NaN on failure
+df['date']        = pd.to_datetime(df['date'], dayfirst=True)
+df['is_active']   = df['is_active'].astype(bool)
+df['category']    = df['category'].astype('category')   # saves memory
+df['customer_id'] = df['customer_id'].astype(str).str.zfill(6)  # restore leading zeros
+
+# Diagnose: which columns failed to parse?
+df['sales_raw'] = df['sales'].copy()
+df['sales']     = pd.to_numeric(df['sales'], errors='coerce')
+bad_rows = df[df['sales'].isna() & df['sales_raw'].notna()]
+print(bad_rows[['sales_raw']].head(20))   # see what values failed</pre>
+
+</div>
+
+<!-- Ch 6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-label">Chapter 6</div>
+  <div class="ch-title">Encoding Categorical Variables</div>
+
+  <p>Machine learning models only understand numbers. Categorical columns must be encoded.</p>
+
+  <div class="when-box">
+    <strong>Which encoding method should I use?</strong>
+    <table>
+      <tr><th>Method</th><th>Use when</th><th>Real example</th></tr>
+      <tr><td>Label Encoding (integers)</td><td>Ordinal data — the category has a natural order</td><td>Education level: High School=0, Undergrad=1, Masters=2, PhD=3</td></tr>
+      <tr><td>One-Hot Encoding</td><td>Nominal data, low cardinality (&lt;15 categories), linear models</td><td>Country of purchase: UK, US, DE → three binary columns</td></tr>
+      <tr><td>Target Encoding (mean encode)</td><td>High cardinality nominal data, tree-based models</td><td>City (1000+ values) → replace each city with its mean conversion rate</td></tr>
+      <tr><td>Binary / Frequency Encoding</td><td>High cardinality, memory-constrained, or you want a middle ground</td><td>Product SKU with 10k values — one-hot would explode column count</td></tr>
+    </table>
+  </div>
+
+  <h3>Label Encoding</h3>
+  <p>Replace each category with an integer. Only use for ordinal data (where order matters).</p>
+<pre>from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+df['tier_encoded'] = le.fit_transform(df['tier'])   # Silver→0, Gold→1, Platinum→2
+
+# Manual mapping (explicit order)
+tier_map = {'Silver': 0, 'Gold': 1, 'Platinum': 2}
+df['tier_enc'] = df['tier'].map(tier_map)</pre>
+
+  <h3>One-Hot Encoding</h3>
+  <p>Create a binary column for each category. Use for nominal data (no order). Avoid for high-cardinality columns.</p>
+<pre># pandas get_dummies
+region_dummies = pd.get_dummies(df['region'], prefix='region', drop_first=True)
+df = pd.concat([df, region_dummies], axis=1)
+df.drop(columns=['region'], inplace=True)
+
+# sklearn OneHotEncoder (for pipelines)
+from sklearn.preprocessing import OneHotEncoder
+enc = OneHotEncoder(drop='first', sparse_output=False)
+encoded = enc.fit_transform(df[['region']])
+enc_df = pd.DataFrame(encoded, columns=enc.get_feature_names_out())
+df = pd.concat([df.reset_index(drop=True), enc_df], axis=1)</pre>
+
+  <h3>Target Encoding</h3>
+  <p>Replace each category with the mean of the target variable for that category. Useful for high-cardinality features. Be careful of data leakage.</p>
+<pre>means = df.groupby('region')['sales'].mean()
+df['region_encoded'] = df['region'].map(means)</pre>
+
+</div>
+
+<!-- Ch 7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-label">Chapter 7</div>
+  <div class="ch-title">Feature Engineering</div>
+
+  <p>Feature engineering creates new columns that make patterns more visible to models — or to your own analysis.</p>
+
+  <h3>Scaling — putting numbers on the same scale</h3>
+<pre>from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+numeric = ['sales', 'hours_worked', 'deals_closed']
+
+# StandardScaler: mean=0, std=1 (for algorithms sensitive to scale)
+scaler = StandardScaler()
+df[numeric] = scaler.fit_transform(df[numeric])
+
+# MinMaxScaler: range [0, 1]
+mm = MinMaxScaler()
+df[numeric] = mm.fit_transform(df[numeric])
+
+# Manual z-score (no sklearn)
+df['sales_z'] = (df['sales'] - df['sales'].mean()) / df['sales'].std()</pre>
+
+  <h3>Binning — convert continuous to categories</h3>
+<pre>df['sales_band'] = pd.cut(
+    df['sales'],
+    bins=[0, 10000, 15000, 25000, float('inf')],
+    labels=['Low', 'Medium', 'High', 'Top']
+)
+
+# Equal-frequency bins (each bin has the same number of rows)
+df['sales_quartile'] = pd.qcut(df['sales'], q=4, labels=['Q1','Q2','Q3','Q4'])</pre>
+
+  <h3>Date features</h3>
+<pre>df['date'] = pd.to_datetime(df['date'])
+df['year']        = df['date'].dt.year
+df['month']       = df['date'].dt.month
+df['day_of_week'] = df['date'].dt.dayofweek   # 0=Monday
+df['is_weekend']  = df['day_of_week'] >= 5
+df['quarter']     = df['date'].dt.quarter
+df['days_to_end_of_month'] = (df['date'] + pd.offsets.MonthEnd(0) - df['date']).dt.days</pre>
+
+  <h3>Derived ratios and interactions</h3>
+<pre>df['revenue_per_hour']  = df['sales'] / df['hours_worked'].replace(0, np.nan)
+df['deal_size']         = df['sales'] / df['deals_closed'].replace(0, np.nan)
+df['sales_x_experience'] = df['sales'] * df['years_experience']  # interaction
+
+# Log transform (normalises right-skewed distributions)
+df['log_sales'] = np.log1p(df['sales'])   # log1p handles 0s safely</pre>
+
+  <h3>Full cleaning pipeline</h3>
+<pre>import pandas as pd, numpy as np
+from pathlib import Path
+
+def clean_sales(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path)
+
+    # 1. Standardise column names
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+
+    # 2. Drop rows missing key identifier
+    df = df.dropna(subset=['sale_id'])
+
+    # 3. Types
+    df['date']  = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    df['sales'] = pd.to_numeric(df['sales'].astype(str).str.replace(r'[$,]','',regex=True), errors='coerce')
+
+    # 4. String normalisation
+    df['region'] = df['region'].str.strip().str.title()
+    df['email']  = df['email'].str.strip().str.lower()
+
+    # 5. Fill missing values
+    df['region'].fillna('Unknown', inplace=True)
+    df['sales'].fillna(df.groupby('region')['sales'].transform('median'), inplace=True)
+
+    # 6. Remove outliers (IQR)
+    Q1, Q3 = df['sales'].quantile([0.25, 0.75])
+    IQR = Q3 - Q1
+    df = df[(df['sales'] >= Q1 - 1.5*IQR) & (df['sales'] <= Q3 + 1.5*IQR)]
+
+    # 7. Dedup
+    df = df.drop_duplicates(subset=['sale_id']).reset_index(drop=True)
+
+    # 8. Feature engineering
+    df['month']      = df['date'].dt.month
+    df['quarter']    = df['date'].dt.quarter
+    df['is_weekend'] = df['date'].dt.dayofweek >= 5
+
+    print(f"Clean: {len(df)} rows, {df.shape[1]} columns")
+    return df
+
+df_clean = clean_sales('raw_sales.csv')
+df_clean.to_csv('clean_sales.csv', index=False)</pre>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Ch2 — Missing data bar chart
+new Chart(document.getElementById('missingChart'), {
+  type: 'bar',
+  data: {
+    labels: ['sale_id','date','region','sales','email','discount','hours'],
+    datasets: [{
+      label: '% missing',
+      data: [0, 1.2, 4.5, 8.3, 22.1, 35.6, 0.4],
+      backgroundColor: data => {
+        const v = [0,1.2,4.5,8.3,22.1,35.6,0.4][data.dataIndex];
+        return v > 20 ? 'rgba(231,76,60,0.7)' : v > 5 ? 'rgba(243,156,18,0.7)' : 'rgba(39,174,96,0.7)';
+      },
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      title: { display: true, text: '% Missing Values per Column (red = action needed)', font: { size: 12, weight: '700' } },
+      legend: { display: false }
+    },
+    scales: { x: { max: 40, ticks: { callback: v => v + '%' } } }
+  }
+});
+
+// Ch4 — outlier chart
+const salesVals = [8200,9100,9700,10200,11500,12400,12900,13200,13800,14200,14700,15100,15800,16200,16800,18300,22000,47500];
+new Chart(document.getElementById('outlierChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Normal',
+      data: salesVals.filter(v => v < 30000).map((v,i) => ({x: i+1, y: v})),
+      backgroundColor: 'rgba(41,128,185,0.7)',
+      pointRadius: 7
+    },{
+      label: 'Outlier',
+      data: [{x: 18, y: 47500}],
+      backgroundColor: 'rgba(231,76,60,0.9)',
+      pointRadius: 10,
+      pointStyle: 'triangle'
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Sales values — one extreme outlier detected (IQR method)', font: { size: 12, weight: '700' } },
+      legend: { position: 'bottom' },
+      annotation: {}
+    },
+    scales: {
+      x: { title: { display: true, text: 'Observation' } },
+      y: { ticks: { callback: v => '$' + v.toLocaleString() } }
+    }
+  }
+});
+</script>
+
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Environment Variables</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u4s1',
+  title: 'Environment Variables',
+  subtitle: 'os.environ · Secrets · .env Pattern',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What is an environment variable?',
+      options: [
+        'A variable defined inside a Python function',
+        'A named value stored in the operating system process environment, accessible to any program',
+        'A special type of global variable in Python',
+        'A variable whose value can never change'
+      ],
+      answer: 1,
+      explanation: 'Environment variables are key-value pairs set in the OS process environment. Programs can read them at runtime. They are commonly used for configuration (paths, URLs) and secrets (API keys) without hardcoding values in code.'
+    },
+    {
+      type: 'fill',
+      before: 'In Python, the dictionary-like object that holds all environment variables is ',
+      after: '.environ.',
+      answer: 'os',
+      explanation: 'os.environ is a mapping of environment variable names to their values (both strings). You can read: os.environ["HOME"], and set: os.environ["MY_VAR"] = "value". Changes only affect the current Python process and its children.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the safest way to read an environment variable with a fallback default?',
+      options: [
+        'os.environ["API_KEY"]',
+        'os.environ.get("API_KEY", "default_value")',
+        'os.getenv["API_KEY"] or "default"',
+        'env.read("API_KEY", default="default")'
+      ],
+      answer: 1,
+      explanation: 'os.environ.get(key, default) returns the value if it exists, or the default if not — no exception. os.environ["API_KEY"] raises KeyError if the variable is missing. os.getenv(key, default) also works and is equivalent to .get().'
+    },
+    {
+      type: 'tf',
+      prompt: 'Environment variables are always strings, even if the value looks like a number.',
+      answer: true,
+      explanation: 'Everything in os.environ is a string. If you set TIMEOUT=30, os.environ["TIMEOUT"] returns "30". You must cast: int(os.environ["TIMEOUT"]). Forgetting this cast is a very common bug.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Why are environment variables preferred over hardcoding secrets in source code?',
+      options: [
+        'Environment variables are encrypted by the OS',
+        'Hardcoded secrets are committed to git, where they can leak; env vars live outside the codebase',
+        'Environment variables are faster to access than Python variables',
+        'Secrets in code are automatically removed by Python before execution'
+      ],
+      answer: 1,
+      explanation: 'Once a secret is committed to git it is in history forever, even after deletion. Environment variables never touch the codebase. This is the core principle of 12-factor app configuration: store config in the environment.'
+    },
+    {
+      type: 'fill',
+      before: 'The popular library for loading .env files into os.environ is called ',
+      after: '.',
+      answer: 'python-dotenv',
+      explanation: 'Install with pip install python-dotenv. Then: from dotenv import load_dotenv; load_dotenv(). This reads key=value pairs from a .env file in the project root and injects them into os.environ — only if they are not already set.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What should you add to .gitignore to prevent the .env file from being committed?',
+      options: ['# .env', '*.env', '.env', 'env/'],
+      answer: 2,
+      explanation: 'Add ".env" to .gitignore. The # prefix is a comment. "*.env" would also work. "env/" would ignore a directory named env. Check your .gitignore before the very first commit — a leaked secret cannot be safely unreverted.'
+    },
+    {
+      type: 'tf',
+      prompt: 'A child process launched by Python inherits the parent process\'s environment variables.',
+      answer: true,
+      explanation: 'By default child processes (e.g. started with subprocess) inherit a copy of the parent\'s environment. You can customise what they inherit using the env parameter in subprocess calls. This is how you pass configuration to spawned scripts.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which is the correct .env file syntax?',
+      options: [
+        'API_KEY = "abc123"',
+        'API_KEY=abc123',
+        'set API_KEY=abc123',
+        'export API_KEY="abc123"'
+      ],
+      answer: 1,
+      explanation: '.env files use KEY=VALUE syntax without spaces around = and without quotes for simple values (quotes are optional but supported). The export keyword is for shell scripts, not .env files.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Your script requires DATABASE_URL. What happens if it is missing and you use os.environ["DATABASE_URL"]?',
+      options: [
+        'It returns None',
+        'It returns an empty string',
+        'It raises a KeyError',
+        'It prompts the user to enter a value'
+      ],
+      answer: 2,
+      explanation: 'os.environ["key"] raises KeyError if the variable is not set. This is actually useful for required config — the crash tells you exactly what is missing. Use os.environ.get() only for truly optional variables with valid defaults.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

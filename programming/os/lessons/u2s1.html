@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: os.path Essentials</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u2s1',
+  title: 'os.path Essentials',
+  subtitle: 'join · basename · dirname · splitext',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'Why should you use os.path.join() instead of concatenating strings with "/"?',
+      options: [
+        'os.path.join() is faster',
+        'os.path.join() automatically uses the correct separator for the OS (/ or \\\\)',
+        'String concatenation does not work with paths',
+        'os.path.join() validates that the path exists'
+      ],
+      answer: 1,
+      explanation: 'On Windows the separator is \\, on Linux/Mac it is /. os.path.join() picks the right one automatically, making your code portable. "folder" + "/" + "file.csv" breaks on Windows.'
+    },
+    {
+      type: 'fill',
+      before: 'os.path.join("/data", "2024", "sales.csv") returns ',
+      after: '.',
+      answer: '/data/2024/sales.csv',
+      explanation: 'os.path.join() concatenates path components with the OS separator. On Linux/Mac: /data/2024/sales.csv. On Windows: \\\\data\\\\2024\\\\sales.csv. Pass as many components as you need.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does os.path.basename("/home/alice/data/report.csv") return?',
+      options: ['/home/alice/data/', 'report', 'report.csv', '/home/alice/'],
+      answer: 2,
+      explanation: 'basename returns the final component of a path — the filename including its extension. It strips everything before the last separator. Useful for displaying or logging the filename without the full path.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What does os.path.dirname("/home/alice/data/report.csv") return?',
+      options: ['report.csv', '/home/alice/data', '/home/alice/', 'data'],
+      answer: 1,
+      explanation: 'dirname returns everything except the final component — the directory containing the file. This is the counterpart to basename: dirname gives the folder, basename gives the filename.'
+    },
+    {
+      type: 'mc',
+      prompt: 'os.path.splitext("analysis_2024.csv") returns…',
+      options: [
+        '("analysis_2024", ".csv")',
+        '("analysis_2024.csv", "")',
+        '(".csv", "analysis_2024")',
+        '["analysis", "2024", "csv"]'
+      ],
+      answer: 0,
+      explanation: 'splitext splits a filename into (root, ext) where ext includes the dot. So "analysis_2024.csv" → ("analysis_2024", ".csv"). Great for changing extensions: stem + ".parquet" instead of ".csv".'
+    },
+    {
+      type: 'tf',
+      prompt: 'os.path.exists(path) returns True for both files and directories.',
+      answer: true,
+      explanation: 'os.path.exists() returns True if the path points to anything that exists — file, directory, or symlink. Use os.path.isfile() or os.path.isdir() if you need to distinguish.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which call gives you the size of a file in bytes?',
+      options: ['os.path.size(path)', 'os.path.getsize(path)', 'os.filesize(path)', 'os.stat(path).bytes'],
+      answer: 1,
+      explanation: 'os.path.getsize(path) returns the size in bytes as an integer. For a human-readable size divide by 1024**2 for MB. It raises OSError if the path does not exist.'
+    },
+    {
+      type: 'fill',
+      before: 'To get the absolute version of a relative path, use os.path.',
+      after: '(path).',
+      answer: 'abspath',
+      explanation: 'os.path.abspath("data/file.csv") resolves the path relative to the current working directory and returns the full absolute path. Useful for printing clear error messages or passing paths to other processes.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You have path = "/data/reports/q1_2024.csv". What does os.path.splitext(os.path.basename(path)) give you?',
+      options: [
+        '("/data/reports/q1_2024", ".csv")',
+        '("q1_2024", ".csv")',
+        '("q1_2024.csv", "")',
+        '("/data/reports/", "q1_2024.csv")'
+      ],
+      answer: 1,
+      explanation: 'First basename extracts "q1_2024.csv", then splitext splits that into ("q1_2024", ".csv"). Chaining these two is a very common pattern for getting the stem of a filename.'
+    },
+    {
+      type: 'tf',
+      prompt: 'os.path.join("/data", "/output/results.csv") returns "/data/output/results.csv".',
+      answer: false,
+      explanation: 'If any component passed to os.path.join() is absolute (starts with /), it discards everything before it. So os.path.join("/data", "/output/results.csv") returns "/output/results.csv" — a common gotcha.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>

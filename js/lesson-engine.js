@@ -118,7 +118,7 @@ if (!D.questions || D.questions.length === 0) {
     document.body.innerHTML = `
     <div id="lr">
       <header class="le-header">
-        <a class="le-back" href="../../lessons.html">← Back</a>
+        <a class="le-back" href="${D.backUrl || '../../lessons.html'}">← Back</a>
         <span class="le-title">${D.title}</span>
         <span style="width:40px"></span>
       </header>
@@ -126,7 +126,7 @@ if (!D.questions || D.questions.length === 0) {
         <div class="le-empty-icon">${D.emptyIcon || '✅'}</div>
         <h2>${D.emptyTitle || 'All caught up!'}</h2>
         <p>${D.emptyMsg || 'Nothing to review right now. Come back later.'}</p>
-        <button class="le-comp-btn primary" style="margin-top:8px;max-width:260px;" onclick="window.location.href='../../lessons.html'">Back to Lessons</button>
+        <button class="le-comp-btn primary" style="margin-top:8px;max-width:260px;" onclick="window.location.href='${D.backUrl || '../../lessons.html'}'">Back to Lessons</button>
       </div>
     </div>`;
     return;
@@ -136,7 +136,7 @@ if (!D.questions || D.questions.length === 0) {
 document.body.innerHTML = `
 <div id="lr">
   <header class="le-header">
-    <a class="le-back" href="../../lessons.html">✕</a>
+    <a class="le-back" href="${D.backUrl || '../../lessons.html'}">✕</a>
     <span class="le-title">${D.title}</span>
     <div class="le-hearts" id="le-hearts">
       <span class="le-heart" id="h1">♥</span>
@@ -182,7 +182,7 @@ document.body.innerHTML = `
     <p>Give it another go.</p>
     <div class="le-comp-btns">
       <button class="le-comp-btn primary" onclick="window.location.reload()">Try Again</button>
-      <button class="le-comp-btn secondary" onclick="window.location.href='../../lessons.html'">Back to Lessons</button>
+      <button class="le-comp-btn secondary" onclick="window.location.href='${D.backUrl || '../../lessons.html'}'">Back to Lessons</button>
     </div>
   </div>
 </div>
@@ -191,9 +191,9 @@ document.body.innerHTML = `
 // Review mode: "Back" goes to review, else to lessons
 if (D.isReview) {
     document.getElementById('le-comp-primary').textContent = 'Back to Lessons';
-    document.getElementById('le-comp-primary').onclick = () => window.location.href = '../../lessons.html';
+    document.getElementById('le-comp-primary').onclick = () => window.location.href = (D.backUrl || '../../lessons.html');
 } else {
-    document.getElementById('le-comp-primary').onclick = () => window.location.href = '../../lessons.html';
+    document.getElementById('le-comp-primary').onclick = () => window.location.href = (D.backUrl || '../../lessons.html');
 }
 
 // Hide crowns row for review sessions (no crown tracking)

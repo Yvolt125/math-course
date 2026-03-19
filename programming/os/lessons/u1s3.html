@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="../../../manifest.json">
+  <meta name="theme-color" content="#8e44ad">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lesson: Listing &amp; Navigating</title>
+</head>
+<body>
+<script>
+window.LESSON_DATA = {
+  id: 'os_u1s3',
+  title: 'Listing & Navigating',
+  subtitle: 'os.listdir · os.walk · os.chdir',
+  color: '#8e44ad',
+  questions: [
+    {
+      type: 'mc',
+      prompt: 'What does os.listdir(path) return?',
+      options: [
+        'A string with all filenames joined by commas',
+        'A list of names (files and directories) inside the given path',
+        'Only filenames, never directory names',
+        'A list of absolute paths for every item inside path'
+      ],
+      answer: 1,
+      explanation: 'os.listdir(path) returns a list of strings — the names (not full paths) of everything inside that directory, both files and subdirectories. To get full paths you combine with os.path.join(path, name).'
+    },
+    {
+      type: 'tf',
+      prompt: 'os.listdir() includes hidden files (those starting with a dot on Linux/Mac).',
+      answer: true,
+      explanation: 'Yes — os.listdir() returns everything, including .gitignore, .env, etc. The shell command ls hides them by default, but os.listdir() does not.'
+    },
+    {
+      type: 'fill',
+      before: 'To get the full path of each item from os.listdir(), use ',
+      after: '.path.join(folder, name).',
+      answer: 'os',
+      explanation: 'os.listdir() gives you bare names like "report.csv". To get "/data/report.csv" you do os.path.join("/data", "report.csv"). Always join — never concatenate strings with + for paths.'
+    },
+    {
+      type: 'mc',
+      prompt: 'What is the main advantage of os.walk() over os.listdir()?',
+      options: [
+        'os.walk() is faster for large directories',
+        'os.walk() recursively traverses all subdirectories automatically',
+        'os.walk() returns absolute paths while os.listdir() returns relative ones',
+        'os.walk() works on Windows but os.listdir() does not'
+      ],
+      answer: 1,
+      explanation: 'os.walk(top) yields a tuple (dirpath, dirnames, filenames) for every directory in the tree rooted at top. It handles all nesting automatically — you do not need to write recursive code yourself.'
+    },
+    {
+      type: 'mc',
+      prompt: 'os.walk() yields a 3-tuple. What are the three elements?',
+      options: [
+        'filename, size, timestamp',
+        'dirpath, dirnames, filenames',
+        'root, path, extension',
+        'parent, current, children'
+      ],
+      answer: 1,
+      explanation: 'Each iteration gives: dirpath (current folder as a string), dirnames (list of subfolder names in dirpath), filenames (list of file names in dirpath). To get full file paths: os.path.join(dirpath, filename).'
+    },
+    {
+      type: 'tf',
+      prompt: 'The following correctly prints every .csv file under /data:\nfor root, dirs, files in os.walk("/data"):\n    for f in files:\n        if f.endswith(".csv"):\n            print(os.path.join(root, f))',
+      answer: true,
+      explanation: 'Exactly right. os.walk gives root (the current directory path) and files (bare filenames in that directory). Joining them gives the full path. Checking endswith(".csv") filters to just CSV files.'
+    },
+    {
+      type: 'mc',
+      prompt: 'Which function would you use to check if a path is a directory (not a file)?',
+      options: ['os.isdir(path)', 'os.path.isdir(path)', 'os.check(path, "dir")', 'os.type(path)'],
+      answer: 1,
+      explanation: 'os.path.isdir(path) returns True if the path exists and is a directory. Its counterpart os.path.isfile(path) checks for files. Both return False if the path does not exist at all.'
+    },
+    {
+      type: 'fill',
+      before: 'To check whether a file or directory exists, use os.path.',
+      after: '(path).',
+      answer: 'exists',
+      explanation: 'os.path.exists(path) returns True if the path exists (file or directory), False otherwise. Always check before opening or deleting to avoid FileNotFoundError.'
+    },
+    {
+      type: 'mc',
+      prompt: 'You want to list only files (not subdirectories) in a folder. Which is the correct approach?',
+      options: [
+        'os.listfiles("/data")',
+        '[f for f in os.listdir("/data") if os.path.isfile(os.path.join("/data", f))]',
+        'os.walk("/data", files_only=True)',
+        'os.listdir("/data", dirs=False)'
+      ],
+      answer: 1,
+      explanation: 'There is no built-in "files only" parameter. You filter manually: list everything with os.listdir(), then keep only items where os.path.isfile() is True. Always join the folder name before calling isfile() to get the full path.'
+    },
+    {
+      type: 'tf',
+      prompt: 'os.chdir() permanently changes the working directory for the rest of the Python process until it is called again.',
+      answer: true,
+      explanation: 'os.chdir() changes the cwd for the entire process — all subsequent relative paths are resolved from the new directory. It is often better to build absolute paths instead, so your code does not depend on which directory it is run from.'
+    }
+  ]
+};
+</script>
+<script src="../../../js/lesson-engine.js"></script>
+<script>
+  document.querySelectorAll('.le-back').forEach(function(a){ a.href = '../index.html'; });
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
+</body>
+</html>
