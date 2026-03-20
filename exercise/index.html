@@ -370,20 +370,22 @@
   }
 
   function updatePosition(lat, lon, accuracy) {
-    if (accuracy > 30) {
+    // Increased tolerance for indoor/low signal tracking
+    if (accuracy > 60) {
       document.getElementById('gps-status').innerText = "Low Accuracy (" + Math.round(accuracy) + "m)";
       return;
     }
-    document.getElementById('gps-status').innerText = "GPS Signal: Good (" + Math.round(accuracy) + "m)";
+    document.getElementById('gps-status').innerText = "GPS Signal: OK (" + Math.round(accuracy) + "m)";
 
     const newPoint = { lat, lon };
     if (path.length > 0) {
       const prevPoint = path[path.length - 1];
       const d = haversine(prevPoint.lat, prevPoint.lon, newPoint.lat, newPoint.lon);
       
+      // Increased sensitivity: count if moved > 1m (was 2m)
       const timeDiff = 1;
       const speed = (d / timeDiff) * 3.6;
-      if (d > 2 && speed < 40) {
+      if (d > 1 && speed < 40) {
         distance += d;
         updateStats();
       }
