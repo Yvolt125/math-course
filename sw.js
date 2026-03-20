@@ -1,20 +1,18 @@
-const CACHE = 'math-ml-v3';
+const CACHE_NAME = 'hub-v6';
 
-const FILES = [
+// Assets to cache immediately on install
+const PRE_CACHE = [
   './index.html',
-  './math/week1/quiz.html',
-  './math/week1/flashcards.html',
-  './math/week1/mastery-guide.html',
-  './math/week2/mastery-guide.html',
   './manifest.json',
   './icon.svg',
-  './js/gmat-db.js',
-  './js/gmat-engine.js'
+  './exercise/index.html',
+  './applied-anthropology/index.html',
+  './sw.js'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(FILES))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(PRE_CACHE))
   );
   self.skipWaiting();
 });
@@ -22,21 +20,31 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Cache-first for local files, network-first for CDN resources
+// "Cache-First" Strategy: Use local copy first, then check for updates in background
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  const isLocal = url.origin === self.location.origin;
+  if (e.request.method !== 'GET') return;
 
-  if (isLocal) {
-    e.respondWith(
-      caches.match(e.request).then(r => r || fetch(e.request))
-    );
-  }
-  // CDN requests (KaTeX, Plotly, MathJax) pass through normally
+  e.respondWith(
+    caches.match(e.request).then(cachedResponse => {
+      const fetchPromise = fetch(e.request).then(networkResponse => {
+        // Update the cache with the fresh version for next time
+        if (networkResponse.ok) {
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheCopy));
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Quietly fail if network is down
+      });
+
+      // Return cached version immediately if we have it, otherwise wait for network
+      return cachedResponse || fetchPromise;
+    })
+  );
 });

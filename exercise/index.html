@@ -64,7 +64,7 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    /* Tracker UI (Running/Biking) */
+    /* Tracker UI */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -95,6 +95,7 @@
     }
     .btn-start { background: #27ae60; }
     .btn-stop { background: #c0392b; }
+    .btn-secondary { background: #ecf0f1; color: #7f8c8d; border: none; border-radius: 8px; cursor: pointer; }
 
     /* Gym UI */
     .gym-form {
@@ -104,13 +105,14 @@
       margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
-    .gym-form input, .gym-form select {
+    .gym-form select, .gym-form input {
       width: 100%;
       padding: 12px;
       margin-bottom: 12px;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 1em;
+      background: #fff;
     }
     .exercise-list { list-style: none; }
     .exercise-item {
@@ -145,6 +147,7 @@
     }
     .badge-run { background: #eafaf1; color: #27ae60; }
     .badge-bike { background: #eaf4fb; color: #2980b9; }
+    .badge-walk { background: #fef9e7; color: #f39c12; }
     .badge-gym { background: #fdedec; color: #c0392b; }
 
     #gps-status {
@@ -156,6 +159,11 @@
   </style>
 </head>
 <body>
+
+<!-- Hidden silent audio loop to keep background alive -->
+<audio id="silent-audio" loop>
+  <source src="data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+</audio>
 
 <header>
   <a class="back" href="../index.html">← Hub</a>
@@ -176,6 +184,7 @@
       <select id="activity-type" style="padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; font-weight: 600;">
         <option value="run">🏃‍♂️ Running</option>
         <option value="bike">🚴‍♂️ Biking</option>
+        <option value="walk">🚶‍♂️ Walking</option>
       </select>
     </div>
 
@@ -205,21 +214,56 @@
   <!-- GYM VIEW -->
   <div id="view-gym" class="view">
     <div class="gym-form">
-      <h3 style="margin-bottom: 15px; font-size: 1.1em;">Add Set</h3>
-      <input type="text" id="gym-exercise" placeholder="Exercise Name (e.g. Bench Press)" list="common-exercises">
-      <datalist id="common-exercises">
-        <option value="Bench Press">
-        <option value="Squat">
-        <option value="Deadlift">
-        <option value="Overhead Press">
-        <option value="Pull Ups">
-        <option value="Bicep Curls">
-      </datalist>
-      <div style="display: flex; gap: 10px;">
-        <input type="number" id="gym-weight" placeholder="Weight (kg)" step="0.5">
-        <input type="number" id="gym-reps" placeholder="Reps">
+      <h3 style="margin-bottom: 15px; font-size: 1.1em;">Log Set</h3>
+      
+      <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">EXERCISE</label>
+      <select id="gym-exercise">
+        <optgroup label="Chest">
+          <option value="Bench Press">Bench Press</option>
+          <option value="Incline Press">Incline Press</option>
+          <option value="Chest Fly">Chest Fly</option>
+          <option value="Push Ups">Push Ups</option>
+        </optgroup>
+        <optgroup label="Back">
+          <option value="Pull Ups">Pull Ups</option>
+          <option value="Lat Pulldown">Lat Pulldown</option>
+          <option value="Seated Row">Seated Row</option>
+          <option value="Deadlift">Deadlift</option>
+        </optgroup>
+        <optgroup label="Legs">
+          <option value="Squat">Squat</option>
+          <option value="Leg Press">Leg Press</option>
+          <option value="Lunges">Lunges</option>
+          <option value="Leg Curl">Leg Curl</option>
+        </optgroup>
+        <optgroup label="Arms/Shoulders">
+          <option value="Overhead Press">Overhead Press</option>
+          <option value="Lateral Raise">Lateral Raise</option>
+          <option value="Bicep Curl">Bicep Curl</option>
+          <option value="Tricep Extension">Tricep Extension</option>
+        </optgroup>
+      </select>
+
+      <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">WEIGHT (KG)</label>
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-weight', -2.5)">-</button>
+            <input type="number" id="gym-weight" value="40" step="2.5" style="margin: 0; text-align: center; flex: 2;">
+            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-weight', 2.5)">+</button>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">REPS</label>
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-reps', -1)">-</button>
+            <input type="number" id="gym-reps" value="10" style="margin: 0; text-align: center; flex: 2;">
+            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-reps', 1)">+</button>
+          </div>
+        </div>
       </div>
-      <button class="btn-main btn-start" style="padding: 12px; margin-bottom: 0;" onclick="addGymSet()">Add to Session</button>
+
+      <button class="btn-main btn-start" style="padding: 15px; margin-bottom: 0;" onclick="addGymSet()">Add Set</button>
     </div>
 
     <div id="current-gym-session">
@@ -264,70 +308,65 @@
 
   // --- TRACKER LOGIC ---
   function toggleTracking() {
-    if (!isTracking) {
-      startTracking();
-    } else {
-      stopTracking();
-    }
-  }
-
-  function startTracking() {
-    if (!navigator.geolocation) {
-      alert("GPS not supported on this device.");
-      return;
-    }
-
-    isTracking = true;
-    startTime = Date.now();
-    distance = 0;
-    path = [];
+    const audio = document.getElementById('silent-audio');
     
-    document.getElementById('btn-toggle').innerText = "Finish Session";
-    document.getElementById('btn-toggle').classList.replace('btn-start', 'btn-stop');
-    document.getElementById('gps-status').innerText = "GPS Signal: Searching...";
+    if (!isTracking) {
+      if (!navigator.geolocation) {
+        alert("GPS not supported on this device.");
+        return;
+      }
 
-    // Start Timer
-    timerInterval = setInterval(updateTimer, 1000);
+      isTracking = true;
+      startTime = Date.now();
+      distance = 0;
+      path = [];
+      
+      document.getElementById('btn-toggle').innerText = "Finish Session";
+      document.getElementById('btn-toggle').classList.replace('btn-start', 'btn-stop');
+      document.getElementById('gps-status').innerText = "GPS Signal: Searching...";
 
-    // Start GPS
-    watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-      },
-      (err) => {
-        console.error(err);
-        document.getElementById('gps-status').innerText = "GPS Error: " + err.message;
-      },
-      { enableHighAccuracy: true, maximumAge: 1000 }
-    );
-  }
+      audio.play().catch(e => console.log("Audio start error:", e));
 
-  function stopTracking() {
-    isTracking = false;
-    clearInterval(timerInterval);
-    navigator.geolocation.clearWatch(watchId);
+      timerInterval = setInterval(updateTimer, 1000);
 
-    const type = document.getElementById('activity-type').value;
-    const finalTime = Math.floor((Date.now() - startTime) / 1000);
-    const finalDist = (distance / 1000).toFixed(2);
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        },
+        (err) => {
+          console.error(err);
+          document.getElementById('gps-status').innerText = "GPS Error: " + err.message;
+        },
+        { enableHighAccuracy: true, maximumAge: 1000 }
+      );
+    } else {
+      isTracking = false;
+      clearInterval(timerInterval);
+      navigator.geolocation.clearWatch(watchId);
 
-    // Save session
-    if (distance > 5) { // Only save if moved more than 5m
-      saveActivity({
-        type: type,
-        date: new Date().toISOString(),
-        distance: finalDist,
-        duration: finalTime,
-        avgSpeed: (finalDist / (finalTime / 3600)).toFixed(1)
-      });
+      audio.pause();
+      audio.currentTime = 0;
+
+      const type = document.getElementById('activity-type').value;
+      const finalTime = Math.floor((Date.now() - startTime) / 1000);
+      const finalDist = (distance / 1000).toFixed(2);
+
+      if (distance > 5) {
+        saveActivity({
+          type: type,
+          date: new Date().toISOString(),
+          distance: finalDist,
+          duration: finalTime,
+          avgSpeed: (finalDist / (finalTime / 3600)).toFixed(1)
+        });
+      }
+
+      document.getElementById('btn-toggle').innerText = "Start Session";
+      document.getElementById('btn-toggle').classList.replace('btn-stop', 'btn-start');
+      document.getElementById('gps-status').innerText = "GPS Signal: Standby";
+      resetStats();
+      showView('history');
     }
-
-    // Reset UI
-    document.getElementById('btn-toggle').innerText = "Start Session";
-    document.getElementById('btn-toggle').classList.replace('btn-stop', 'btn-start');
-    document.getElementById('gps-status').innerText = "GPS Signal: Standby";
-    resetStats();
-    showView('history');
   }
 
   function updatePosition(lat, lon, accuracy) {
@@ -342,8 +381,7 @@
       const prevPoint = path[path.length - 1];
       const d = haversine(prevPoint.lat, prevPoint.lon, newPoint.lat, newPoint.lon);
       
-      // Filter jitter: only count if moved > 2m and speed < 40km/h
-      const timeDiff = 1; // approx
+      const timeDiff = 1;
       const speed = (d / timeDiff) * 3.6;
       if (d > 2 && speed < 40) {
         distance += d;
@@ -354,7 +392,7 @@
   }
 
   function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371e3; // meters
+    const R = 6371e3;
     const φ1 = lat1 * Math.PI/180;
     const φ2 = lat2 * Math.PI/180;
     const Δφ = (lat2-lat1) * Math.PI/180;
@@ -408,6 +446,13 @@
   }
 
   // --- GYM LOGIC ---
+  function adjustValue(id, delta) {
+    const input = document.getElementById(id);
+    let val = parseFloat(input.value) || 0;
+    val = Math.max(0, val + delta);
+    input.value = val;
+  }
+
   function addGymSet() {
     const ex = document.getElementById('gym-exercise').value;
     const wt = document.getElementById('gym-weight').value;
@@ -419,10 +464,6 @@
     currentGymSession.push(setData);
     
     renderCurrentGymSession();
-    
-    // Clear inputs except exercise name for convenience
-    document.getElementById('gym-weight').value = '';
-    document.getElementById('gym-reps').value = '';
     document.getElementById('btn-finish-gym').style.display = 'block';
   }
 
@@ -457,7 +498,6 @@
     });
 
     currentGymSession = [];
-    document.getElementById('gym-exercise').value = '';
     renderCurrentGymSession();
     document.getElementById('btn-finish-gym').style.display = 'none';
     showView('history');
@@ -467,7 +507,7 @@
   function saveActivity(activity) {
     const history = JSON.parse(localStorage.getItem('exercise-history') || '[]');
     history.unshift(activity);
-    localStorage.setItem('exercise-history', JSON.stringify(history.slice(0, 50))); // Keep last 50
+    localStorage.setItem('exercise-history', JSON.stringify(history.slice(0, 50)));
   }
 
   function renderHistory() {
@@ -495,10 +535,9 @@
           </div>
         `;
       } else {
-        const icon = h.type === 'run' ? '🏃‍♂️' : '🚴‍♂️';
-        const badgeClass = h.type === 'run' ? 'badge-run' : 'badge-bike';
+        const badgeClass = h.type === 'run' ? 'badge-run' : (h.type === 'bike' ? 'badge-bike' : 'badge-walk');
         return `
-          <div class="history-card" style="border-left-color: ${h.type === 'run' ? '#27ae60' : '#2980b9'};">
+          <div class="history-card" style="border-left-color: ${h.type === 'run' ? '#27ae60' : (h.type === 'bike' ? '#2980b9' : '#f39c12')};">
             <span class="badge ${badgeClass}">${h.type}</span>
             <div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;">
