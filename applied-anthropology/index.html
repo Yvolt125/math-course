@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applied Anthropology — Study Hub</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #1a252f;
+      color: white;
+      padding: 28px 20px 24px;
+      text-align: center;
+      position: relative;
+    }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; }
+    header p  { font-size: 0.78em; opacity: 0.5; margin-top: 3px; letter-spacing: 1px; }
+    .back {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em;
+    }
+    .back:hover { color: white; }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 60px;
+      gap: 20px;
+      max-width: 520px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-card {
+      width: 100%;
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .prompt-box {
+      background: #fdf2e9;
+      border-left: 4px solid #e67e22;
+      padding: 16px;
+      border-radius: 8px;
+      color: #7e5109;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .social-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .social-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 1px solid #e9ecef;
+    }
+
+    .social-info h3 {
+      font-size: 0.95em;
+      color: #2c3e50;
+    }
+
+    .social-info p {
+      font-size: 0.8em;
+      color: #7f8c8d;
+    }
+
+    .social-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:active { opacity: 0.7; }
+
+    .btn-primary { background: #e67e22; color: white; }
+    .btn-secondary { background: #ecf0f1; color: #7f8c8d; }
+    .btn-delete { background: #fadbd8; color: #c0392b; }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .add-form input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+
+    .add-form button {
+      padding: 10px;
+      background: #1a252f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .badge {
+      font-size: 0.7em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .badge-urgent { background: #fadbd8; color: #c0392b; }
+    .badge-upcoming { background: #d4efdf; color: #27ae60; }
+
+    .principles-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .principle-item {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+    }
+    .principle-item:last-child { border-bottom: none; }
+    .principle-title {
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 0.95em;
+      margin-bottom: 4px;
+    }
+    .principle-content {
+      font-size: 0.85em;
+      color: #5d6d7e;
+      line-height: 1.4;
+    }
+    .principle-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .tag-maintain { background: #e8f8f5; color: #16a085; }
+    .tag-deepen { background: #ebf5fb; color: #2980b9; }
+    .tag-support { background: #fef9e7; color: #f1c40f; }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 24px;
+      border-radius: 18px;
+      max-width: 480px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+    }
+    .close-modal {
+      font-size: 24px;
+      cursor: pointer;
+      color: #7f8c8d;
+    }
+
+  </style>
+</head>
+<body>
+
+<div id="guide-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 style="font-size: 1.1em; color: #2c3e50;">✨ Strategic Social System</h2>
+      <span class="close-modal" onclick="toggleGuide()">&times;</span>
+    </div>
+    <div class="principles-list">
+      <div class="principle-item">
+        <div class="principle-title">1. Reduce Decisions, Not Increase Them</div>
+        <div class="principle-content">Predefine categories and rotation rules. Let a system (not mood) decide who/what next to save mental energy.</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">2. Use 3 Simple Social Buckets</div>
+        <div class="principle-content">
+          <span class="principle-tag tag-maintain">Maintain</span> Light touch: Texting, checking in (High frequency, low effort).<br>
+          <span class="principle-tag tag-deepen">Deepen</span> Shared experiences: Coffee, dinner, walks (Growth).<br>
+          <span class="principle-tag tag-support">Support</span> Intentional effort: Helping, favors (High impact).
+        </div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">3. Categorize by “Closeness Tier”</div>
+        <div class="principle-content">
+          <b>Tier 1 (Inner, 3-8):</b> High priority, frequent contact.<br>
+          <b>Tier 2 (Active, 8-20):</b> Friends to grow. Medium frequency.<br>
+          <b>Tier 3 (Outer, Unlimited):</b> Acquaintances. Low frequency.
+        </div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">4. Weekly “Social Rotation”</div>
+        <div class="principle-content">Aim for 3-4 actions/week: 2× Maintain, 1× Deepen, 1× Support (optional).</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">5. Use a “Rolling Queue”</div>
+        <div class="principle-content">Move people to the bottom after contact; always pick from the top. Ensures automatic fairness.</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">6. Frequency Rules per Tier</div>
+        <div class="principle-content">Tier 1: 1-2 weeks | Tier 2: 3-6 weeks | Tier 3: 2-4 months. Move up if they feel "due".</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">7. Make It Frictionless</div>
+        <div class="principle-content">Set recurring reminders: 2×/week for "Social Maintenance" (10m), 1×/week for "Plan Something" (15m).</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">8. “Default Action” Rule</div>
+        <div class="principle-content">Tired? <b>Maintain</b>. Normal? <b>Deepen</b>. Motivated? <b>Support</b>. No overthinking.</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">9. Prevent Overwhelm</div>
+        <div class="principle-content">Max 1 planned event/week. Max 3 outreach messages/session. Skip guilt.</div>
+      </div>
+      <div class="principle-item">
+        <div class="principle-title">10. Light Tracking</div>
+        <div class="principle-content">Only track last contact and next idea (e.g., "walk"). Avoid detailed logs.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <a class="back" href="../index.html">← Home</a>
+  <h1>Applied Anthropology</h1>
+  <p>Social dynamics & networking</p>
+</header>
+
+<div class="container">
+
+  <div class="section-card" style="padding: 16px 24px;">
+    <div class="section-title" style="margin-bottom: 0; justify-content: space-between;">
+      <span style="font-size: 0.9em; opacity: 0.8;">System Strategy</span>
+      <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75em;" onclick="toggleGuide()">Open Guide</button>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">✨ Prompt of the Day</div>
+    <div id="prompt" class="prompt-box">
+      Loading prompt...
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 10px;">
+      <button class="btn btn-secondary" style="flex: 1;" onclick="newPrompt()">New Prompt</button>
+      <button id="view-all-btn" class="btn btn-secondary" onclick="togglePrompts()">View All</button>
+    </div>
+    <div id="prompts-list-container" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+      <ul id="all-prompts-list" style="font-size: 0.85em; color: #34495e; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+        <!-- Prompts will be injected here -->
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title" style="justify-content: space-between;">
+      <span>👥 Social Reminders</span>
+      <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7em;" onclick="togglePoolManager()">Manage Pool</button>
+    </div>
+    
+    <div id="due-container">
+      <p style="font-size: 0.8em; color: #7f8c8d; margin-bottom: 12px;">Due for contact based on your intervals:</p>
+      
+      <div class="section-title" style="font-size: 0.85em; color: #3498db; margin-top: 10px;">🌍 Long Distance Check-ins</div>
+      <ul id="contact-due-list" class="social-list" style="margin-bottom: 20px;">
+        <!-- Contact items will be injected here -->
+      </ul>
+
+      <div class="section-title" style="font-size: 0.85em; color: #27ae60;">📍 Local Activity Suggestions</div>
+      <ul id="meetup-due-list" class="social-list">
+        <!-- Meetup items will be injected here -->
+      </ul>
+    </div>
+
+    <div id="pool-manager" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 16px;">
+      <div class="section-title" style="font-size: 0.9em;">Add to Pool</div>
+      <div class="add-form">
+        <input type="text" id="name-input" placeholder="Name">
+        <input type="text" id="reason-input" placeholder="Context (e.g. 'College friend')">
+        <div style="display: flex; gap: 8px;">
+          <select id="type-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
+            <option value="remote">🌍 Long Distance</option>
+            <option value="local">📍 Local Connection</option>
+          </select>
+          <select id="tier-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
+            <option value="1">Tier 1 (Inner)</option>
+            <option value="2" selected>Tier 2 (Active)</option>
+            <option value="3">Tier 3 (Outer)</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <select id="bucket-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
+            <option value="maintain">Maintain (Light)</option>
+            <option value="deepen" selected>Deepen (Shared)</option>
+            <option value="support">Support (Effort)</option>
+          </select>
+          <select id="freq-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
+            <option value="7">Weekly</option>
+            <option value="14">Bi-weekly</option>
+            <option value="30" selected>Monthly</option>
+            <option value="60">Every 2mo</option>
+            <option value="120">Every 4mo</option>
+          </select>
+        </div>
+        <input type="text" id="ideas-input" placeholder="Ideas (e.g. coffee, podcast, share article)">
+        <button onclick="addPerson()">Add Person</button>
+      </div>
+      
+      <div class="section-title" style="font-size: 0.9em; margin-top: 20px;">Full Pool</div>
+      <ul id="full-pool-list" class="social-list">
+        <!-- All people will be injected here -->
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const prompts = [
+    "Compliment a stranger on something they chose (e.g., their shoes, a book).",
+    "Ask a coworker about their weekend plans or a hobby they mentioned.",
+    "Call a family member you haven't spoken to in a while just to check in.",
+    "Send a 'thinking of you' text to a friend you haven't seen lately.",
+    "Strike up a conversation with someone while waiting in line.",
+    "Ask someone for a recommendation (book, movie, or restaurant).",
+    "Share a small personal win with someone today.",
+    "Listen actively to someone without interrupting for 5 minutes.",
+    "Offer a genuine thank you to someone who helped you today.",
+    "Invite someone for a quick coffee or walk.",
+    "Ask someone 'What's the best thing that happened to you this week?'",
+    "Reach out to a former colleague to see how their new role is going.",
+    "Ask a friend what they're currently most excited about.",
+    "Notice someone who is excluded in a group and bring them into the conversation.",
+    "Ask a colleague for feedback on a recent task or project.",
+    "Send a handwritten note or card to someone unexpectedly.",
+    "Practice mirroring someone's body language in a conversation to build rapport.",
+    "Ask someone about a challenge they've overcome recently.",
+    "Offer to mentor someone or share a skill you've mastered.",
+    "Ask a local shop owner or worker how their day is going.",
+    "Tell someone specifically why you appreciate their presence in your life.",
+    "Ask someone: 'What's a project you've always wanted to start but haven't yet?'",
+    "Invite a neighbor over for a brief chat or tea/coffee.",
+    "Send an article or resource to someone that reminds you of a conversation you had.",
+    "Ask a peer what their favorite way to recharge is.",
+    "Give a genuine compliment to a service worker (barista, cashier, etc.).",
+    "Ask someone: 'If you could learn any new skill instantly, what would it be?'",
+    "Initiate a conversation with someone you often see but rarely speak to.",
+    "Practice pausing for 2 seconds before responding in a conversation today.",
+    "Ask someone for their honest opinion on a topic you're curious about."
+  ];
+
+  function getBelgiumDate() {
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Brussels',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+  }
+
+  function getPromptState() {
+    const state = localStorage.getItem('prompt-state');
+    return state ? JSON.parse(state) : { history: [], current: null, date: null };
+  }
+
+  function savePromptState(state) {
+    localStorage.setItem('prompt-state', JSON.stringify(state));
+  }
+
+  function newPrompt(isAutoReset = false) {
+    const state = getPromptState();
+    const excluded = [...state.history];
+    if (state.current) excluded.push(state.current);
+
+    const available = prompts.filter(p => !excluded.includes(p));
+    const pool = available.length > 0 ? available : prompts;
+    const nextPrompt = pool[Math.floor(Math.random() * pool.length)];
+
+    if (state.current) {
+      state.history.push(state.current);
+      if (state.history.length > 3) state.history.shift();
+    }
+
+    state.current = nextPrompt;
+    if (isAutoReset) state.date = getBelgiumDate();
+
+    savePromptState(state);
+    document.getElementById('prompt').innerText = nextPrompt;
+  }
+
+  function initPrompt() {
+    const state = getPromptState();
+    const today = getBelgiumDate();
+
+    if (state.date !== today) {
+      newPrompt(true);
+    } else {
+      document.getElementById('prompt').innerText = state.current || "Click 'New Prompt' to start!";
+    }
+  }
+
+  function togglePrompts() {
+    const container = document.getElementById('prompts-list-container');
+    const btn = document.getElementById('view-all-btn');
+    const list = document.getElementById('all-prompts-list');
+    
+    if (container.style.display === 'none') {
+      list.innerHTML = prompts.map(p => `<li>${p}</li>`).join('');
+      container.style.display = 'block';
+      btn.innerText = 'Hide All';
+    } else {
+      container.style.display = 'none';
+      btn.innerText = 'View All';
+    }
+  }
+
+  function getSocialData() {
+    const defaultPool = [
+      {
+        id: 1,
+        name: "Joshua Clark",
+        reason: "General catch-up",
+        type: "local",
+        tier: "2",
+        bucket: "deepen",
+        frequency: 21,
+        ideas: "coffee, walking, share book",
+        lastContact: new Date().toISOString().split('T')[0]
+      }
+    ];
+    const stored = localStorage.getItem('social-reminders-pool');
+    if (!stored) {
+      localStorage.setItem('social-reminders-pool', JSON.stringify(defaultPool));
+      return defaultPool;
+    }
+    return JSON.parse(stored);
+  }
+
+  function saveSocialData(data) {
+    localStorage.setItem('social-reminders-pool', JSON.stringify(data));
+    renderSocialList();
+  }
+
+  function togglePoolManager() {
+    const manager = document.getElementById('pool-manager');
+    const due = document.getElementById('due-container');
+    if (manager.style.display === 'none') {
+      manager.style.display = 'block';
+      due.style.display = 'none';
+    } else {
+      manager.style.display = 'none';
+      due.style.display = 'block';
+    }
+  }
+
+  function toggleGuide() {
+    const modal = document.getElementById('guide-modal');
+    modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
+  }
+
+  function addPerson() {
+    const nameInput = document.getElementById('name-input');
+    const reasonInput = document.getElementById('reason-input');
+    const freqInput = document.getElementById('freq-input');
+    const typeInput = document.getElementById('type-input');
+    const tierInput = document.getElementById('tier-input');
+    const bucketInput = document.getElementById('bucket-input');
+    const ideasInput = document.getElementById('ideas-input');
+
+    if (!nameInput.value) return;
+
+    const newPerson = {
+      id: Date.now(),
+      name: nameInput.value,
+      reason: reasonInput.value,
+      type: typeInput.value,
+      tier: tierInput.value,
+      bucket: bucketInput.value,
+      frequency: parseInt(freqInput.value),
+      ideas: ideasInput.value,
+      lastContact: new Date().toISOString().split('T')[0]
+    };
+
+    const data = getSocialData();
+    data.push(newPerson);
+    saveSocialData(data);
+
+    nameInput.value = '';
+    reasonInput.value = '';
+    ideasInput.value = '';
+  }
+
+  function markContacted(id) {
+    const data = getSocialData();
+    const person = data.find(p => p.id === id);
+    if (person) {
+      person.lastContact = new Date().toISOString().split('T')[0];
+      saveSocialData(data);
+    }
+  }
+
+  function deletePerson(id) {
+    if (!confirm('Remove this person from your pool?')) return;
+    const data = getSocialData().filter(p => p.id !== id);
+    saveSocialData(data);
+  }
+
+  function renderSocialList() {
+    const contactDueList = document.getElementById('contact-due-list');
+    const meetupDueList = document.getElementById('meetup-due-list');
+    const fullList = document.getElementById('full-pool-list');
+    const data = getSocialData();
+    const today = new Date();
+
+    // Rolling Queue: Sort by lastContact (oldest first)
+    data.sort((a, b) => new Date(a.lastContact) - new Date(b.lastContact));
+
+    contactDueList.innerHTML = '';
+    meetupDueList.innerHTML = '';
+    fullList.innerHTML = '';
+
+    let contactCount = 0;
+    let meetupCount = 0;
+
+    data.forEach(p => {
+      const lastDate = new Date(p.lastContact);
+      const diffTime = Math.abs(today - lastDate);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const isDue = diffDays >= p.frequency;
+      const typeIcon = p.type === 'local' ? '📍' : '🌍';
+      
+      const bucketClass = `tag-${p.bucket || 'maintain'}`;
+      const tierText = p.tier ? `T${p.tier}` : '';
+
+      const ideasHtml = p.ideas ? `
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+          ${p.ideas.split(',').map(i => `<span style="font-size: 0.65em; background: #eef2f3; color: #34495e; padding: 2px 6px; border-radius: 8px;">${i.trim()}</span>`).join('')}
+        </div>
+      ` : '';
+
+      const liContent = `
+        <div class="social-info" style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <h3 style="font-size: 0.9em;">${typeIcon} ${p.name}</h3>
+            ${tierText ? `<span style="font-size: 0.6em; background: #34495e; color: white; padding: 1px 4px; border-radius: 3px; font-weight: bold;">${tierText}</span>` : ''}
+            <span class="principle-tag ${bucketClass}" style="margin: 0; font-size: 0.6em; padding: 1px 6px;">${p.bucket || 'Maintain'}</span>
+          </div>
+          <p style="font-size: 0.75em; color: #7f8c8d;">${p.reason || 'No context'}</p>
+          ${ideasHtml}
+          <p style="font-size: 0.6em; color: #bdc3c7; margin-top: 4px;">
+            Every ${p.frequency}d | Last: ${p.lastContact}
+          </p>
+        </div>
+        <div class="social-actions" style="margin-left: 10px;">
+          ${isDue ? `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75em;" onclick="markContacted(${p.id})">Done</button>` : ''}
+          <button class="btn btn-delete" style="padding: 4px 8px; font-size: 0.75em;" onclick="deletePerson(${p.id})">✕</button>
+        </div>
+      `;
+
+      const fullLi = document.createElement('li');
+      fullLi.className = 'social-item';
+      fullLi.innerHTML = liContent;
+      fullList.appendChild(fullLi);
+
+      if (isDue) {
+        const dueLi = document.createElement('li');
+        dueLi.className = 'social-item';
+        dueLi.innerHTML = liContent;
+        if (p.type === 'local') {
+          meetupCount++;
+          meetupDueList.appendChild(dueLi);
+        } else {
+          contactCount++;
+          contactDueList.appendChild(dueLi);
+        }
+      }
+    });
+
+    if (contactCount === 0) contactDueList.innerHTML = '<p style="text-align:center; color:#95a5a6; font-size:0.8em; padding: 10px;">All check-ins done! ✨</p>';
+    if (meetupCount === 0) meetupDueList.innerHTML = '<p style="text-align:center; color:#95a5a6; font-size:0.8em; padding: 10px;">No pending activity suggestions. 🌟</p>';
+  }
+
+  // Initialize
+  initPrompt();
+  renderSocialList();
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+</script>
+</body>
+</html>

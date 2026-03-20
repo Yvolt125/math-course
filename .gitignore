@@ -10,3 +10,6 @@ Thumbs.db
 
 # PyCharm
 .idea/
+
+# temp file
+/temp
