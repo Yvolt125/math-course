@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Exercise Tracker — Study Hub</title>
+  <title>Exercise Tracker — The Hub</title>
   <link rel="manifest" href="../manifest.json">
   <meta name="theme-color" content="#c0392b">
   <meta name="mobile-web-app-capable" content="yes">
@@ -160,7 +160,6 @@
 </head>
 <body>
 
-<!-- Hidden silent audio loop to keep background alive -->
 <audio id="silent-audio" loop>
   <source src="data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
 </audio>
@@ -184,7 +183,7 @@
       <select id="activity-type" style="padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; font-weight: 600;">
         <option value="run">🏃‍♂️ Running</option>
         <option value="bike">🚴‍♂️ Biking</option>
-        <option value="walk">🚶‍♂️ Walking</option>
+        <option value="walk" selected>🚶‍♂️ Walking</option>
       </select>
     </div>
 
@@ -275,237 +274,182 @@
     </div>
   </div>
 
-  <!-- HISTORY VIEW -->
   <div id="view-history" class="view">
     <h3 style="margin-bottom: 15px;">Recent Activities</h3>
-    <div id="history-list">
-      <!-- History items injected here -->
-    </div>
+    <div id="history-list"></div>
     <button class="btn-main btn-stop" style="background: #7f8c8d; font-size: 0.8em; padding: 10px;" onclick="clearHistory()">Clear All Data</button>
   </div>
 
 </div>
 
 <script>
-  // --- STATE ---
   let isTracking = false;
   let startTime = null;
   let timerInterval = null;
   let watchId = null;
-  let distance = 0; // meters
-  let path = []; // array of {lat, lon}
+  let distance = 0;
+  let path = [];
   let currentGymSession = [];
+  
+  // Smoothing Buffer: average last 3 points to reduce jitter
+  let pointBuffer = [];
+  const BUFFER_SIZE = 3;
 
-  // --- NAVIGATION ---
   function showView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById(`view-${viewName}`).classList.add('active');
     document.querySelector(`.nav-tab[onclick="showView('${viewName}')"]`).classList.add('active');
-    
     if (viewName === 'history') renderHistory();
   }
 
-  // --- TRACKER LOGIC ---
   function toggleTracking() {
     const audio = document.getElementById('silent-audio');
-    
     if (!isTracking) {
-      if (!navigator.geolocation) {
-        alert("GPS not supported on this device.");
-        return;
-      }
-
+      if (!navigator.geolocation) return alert("GPS not supported.");
       isTracking = true;
       startTime = Date.now();
       distance = 0;
       path = [];
-      
+      pointBuffer = [];
       document.getElementById('btn-toggle').innerText = "Finish Session";
       document.getElementById('btn-toggle').classList.replace('btn-start', 'btn-stop');
-      document.getElementById('gps-status').innerText = "GPS Signal: Searching...";
-
-      audio.play().catch(e => console.log("Audio start error:", e));
-
-      timerInterval = setInterval(updateTimer, 1000);
+      audio.play().catch(e => console.log(e));
+      timerInterval = setInterval(() => {
+        document.getElementById('display-time').innerText = formatTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
 
       watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-        },
-        (err) => {
-          console.error(err);
-          document.getElementById('gps-status').innerText = "GPS Error: " + err.message;
-        },
-        { enableHighAccuracy: true, maximumAge: 1000 }
+        (pos) => updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, pos.coords.speed),
+        (err) => document.getElementById('gps-status').innerText = "GPS Error: " + err.message,
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
       );
     } else {
-      isTracking = false;
-      clearInterval(timerInterval);
-      navigator.geolocation.clearWatch(watchId);
-
-      audio.pause();
-      audio.currentTime = 0;
-
-      const type = document.getElementById('activity-type').value;
-      const finalTime = Math.floor((Date.now() - startTime) / 1000);
-      const finalDist = (distance / 1000).toFixed(2);
-
-      if (distance > 5) {
-        saveActivity({
-          type: type,
-          date: new Date().toISOString(),
-          distance: finalDist,
-          duration: finalTime,
-          avgSpeed: (finalDist / (finalTime / 3600)).toFixed(1)
-        });
-      }
-
-      document.getElementById('btn-toggle').innerText = "Start Session";
-      document.getElementById('btn-toggle').classList.replace('btn-stop', 'btn-start');
-      document.getElementById('gps-status').innerText = "GPS Signal: Standby";
-      resetStats();
-      showView('history');
+      stopTracking();
     }
   }
 
-  function updatePosition(lat, lon, accuracy) {
-    // Increased tolerance for indoor/low signal tracking
-    if (accuracy > 60) {
-      document.getElementById('gps-status').innerText = "Low Accuracy (" + Math.round(accuracy) + "m)";
+  function stopTracking() {
+    isTracking = false;
+    clearInterval(timerInterval);
+    navigator.geolocation.clearWatch(watchId);
+    document.getElementById('silent-audio').pause();
+    saveActivity({
+      type: document.getElementById('activity-type').value,
+      date: new Date().toISOString(),
+      distance: (distance / 1000).toFixed(2),
+      duration: Math.floor((Date.now() - startTime) / 1000),
+      avgSpeed: ((distance / 1000) / (Math.floor((Date.now() - startTime) / 1000) / 3600)).toFixed(1)
+    });
+    document.getElementById('btn-toggle').innerText = "Start Session";
+    document.getElementById('btn-toggle').classList.replace('btn-stop', 'btn-start');
+    resetStats();
+    showView('history');
+  }
+
+  function updatePosition(lat, lon, accuracy, nativeSpeed) {
+    if (accuracy > 50) {
+      document.getElementById('gps-status').innerText = "Signal: Low (" + Math.round(accuracy) + "m)";
       return;
     }
-    document.getElementById('gps-status').innerText = "GPS Signal: OK (" + Math.round(accuracy) + "m)";
+    document.getElementById('gps-status').innerText = "Signal: OK (" + Math.round(accuracy) + "m)";
 
-    const newPoint = { lat, lon };
+    pointBuffer.push({lat, lon});
+    if (pointBuffer.length > BUFFER_SIZE) pointBuffer.shift();
+    
+    const avgLat = pointBuffer.reduce((sum, p) => sum + p.lat, 0) / pointBuffer.length;
+    const avgLon = pointBuffer.reduce((sum, p) => sum + p.lon, 0) / pointBuffer.length;
+    const newPoint = { lat: avgLat, lon: avgLon };
+
     if (path.length > 0) {
       const prevPoint = path[path.length - 1];
       const d = haversine(prevPoint.lat, prevPoint.lon, newPoint.lat, newPoint.lon);
-      
-      // Increased sensitivity: count if moved > 1m (was 2m)
-      const timeDiff = 1;
-      const speed = (d / timeDiff) * 3.6;
-      if (d > 1 && speed < 40) {
+      if (d > 2) { // 2m threshold to filter micro-jitter
         distance += d;
-        updateStats();
+        const calcSpeed = (d / 1) * 3.6; // assuming 1s interval
+        const speedKmh = (nativeSpeed && nativeSpeed > 0) ? (nativeSpeed * 3.6) : calcSpeed;
+        updateStats(speedKmh);
       }
     }
     path.push(newPoint);
   }
 
-  function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI/180;
-    const φ2 = lat2 * Math.PI/180;
-    const Δφ = (lat2-lat1) * Math.PI/180;
-    const Δλ = (lon2-lon1) * Math.PI/180;
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-
-  function updateTimer() {
-    const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    document.getElementById('display-time').innerText = formatTime(elapsed);
-    updateStats();
-  }
-
-  function updateStats() {
+  function updateStats(speedKmh) {
     const distKm = distance / 1000;
     document.getElementById('display-distance').innerText = distKm.toFixed(2);
-    
+    document.getElementById('display-speed').innerText = speedKmh.toFixed(1);
     const elapsedSec = (Date.now() - startTime) / 1000;
-    if (elapsedSec > 0 && distKm > 0) {
-      const speed = (distKm / (elapsedSec / 3600)).toFixed(1);
+    if (distKm > 0) {
       const pace = (elapsedSec / 60) / distKm;
-      
-      document.getElementById('display-speed').innerText = speed;
       document.getElementById('display-pace').innerText = formatPace(pace);
     }
   }
 
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
   function formatTime(sec) {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = sec % 60;
-    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return (h > 0 ? h + ":" : "") + m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
   }
 
   function formatPace(minPerKm) {
-    const m = Math.floor(minPerKm);
-    const s = Math.floor((minPerKm - m) * 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    const m = Math.floor(minPerKm), s = Math.floor((minPerKm - m) * 60);
+    return m + ":" + s.toString().padStart(2, '0');
   }
 
   function resetStats() {
+    distance = 0;
     document.getElementById('display-distance').innerText = "0.00";
     document.getElementById('display-time').innerText = "00:00";
     document.getElementById('display-speed').innerText = "0.0";
     document.getElementById('display-pace').innerText = "0:00";
   }
 
-  // --- GYM LOGIC ---
   function adjustValue(id, delta) {
     const input = document.getElementById(id);
-    let val = parseFloat(input.value) || 0;
-    val = Math.max(0, val + delta);
-    input.value = val;
+    input.value = Math.max(0, (parseFloat(input.value) || 0) + delta);
   }
 
   function addGymSet() {
     const ex = document.getElementById('gym-exercise').value;
     const wt = document.getElementById('gym-weight').value;
     const rp = document.getElementById('gym-reps').value;
-
     if (!ex || !wt || !rp) return;
-
-    const setData = { exercise: ex, weight: wt, reps: rp };
-    currentGymSession.push(setData);
-    
+    currentGymSession.push({ exercise: ex, weight: wt, reps: rp });
     renderCurrentGymSession();
     document.getElementById('btn-finish-gym').style.display = 'block';
   }
 
   function renderCurrentGymSession() {
-    const list = document.getElementById('gym-session-list');
-    list.innerHTML = currentGymSession.map((s, idx) => `
+    document.getElementById('gym-session-list').innerHTML = currentGymSession.map((s, i) => `
       <li class="exercise-item">
-        <div class="exercise-info">
-          <h4>${s.exercise}</h4>
-          <p>${s.weight}kg × ${s.reps} reps</p>
-        </div>
-        <button onclick="removeSet(${idx})" style="background:none; border:none; color:#e74c3c; font-weight:bold;">✕</button>
+        <div class="exercise-info"><h4>${s.exercise}</h4><p>${s.weight}kg × ${s.reps}</p></div>
+        <button onclick="removeSet(${i})" style="background:none; border:none; color:#e74c3c; font-weight:bold;">✕</button>
       </li>
     `).join('');
   }
 
-  function removeSet(idx) {
-    currentGymSession.splice(idx, 1);
+  function removeSet(i) {
+    currentGymSession.splice(i, 1);
     renderCurrentGymSession();
-    if (currentGymSession.length === 0) {
-      document.getElementById('btn-finish-gym').style.display = 'none';
-    }
+    if (currentGymSession.length === 0) document.getElementById('btn-finish-gym').style.display = 'none';
   }
 
   function finishGymSession() {
     if (currentGymSession.length === 0) return;
-    
-    saveActivity({
-      type: 'gym',
-      date: new Date().toISOString(),
-      sets: [...currentGymSession]
-    });
-
+    saveActivity({ type: 'gym', date: new Date().toISOString(), sets: [...currentGymSession] });
     currentGymSession = [];
     renderCurrentGymSession();
     document.getElementById('btn-finish-gym').style.display = 'none';
     showView('history');
   }
 
-  // --- DATA PERSISTENCE ---
   function saveActivity(activity) {
     const history = JSON.parse(localStorage.getItem('exercise-history') || '[]');
     history.unshift(activity);
@@ -514,60 +458,20 @@
 
   function renderHistory() {
     const history = JSON.parse(localStorage.getItem('exercise-history') || '[]');
-    const list = document.getElementById('history-list');
-    
-    if (history.length === 0) {
-      list.innerHTML = '<p style="text-align:center; color:#95a5a6; padding: 20px;">No activities yet. Let\'s move!</p>';
-      return;
-    }
-
-    list.innerHTML = history.map(h => {
+    document.getElementById('history-list').innerHTML = history.map(h => {
       const date = new Date(h.date).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       if (h.type === 'gym') {
-        const setSummary = h.sets.reduce((acc, s) => {
-          acc[s.exercise] = (acc[s.exercise] || 0) + 1;
-          return acc;
-        }, {});
-        const summaryStr = Object.entries(setSummary).map(([name, count]) => `${count}× ${name}`).join(', ');
-        return `
-          <div class="history-card">
-            <span class="badge badge-gym">Gym</span>
-            <div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div>
-            <div style="font-size: 0.9em; font-weight: 600; margin-top: 5px;">${summaryStr}</div>
-          </div>
-        `;
+        const summary = Object.entries(h.sets.reduce((acc, s) => { acc[s.exercise] = (acc[s.exercise] || 0) + 1; return acc; }, {})).map(([n, c]) => `${c}× ${n}`).join(', ');
+        return `<div class="history-card"><span class="badge badge-gym">Gym</span><div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div><div style="font-size: 0.9em; font-weight: 600; margin-top: 5px;">${summary}</div></div>`;
       } else {
-        const badgeClass = h.type === 'run' ? 'badge-run' : (h.type === 'bike' ? 'badge-bike' : 'badge-walk');
-        return `
-          <div class="history-card" style="border-left-color: ${h.type === 'run' ? '#27ae60' : (h.type === 'bike' ? '#2980b9' : '#f39c12')};">
-            <span class="badge ${badgeClass}">${h.type}</span>
-            <div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;">
-              <div>
-                <span style="font-size: 1.2em; font-weight: 700;">${h.distance}</span> <span style="font-size: 0.8em; color:#7f8c8d;">km</span>
-              </div>
-              <div style="text-align: right; font-size: 0.85em;">
-                <div>${formatTime(h.duration)}</div>
-                <div style="color: #7f8c8d; font-size: 0.8em;">${h.avgSpeed} km/h</div>
-              </div>
-            </div>
-          </div>
-        `;
+        const badge = h.type === 'run' ? 'badge-run' : (h.type === 'bike' ? 'badge-bike' : 'badge-walk');
+        return `<div class="history-card" style="border-left-color: ${h.type === 'run' ? '#27ae60' : (h.type === 'bike' ? '#2980b9' : '#f39c12')};"><span class="badge ${badge}">${h.type}</span><div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div><div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;"><div><span style="font-size: 1.2em; font-weight: 700;">${h.distance}</span> <span style="font-size: 0.8em; color:#7f8c8d;">km</span></div><div style="text-align: right; font-size: 0.85em;"><div>${formatTime(h.duration)}</div><div style="color: #7f8c8d; font-size: 0.8em;">${h.avgSpeed} km/h</div></div></div></div>`;
       }
     }).join('');
   }
 
-  function clearHistory() {
-    if (confirm("Clear all exercise data? This cannot be undone.")) {
-      localStorage.removeItem('exercise-history');
-      renderHistory();
-    }
-  }
-
-  // --- SW / PWA ---
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw.js');
-  }
+  function clearHistory() { if (confirm("Clear all?")) { localStorage.removeItem('exercise-history'); renderHistory(); } }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
 </script>
 </body>
 </html>
