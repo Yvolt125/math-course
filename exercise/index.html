@@ -283,17 +283,19 @@
 </div>
 
 <script>
+  // --- STATE ---
   let isTracking = false;
   let startTime = null;
   let timerInterval = null;
   let watchId = null;
   let distance = 0;
-  let path = [];
+  let lastPosition = null;
   let currentGymSession = [];
   
-  // Smoothing Buffer: average last 3 points to reduce jitter
-  let pointBuffer = [];
-  const BUFFER_SIZE = 3;
+  // Professional Grade Filters
+  const MIN_ACCURACY = 35; // Meters
+  const MAX_SPEED = 12.5;  // Meters per second (~45km/h)
+  const MIN_DIST = 4;      // Ignore movements smaller than this to avoid jitter
 
   function showView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -310,8 +312,7 @@
       isTracking = true;
       startTime = Date.now();
       distance = 0;
-      path = [];
-      pointBuffer = [];
+      lastPosition = null;
       document.getElementById('btn-toggle').innerText = "Finish Session";
       document.getElementById('btn-toggle').classList.replace('btn-start', 'btn-stop');
       audio.play().catch(e => console.log(e));
@@ -320,7 +321,7 @@
       }, 1000);
 
       watchId = navigator.geolocation.watchPosition(
-        (pos) => updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, pos.coords.speed),
+        (pos) => updatePosition(pos),
         (err) => document.getElementById('gps-status').innerText = "GPS Error: " + err.message,
         { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
       );
@@ -347,31 +348,32 @@
     showView('history');
   }
 
-  function updatePosition(lat, lon, accuracy, nativeSpeed) {
-    if (accuracy > 50) {
-      document.getElementById('gps-status').innerText = "Signal: Low (" + Math.round(accuracy) + "m)";
+  function updatePosition(pos) {
+    const { latitude, longitude, accuracy, speed, timestamp } = pos.coords;
+    const time = pos.timestamp || Date.now();
+
+    // 1. Accuracy Lock
+    if (accuracy > MIN_ACCURACY) {
+      document.getElementById('gps-status').innerText = "Signal: Weak (" + Math.round(accuracy) + "m)";
       return;
     }
-    document.getElementById('gps-status').innerText = "Signal: OK (" + Math.round(accuracy) + "m)";
+    document.getElementById('gps-status').innerText = "Signal: Strong (" + Math.round(accuracy) + "m)";
 
-    pointBuffer.push({lat, lon});
-    if (pointBuffer.length > BUFFER_SIZE) pointBuffer.shift();
-    
-    const avgLat = pointBuffer.reduce((sum, p) => sum + p.lat, 0) / pointBuffer.length;
-    const avgLon = pointBuffer.reduce((sum, p) => sum + p.lon, 0) / pointBuffer.length;
-    const newPoint = { lat: avgLat, lon: avgLon };
+    if (lastPosition) {
+      const d = haversine(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude);
+      const dt = (time - lastPosition.timestamp) / 1000; // seconds
+      const velocity = d / dt;
 
-    if (path.length > 0) {
-      const prevPoint = path[path.length - 1];
-      const d = haversine(prevPoint.lat, prevPoint.lon, newPoint.lat, newPoint.lon);
-      if (d > 2) { // 2m threshold to filter micro-jitter
+      // 2. Velocity Filter: Ignore impossible speeds or standing still jitter
+      if (velocity < MAX_SPEED && d > MIN_DIST) {
         distance += d;
-        const calcSpeed = (d / 1) * 3.6; // assuming 1s interval
-        const speedKmh = (nativeSpeed && nativeSpeed > 0) ? (nativeSpeed * 3.6) : calcSpeed;
+        
+        // Prefer native hardware speed, fallback to calculated
+        const speedKmh = (speed && speed > 0) ? (speed * 3.6) : (velocity * 3.6);
         updateStats(speedKmh);
       }
     }
-    path.push(newPoint);
+    lastPosition = pos;
   }
 
   function updateStats(speedKmh) {
