@@ -1,13 +1,12 @@
-const CACHE_NAME = 'hub-v6';
+const CACHE_NAME = 'hub-v7';
 
-// Assets to cache immediately on install
+// Core assets to cache for offline use
 const PRE_CACHE = [
   './index.html',
   './manifest.json',
   './icon.svg',
   './exercise/index.html',
-  './applied-anthropology/index.html',
-  './sw.js'
+  './applied-anthropology/index.html'
 ];
 
 self.addEventListener('install', e => {
@@ -26,25 +25,26 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// "Cache-First" Strategy: Use local copy first, then check for updates in background
+// "Network-First" Strategy: 
+// 1. Try to get it from the network first (so updates are seen immediately).
+// 2. If network fails (offline), pull from cache.
+// 3. If it's not in cache either, fail gracefully.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   e.respondWith(
-    caches.match(e.request).then(cachedResponse => {
-      const fetchPromise = fetch(e.request).then(networkResponse => {
-        // Update the cache with the fresh version for next time
-        if (networkResponse.ok) {
+    fetch(e.request)
+      .then(networkResponse => {
+        // If we get a good response, clone it into the cache
+        if (networkResponse && networkResponse.status === 200) {
           const cacheCopy = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheCopy));
         }
         return networkResponse;
-      }).catch(() => {
-        // Quietly fail if network is down
-      });
-
-      // Return cached version immediately if we have it, otherwise wait for network
-      return cachedResponse || fetchPromise;
-    })
+      })
+      .catch(() => {
+        // If network is down, try the cache
+        return caches.match(e.request);
+      })
   );
 });
