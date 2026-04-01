@@ -211,6 +211,7 @@ function showFeedback(isRight) {
 }
 function nextQuestion() { if(hearts<=0||qIndex>=questions.length)showFinish(); else showQuestion(); }
 function showFinish() {
+  if (typeof registerProgSRS === 'function') registerProgSRS('pandas_l02', 'Loading Data', QUESTIONS);
   const pct=correctCount/Math.max(1,correctCount+wrongCount);
   document.getElementById('finish-stars').textContent=pct>=0.9?'⭐⭐⭐':pct>=0.7?'⭐⭐':'⭐';
   document.getElementById('fin-correct').textContent=correctCount;
@@ -224,6 +225,7 @@ function updateProgress(){document.getElementById('prog-fill').style.width=(qInd
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
+<script src="../../prog-srs.js"></script>
 <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../../sw.js');</script>
 </body>
 </html>

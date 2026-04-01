@@ -202,7 +202,7 @@ if (D.isReview) {
 }
 
 // ── SRS ────────────────────────────────────────────────────────────────────────
-const SRS_KEY = 'srs_pool';
+const SRS_KEY = D.srsKey || 'srs_pool';
 const INTERVALS = [1, 3, 7, 14, 30, 60]; // days per streak level
 
 function getSRSPool() {

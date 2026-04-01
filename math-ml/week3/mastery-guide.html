@@ -47,6 +47,27 @@
         .week-link { padding:8px 20px; border-radius:20px; text-decoration:none; font-size:0.83em; font-weight:700; border:2px solid; }
         .wl-1 { border-color:#2980b9; color:#2980b9; } .wl-2 { border-color:#8e44ad; color:#8e44ad; } .wl-3 { background:var(--secondary); border-color:var(--secondary); color:white; }
         #gd-plot { width:100%; height:350px; border-radius:10px; }
+
+        /* ── Overflow guard (MathJax display math) ───── */
+        mjx-container[display="true"] { overflow-x: auto; max-width: 100%; }
+
+        /* ── Mobile ───────────────────────────────────── */
+        @media (max-width: 600px) {
+            body { padding: 12px 10px; }
+            .container { padding: 20px 14px; border-radius: 10px; }
+            h1 { font-size: 1.1em; letter-spacing: 1px; }
+            h2 { padding: 12px 14px; font-size: 1.1em; }
+            .roadmap { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 14px 10px; }
+            .roadmap-arrow { display: none; }
+            .roadmap-step { min-width: unset; }
+            .key-box, .example-box, .ml-box { padding: 14px 16px; }
+            .code-block { padding: 14px; font-size: 0.82em; }
+            table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 0.82em; }
+            th, td { padding: 8px 10px; }
+            .week-link-strip { gap: 6px; }
+            .week-link { padding: 6px 14px; font-size: 0.78em; }
+            #gd-plot { height: 280px; }
+        }
     </style>
 </head>
 <body>

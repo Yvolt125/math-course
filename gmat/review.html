@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMAT Review</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; --accent: #2c3e50; --accent-bg: #eaf4fb; --exp-bg: #eaf4fb; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p  { font-size: 0.82em; opacity: 0.55; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    #engine-root { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← GMAT</a>
+  <h1>GMAT Review</h1>
+  <p id="hdr-sub">Loading…</p>
+</header>
+
+<div id="engine-root"></div>
+
+<script src="../js/gmat-db.js"></script>
+<script src="../js/gmat-engine.js"></script>
+<script>
+  const pool = JSON.parse(localStorage.getItem('gmat_srs_pool') || '[]');
+  const now  = Date.now();
+  const due  = pool.filter(q => q.nextDue <= now).sort(() => Math.random() - 0.5).slice(0, 25);
+  document.getElementById('hdr-sub').textContent = due.length
+    ? due.length + ' question' + (due.length > 1 ? 's' : '') + ' due · spaced repetition'
+    : 'All caught up!';
+  GmatEngine.init({ rootId: 'engine-root', reviewPool: due });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+</script>
+</body>
+</html>

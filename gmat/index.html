@@ -135,7 +135,69 @@
         </div>
         <div class="practice-arrow">›</div>
     </a>
+    <a class="practice-card" href="daily-lesson.html" id="daily-lesson-card" style="margin-top:10px;background:#1a6fa8">
+        <div class="practice-icon" id="daily-lesson-icon">📚</div>
+        <div class="practice-text">
+            <h3 id="daily-lesson-title">Daily Lesson</h3>
+            <p id="daily-lesson-sub">Loading…</p>
+        </div>
+        <div class="practice-arrow">›</div>
+    </a>
+    <a class="practice-card" href="review.html" id="review-card" style="margin-top:10px;background:#922b21">
+        <div class="practice-icon">🔁</div>
+        <div class="practice-text">
+            <h3>Due for Review</h3>
+            <p id="review-card-sub">0 due · answer questions to build your queue</p>
+        </div>
+        <div class="practice-arrow">›</div>
+    </a>
 </div>
+
+<script>
+(function() {
+  // ── Due for review card ──
+  const pool = JSON.parse(localStorage.getItem('gmat_srs_pool') || '[]');
+  const due  = pool.filter(q => q.nextDue <= Date.now()).length;
+  const total = pool.length;
+  document.getElementById('review-card-sub').textContent = due > 0
+    ? due + ' question' + (due > 1 ? 's' : '') + ' due · spaced repetition'
+    : total > 0
+      ? 'All caught up ✓ · ' + total + ' card' + (total > 1 ? 's' : '') + ' in queue'
+      : '0 due · answer questions to build your queue';
+
+  // ── Daily lesson card ──
+  const TOPICS = [
+    { id: 'arithmetic', label: 'Arithmetic', icon: '🔢' },
+    { id: 'algebra', label: 'Algebra', icon: '🔣' },
+    { id: 'word', label: 'Word Problems', icon: '📝' },
+    { id: 'statistics', label: 'Statistics & Averages', icon: '📉' },
+    { id: 'geometry', label: 'Geometry', icon: '📐' },
+    { id: 'ds', label: 'Data Sufficiency', icon: '⚖️' },
+    { id: 'combinatorics', label: 'Combinatorics', icon: '🎲' },
+    { id: 'rc', label: 'Reading Comprehension', icon: '📖' },
+    { id: 'cr', label: 'Critical Reasoning', icon: '🔍' },
+    { id: 'table', label: 'Table Analysis', icon: '📊' },
+    { id: 'graphics', label: 'Graphics Interpretation', icon: '📈' },
+    { id: 'tpa', label: 'Two-Part Analysis', icon: '🔀' },
+    { id: 'msr', label: 'Multi-Source Reasoning', icon: '🗂️' },
+  ];
+  const SESSIONS = 6;
+  let state;
+  try { state = JSON.parse(localStorage.getItem('gmat_daily') || 'null'); } catch {}
+  state = state || { topicIndex: 0, sessions: 0, lastSessionDate: null };
+  const topic = TOPICS[state.topicIndex % TOPICS.length];
+  const sessionNum = state.sessions % SESSIONS;
+  const today = new Date().toISOString().slice(0, 10);
+  const doneToday = state.lastSessionDate === today;
+  document.getElementById('daily-lesson-icon').textContent = topic.icon;
+  document.getElementById('daily-lesson-title').textContent = doneToday
+    ? 'Daily Lesson · Done ✓'
+    : 'Daily Lesson · ' + topic.label;
+  document.getElementById('daily-lesson-sub').textContent = doneToday
+    ? topic.label + ' · session ' + (sessionNum) + '/' + SESSIONS + ' complete today'
+    : topic.label + ' · session ' + (sessionNum + 1) + ' of ' + SESSIONS;
+})();
+</script>
 
 <div class="section-block" style="padding-top:16px;">
     <div class="divider" style="margin:0 0 20px;max-width:100%;"></div>

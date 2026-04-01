@@ -545,6 +545,7 @@ let answers = {};
 let flagged = new Set();
 try { answers = JSON.parse(localStorage.getItem(LS_ANSWERS) || '{}'); } catch(e) {}
 try { flagged = new Set(JSON.parse(localStorage.getItem(LS_FLAGGED) || '[]')); } catch(e) {}
+localStorage.setItem('gmat-last-practice', Date.now());
 let activeDiff = 'all', timerPaused = false, timerHandle = null, qTimerSecs = 0, timerStarted = false;
 let tpaSel = [null, null], ynSel = [], ddSel = [];
 

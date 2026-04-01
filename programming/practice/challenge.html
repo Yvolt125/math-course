@@ -336,6 +336,7 @@ except Exception as _e:
     _tb_mod.print_exc()   # writes full traceback to sys.stderr = _out_buf
 
 if _result_type is None:
+    _ns['_ns'] = _ns
     try:
         exec(_test_code, _ns)
         _result_type = 'success'

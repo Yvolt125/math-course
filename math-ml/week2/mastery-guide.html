@@ -323,6 +323,27 @@
             border-top: 1px solid #eee;
             padding-top: 30px;
         }
+
+        /* ── Overflow guard (MathJax display math) ───── */
+        mjx-container[display="true"] { overflow-x: auto; max-width: 100%; }
+
+        /* ── Mobile ───────────────────────────────────── */
+        @media (max-width: 600px) {
+            body { padding: 12px 10px; }
+            .container { padding: 20px 14px; border-radius: 10px; }
+            h1 { font-size: 1.1em; letter-spacing: 1px; }
+            h2 { padding: 12px 14px; font-size: 1.1em; }
+            .roadmap { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 14px 10px; }
+            .roadmap-arrow { display: none; }
+            .roadmap-step { min-width: unset; }
+            .concept-block { padding: 18px 14px; }
+            .summary-chain { padding: 18px 14px; }
+            .deep-dive, .example, .example-box, .ml-bridge, .info-box { padding: 14px 16px; }
+            pre { padding: 14px; font-size: 0.85em; }
+            table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 0.82em; }
+            table th, table td { padding: 8px 10px; }
+            .graph-container { height: 300px; }
+        }
     </style>
 </head>
 <body>

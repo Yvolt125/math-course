@@ -51,6 +51,15 @@
 
 <div class="hub">
 
+  <a class="hub-card" href="review.html" id="review-card" style="border-left-color:#e74c3c; background: #fff9f9;">
+    <div class="hub-icon" style="background:#fdedec;">🔁</div>
+    <div class="hub-text">
+      <h2 id="review-title">Daily Review</h2>
+      <p id="review-sub">Loading…</p>
+    </div>
+    <div class="hub-arrow">›</div>
+  </a>
+
   <div class="sec-label">Courses</div>
 
   <a class="hub-card" href="os/index.html">
@@ -93,6 +102,21 @@
 
 </div>
 
-<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');</script>
+<script>
+  const pool = JSON.parse(localStorage.getItem('prog_srs_pool') || '[]');
+  const due  = pool.filter(q => q.nextDue <= Date.now()).length;
+  const total = pool.length;
+  const sub = document.getElementById('review-sub');
+  const title = document.getElementById('review-title');
+  if (due > 0) {
+    title.textContent = 'Daily Review · ' + due + ' due';
+    sub.textContent   = due + ' card' + (due > 1 ? 's' : '') + ' ready — ' + total + ' in pool';
+  } else if (total > 0) {
+    sub.textContent = 'All caught up! · ' + total + ' cards in pool';
+  } else {
+    sub.textContent = 'Complete a lesson to build your review queue';
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+</script>
 </body>
 </html>

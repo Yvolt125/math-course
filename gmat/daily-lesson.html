@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMAT Daily Lesson</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh;
+           --accent: #1a252f; --accent-bg: #eaf4fb; --exp-bg: #eaf4fb; }
+    header { background: #1a252f; color: white; padding: 28px 20px 22px; text-align: center; position: relative; }
+    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    header p  { font-size: 0.82em; opacity: 0.55; }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    .progress-pill {
+      display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px;
+      padding: 4px 12px; font-size: 0.72em; letter-spacing: 1px; margin-top: 8px;
+    }
+    #engine-root { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="index.html">← GMAT</a>
+  <h1 id="hdr-title">Daily Lesson</h1>
+  <p id="hdr-sub">Loading…</p>
+  <div class="progress-pill" id="hdr-progress"></div>
+</header>
+
+<div id="engine-root"></div>
+
+<script src="../js/gmat-db.js"></script>
+<script src="../js/gmat-engine.js"></script>
+<script>
+  const DAILY_TOPICS = [
+    { id: 'arithmetic',   label: 'Arithmetic',              icon: '🔢' },
+    { id: 'algebra',      label: 'Algebra',                 icon: '🔣' },
+    { id: 'word',         label: 'Word Problems',           icon: '📝' },
+    { id: 'statistics',   label: 'Statistics & Averages',   icon: '📉' },
+    { id: 'geometry',     label: 'Geometry',                icon: '📐' },
+    { id: 'ds',           label: 'Data Sufficiency',        icon: '⚖️' },
+    { id: 'combinatorics',label: 'Combinatorics',           icon: '🎲' },
+    { id: 'rc',           label: 'Reading Comprehension',   icon: '📖' },
+    { id: 'cr',           label: 'Critical Reasoning',      icon: '🔍' },
+    { id: 'table',        label: 'Table Analysis',          icon: '📊' },
+    { id: 'graphics',     label: 'Graphics Interpretation', icon: '📈' },
+    { id: 'tpa',          label: 'Two-Part Analysis',       icon: '🔀' },
+    { id: 'msr',          label: 'Multi-Source Reasoning',  icon: '🗂️' },
+  ];
+  const SESSIONS_PER_TOPIC = 6;
+  const QUESTIONS_PER_SESSION = 8;
+
+  function getDailyState() {
+    try { return JSON.parse(localStorage.getItem('gmat_daily') || 'null'); } catch { return null; }
+  }
+  function saveDailyState(s) { localStorage.setItem('gmat_daily', JSON.stringify(s)); }
+
+  // Initialise state if needed
+  let state = getDailyState() || { topicIndex: 0, sessions: 0, lastSessionDate: null };
+
+  const topic = DAILY_TOPICS[state.topicIndex % DAILY_TOPICS.length];
+  const sessionNum = state.sessions % SESSIONS_PER_TOPIC;  // 0-based within current topic
+  const topicRound = Math.floor(state.sessions / SESSIONS_PER_TOPIC) + 1;
+
+  // Header
+  document.getElementById('hdr-title').textContent = topic.icon + '  ' + topic.label;
+  document.getElementById('hdr-sub').textContent =
+    'Session ' + (sessionNum + 1) + ' of ' + SESSIONS_PER_TOPIC + ' on this topic';
+  document.getElementById('hdr-progress').textContent =
+    'Topic ' + (state.topicIndex % DAILY_TOPICS.length + 1) + ' / ' + DAILY_TOPICS.length
+    + '  ·  Round ' + topicRound;
+
+  // Pick questions: all difficulties, shuffled, capped
+  const allQ = dbQuery({ topic: topic.id });
+  const shuffled = allQ.slice().sort(() => Math.random() - 0.5);
+  const questions = shuffled.slice(0, QUESTIONS_PER_SESSION);
+
+  function recordSession() {
+    const today = new Date().toISOString().slice(0, 10);
+    state.sessions++;
+    state.lastSessionDate = today;
+    // Advance topic after SESSIONS_PER_TOPIC completions
+    if (state.sessions % SESSIONS_PER_TOPIC === 0) {
+      state.topicIndex = (Math.floor(state.sessions / SESSIONS_PER_TOPIC)) % DAILY_TOPICS.length;
+    }
+    saveDailyState(state);
+  }
+
+  GmatEngine.init({
+    rootId: 'engine-root',
+    reviewPool: questions,
+    onComplete: function(score, total) {
+      recordSession();
+      const nextTopic = DAILY_TOPICS[state.topicIndex % DAILY_TOPICS.length];
+      const nextSession = state.sessions % SESSIONS_PER_TOPIC;
+      const isNewTopic = state.sessions % SESSIONS_PER_TOPIC === 0;
+      // Append a nice completion panel after the engine's message
+      const root = document.getElementById('engine-root');
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:white;border-radius:14px;padding:24px 20px;margin-top:16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.07)';
+      panel.innerHTML = isNewTopic
+        ? `<div style="font-size:1.5em;margin-bottom:8px">🎓</div>
+           <div style="font-weight:700;color:#2c3e50;margin-bottom:6px">Topic complete!</div>
+           <div style="font-size:0.83em;color:#7f8c8d;margin-bottom:18px">
+             Next up: <strong>${nextTopic.icon} ${nextTopic.label}</strong>
+           </div>
+           <a href="index.html" style="display:inline-block;background:#1a252f;color:white;border-radius:8px;padding:10px 22px;text-decoration:none;font-weight:700;font-size:0.9em">Back to GMAT</a>`
+        : `<div style="font-size:1.5em;margin-bottom:8px">✅</div>
+           <div style="font-weight:700;color:#2c3e50;margin-bottom:6px">Session recorded</div>
+           <div style="font-size:0.83em;color:#7f8c8d;margin-bottom:18px">
+             ${SESSIONS_PER_TOPIC - nextSession} more session${SESSIONS_PER_TOPIC - nextSession > 1 ? 's' : ''} on <strong>${topic.label}</strong> before next topic
+           </div>
+           <a href="index.html" style="display:inline-block;background:#1a252f;color:white;border-radius:8px;padding:10px 22px;text-decoration:none;font-weight:700;font-size:0.9em">Back to GMAT</a>`;
+      root.appendChild(panel);
+    }
+  });
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+</script>
+</body>
+</html>

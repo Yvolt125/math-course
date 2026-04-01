@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#8e44ad">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Daily Review · Programming</title>
+</head>
+<body>
+<script>
+(function () {
+    const pool = JSON.parse(localStorage.getItem('prog_srs_pool') || '[]');
+    const now  = Date.now();
+    const due  = pool.filter(q => q.nextDue <= now);
+
+    due.sort(() => Math.random() - 0.5);
+    const questions = due.slice(0, 25);
+
+    window.LESSON_DATA = {
+        id:        'prog_review',
+        srsKey:    'prog_srs_pool',
+        title:     'Daily Review',
+        subtitle:  questions.length + ' questions due',
+        color:     '#8e44ad',
+        isReview:  true,
+        questions: questions,
+        emptyIcon:  '🎉',
+        emptyTitle: 'All caught up!',
+        emptyMsg:   'No questions are due right now. Complete a programming lesson to add questions to your review queue.',
+        backUrl:    'index.html'
+    };
+})();
+</script>
+<script src="../js/lesson-engine.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js');</script>
+</body>
+</html>

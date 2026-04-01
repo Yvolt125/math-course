@@ -3,655 +3,1198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Applied Anthropology — Study Hub</title>
+  <title>Applied Anthropology — Hub</title>
   <link rel="manifest" href="../manifest.json">
   <meta name="theme-color" content="#1a252f">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="../icon.svg">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: #f0f2f5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    :root {
+      --bg:      #f0f2f5;
+      --card:    #ffffff;
+      --header:  #1a252f;
+      --text:    #2c3e50;
+      --muted:   #7f8c8d;
+      --border:  #e9ecef;
+      --people:  #2980b9;
+      --explore: #27ae60;
+      --partner: #c0392b;
+      --network: #8e44ad;
+      --today:   #e67e22;
     }
 
-    header {
-      background: #1a252f;
-      color: white;
-      padding: 28px 20px 24px;
-      text-align: center;
-      position: relative;
-    }
-    header h1 { font-size: 1.3em; letter-spacing: 2px; text-transform: uppercase; }
-    header p  { font-size: 0.78em; opacity: 0.5; margin-top: 3px; letter-spacing: 1px; }
-    .back {
-      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-      color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em;
-    }
-    .back:hover { color: white; }
+    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; color:var(--text); }
 
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px 20px 60px;
-      gap: 20px;
-      max-width: 520px;
-      margin: 0 auto;
-      width: 100%;
-    }
+    header { background:var(--header); color:white; padding:20px 16px; text-align:center; position:relative; }
+    .back { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.7); text-decoration:none; font-size:0.88em; }
+    header h1 { font-size:1.1em; letter-spacing:2px; text-transform:uppercase; }
+    header p  { font-size:0.72em; opacity:0.5; margin-top:2px; letter-spacing:1px; }
 
-    .section-card {
-      width: 100%;
-      background: white;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    }
+    .nav-tabs { display:flex; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.06); overflow-x:auto; scrollbar-width:none; }
+    .nav-tabs::-webkit-scrollbar { display:none; }
+    .nav-tab { flex:1; min-width:60px; text-align:center; padding:13px 6px; font-size:0.78em; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; }
+    .nav-tab.active { color:var(--today); border-bottom-color:var(--today); }
 
-    .section-title {
-      font-size: 1.1em;
-      font-weight: 700;
-      color: #2c3e50;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .container { flex:1; padding:16px; max-width:520px; margin:0 auto; width:100%; }
+    .view { display:none; }
+    .view.active { display:block; }
 
-    .prompt-box {
-      background: #fdf2e9;
-      border-left: 4px solid #e67e22;
-      padding: 16px;
-      border-radius: 8px;
-      color: #7e5109;
-      font-style: italic;
-      line-height: 1.5;
-    }
+    /* ── Week strip ── */
+    .week-strip { background:white; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+    .week-strip-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .week-count { font-size:0.78em; color:var(--muted); }
+    .week-count strong { color:var(--today); font-size:1.1em; }
+    .week-dots { display:flex; gap:5px; }
+    .day-dot { width:28px; height:8px; border-radius:4px; background:var(--border); }
+    .day-dot.done { background:var(--today); }
+    .day-dot.today-dot { border:2px solid var(--today); }
 
-    .social-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    /* ── Today action cards ── */
+    .today-card { background:white; border-radius:14px; padding:14px 16px; margin-bottom:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; align-items:center; gap:12px; border-left:4px solid var(--border); }
+    .today-card.done-today { opacity:0.55; }
+    .today-card .area-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .today-card .card-body { flex:1; min-width:0; }
+    .today-card .card-area { font-size:0.62em; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+    .today-card .card-main { font-size:0.9em; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .today-card .card-sub  { font-size:0.75em; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .today-done-btn { border:none; border-radius:20px; padding:7px 14px; font-size:0.78em; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0; }
 
-    .social-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border: 1px solid #e9ecef;
-    }
+    /* ── Generic cards ── */
+    .card { background:white; border-radius:14px; padding:16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+    .card-title { font-size:0.78em; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+    .section-lbl { font-size:0.7em; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin:14px 0 8px; }
 
-    .social-info h3 {
-      font-size: 0.95em;
-      color: #2c3e50;
-    }
+    /* ── Prompt card ── */
+    .prompt-card { border-left:4px solid var(--today); padding:14px 16px; background:#fdf2e9; border-radius:0 10px 10px 0; margin-bottom:12px; line-height:1.5; font-size:0.9em; color:#7e5109; font-style:italic; }
+    .prompt-actions { display:flex; gap:8px; }
 
-    .social-info p {
-      font-size: 0.8em;
-      color: #7f8c8d;
-    }
+    /* ── Buttons ── */
+    .btn { border:none; padding:9px 14px; border-radius:8px; font-size:0.82em; font-weight:600; cursor:pointer; transition:opacity .15s; }
+    .btn:active { opacity:.75; }
+    .btn-primary { background:var(--today); color:white; }
+    .btn-ghost   { background:var(--border); color:var(--muted); }
+    .btn-sm      { padding:6px 11px; font-size:0.75em; }
+    .btn-full    { width:100%; padding:11px; border-radius:8px; border:none; font-size:0.88em; font-weight:700; cursor:pointer; color:white; margin-top:10px; }
 
-    .social-actions {
-      display: flex;
-      gap: 8px;
-    }
+    /* ── People list ── */
+    .person-item { border-radius:10px; border:1px solid var(--border); background:white; margin-bottom:8px; overflow:hidden; }
+    .person-row  { display:flex; align-items:center; gap:10px; padding:12px; }
+    .person-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9em; color:white; flex-shrink:0; }
+    .person-body { flex:1; min-width:0; }
+    .person-name { font-size:0.92em; font-weight:600; color:var(--text); }
+    .person-meta { font-size:0.72em; color:var(--muted); margin-top:2px; }
+    .person-memory { font-size:0.75em; color:#2980b9; background:#eaf4fb; padding:5px 10px; margin:0 12px 10px; border-radius:6px; }
+    .person-note-form { padding:0 12px 12px; display:none; }
+    .person-note-form textarea { width:100%; border:1px solid var(--border); border-radius:8px; padding:9px; font-size:0.85em; resize:none; height:70px; font-family:inherit; }
+    .person-actions { display:flex; gap:6px; margin-top:6px; }
+    .overdue-badge { font-size:0.62em; background:#fdecea; color:#c0392b; padding:2px 6px; border-radius:4px; font-weight:700; }
+    .tier-badge    { font-size:0.62em; padding:2px 5px; border-radius:4px; font-weight:700; }
+    .t1 { background:#fef9e7; color:#f39c12; }
+    .t2 { background:#eaf4fb; color:#2980b9; }
+    .t3 { background:#f2f3f4; color:#7f8c8d; }
+    .cat-badge { font-size:0.62em; padding:2px 6px; border-radius:4px; font-weight:700; }
+    .cat-friend { background:#eaf7ea; color:#27ae60; }
+    .cat-family { background:#fdedec; color:#c0392b; }
 
-    .btn {
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.8em;
-      cursor: pointer;
-      transition: opacity 0.2s;
+    /* ── Forms ── */
+    .form-row { display:flex; gap:8px; margin-bottom:8px; }
+    .form-row > * { flex:1; }
+    input[type=text], input[type=number], select, textarea {
+      width:100%; padding:10px 11px; border:1px solid var(--border); border-radius:8px;
+      font-size:0.88em; background:white; color:var(--text); font-family:inherit;
     }
+    input::placeholder, textarea::placeholder { color:#bdc3c7; }
+    .mb8 { margin-bottom:8px; }
 
-    .btn:active { opacity: 0.7; }
+    /* ── Explore ── */
+    .challenge-card { background:linear-gradient(135deg,#1a4731,#27ae60); border-radius:14px; padding:18px; margin-bottom:14px; color:white; }
+    .challenge-label { font-size:0.65em; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; opacity:.8; margin-bottom:6px; }
+    .challenge-title { font-size:1.05em; font-weight:700; margin-bottom:4px; }
+    .challenge-cat   { font-size:0.72em; opacity:.75; margin-bottom:14px; }
+    .challenge-btns  { display:flex; gap:8px; }
+    .challenge-btns button { border:none; border-radius:8px; padding:8px 16px; font-size:0.8em; font-weight:700; cursor:pointer; }
+    .ch-done  { background:white; color:#27ae60; }
+    .ch-other { background:rgba(255,255,255,0.2); color:white; }
 
-    .btn-primary { background: #e67e22; color: white; }
-    .btn-secondary { background: #ecf0f1; color: #7f8c8d; }
-    .btn-delete { background: #fadbd8; color: #c0392b; }
+    .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .filter-btn { padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:white; color:var(--muted); font-size:0.75em; font-weight:600; cursor:pointer; }
+    .filter-btn.active { background:var(--explore); color:white; border-color:var(--explore); }
 
-    .add-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 16px;
-    }
+    .activity-item { display:flex; align-items:center; gap:10px; padding:11px 12px; background:white; border-radius:10px; border:1px solid var(--border); margin-bottom:7px; }
+    .activity-item.done-item { opacity:.5; }
+    .act-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .act-body { flex:1; }
+    .act-title { font-size:0.88em; font-weight:600; }
+    .act-meta  { font-size:0.7em; color:var(--muted); margin-top:2px; }
+    .act-check { width:26px; height:26px; border-radius:50%; border:2px solid var(--border); background:white; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.8em; flex-shrink:0; }
+    .act-check.checked { background:var(--explore); border-color:var(--explore); color:white; }
 
-    .add-form input {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 0.9em;
-    }
+    /* ── Partner ── */
+    .partner-type-bar { display:flex; gap:6px; margin-bottom:12px; }
+    .ptype-btn { flex:1; padding:8px; border-radius:8px; border:1px solid var(--border); background:white; font-size:0.75em; font-weight:600; color:var(--muted); cursor:pointer; text-align:center; }
+    .ptype-btn.active { background:var(--partner); color:white; border-color:var(--partner); }
 
-    .add-form button {
-      padding: 10px;
-      background: #1a252f;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    .log-entry { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .log-entry:last-child { border-bottom:none; }
+    .log-dot { width:8px; height:8px; border-radius:50%; background:var(--border); margin-top:5px; flex-shrink:0; }
+    .log-date { font-size:0.68em; color:var(--muted); margin-top:2px; }
+    .log-text { font-size:0.85em; color:var(--text); }
 
-    .badge {
-      font-size: 0.7em;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: bold;
-      margin-left: 5px;
-    }
-    .badge-urgent { background: #fadbd8; color: #c0392b; }
-    .badge-upcoming { background: #d4efdf; color: #27ae60; }
+    /* ── Network ── */
+    .network-toggle { display:flex; gap:8px; margin-bottom:14px; background:var(--border); padding:4px; border-radius:10px; }
+    .net-tab { flex:1; text-align:center; padding:9px; border-radius:8px; font-size:0.82em; font-weight:700; cursor:pointer; color:var(--muted); }
+    .net-tab.active { background:white; color:var(--network); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
 
-    .principles-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .principle-item {
-      border-bottom: 1px solid #eee;
-      padding-bottom: 12px;
-    }
-    .principle-item:last-child { border-bottom: none; }
-    .principle-title {
-      font-weight: 700;
-      color: #2c3e50;
-      font-size: 0.95em;
-      margin-bottom: 4px;
-    }
-    .principle-content {
-      font-size: 0.85em;
-      color: #5d6d7e;
-      line-height: 1.4;
-    }
-    .principle-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.75em;
-      font-weight: 600;
-      margin-top: 6px;
-    }
-    .tag-maintain { background: #e8f8f5; color: #16a085; }
-    .tag-deepen { background: #ebf5fb; color: #2980b9; }
-    .tag-support { background: #fef9e7; color: #f1c40f; }
+    .starter-item { padding:11px 14px; background:#f8f0ff; border-left:3px solid var(--network); border-radius:0 8px 8px 0; margin-bottom:7px; font-size:0.85em; color:#4a235a; line-height:1.4; }
 
-    /* Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-    }
-    .modal-content {
-      background-color: white;
-      margin: 10% auto;
-      padding: 24px;
-      border-radius: 18px;
-      max-width: 480px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 12px;
-    }
-    .close-modal {
-      font-size: 24px;
-      cursor: pointer;
-      color: #7f8c8d;
-    }
+    /* ── Bottom sheet ── */
+    .sheet-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; }
+    .sheet-overlay.open { display:block; }
+    .bottom-sheet { position:fixed; bottom:0; left:0; right:0; background:white; border-radius:20px 20px 0 0; padding:20px; z-index:101; max-width:520px; margin:0 auto; box-shadow:0 -4px 30px rgba(0,0,0,0.12); transform:translateY(100%); transition:transform .25s ease; }
+    .bottom-sheet.open { transform:translateY(0); }
+    .sheet-title { font-weight:700; font-size:1em; margin-bottom:14px; color:var(--text); }
+    .sheet-btns { display:flex; gap:8px; margin-top:12px; }
 
+    /* ── Misc ── */
+    .empty { text-align:center; color:var(--muted); padding:24px; font-size:0.85em; }
+    .collapsible-toggle { font-size:0.75em; color:var(--muted); cursor:pointer; text-align:center; padding:8px; margin-top:4px; }
+    .done-check { color:#27ae60; font-size:1em; }
+    .add-btn { width:100%; padding:10px; border:2px dashed var(--border); border-radius:10px; background:transparent; color:var(--muted); font-size:0.82em; cursor:pointer; margin-top:4px; }
   </style>
 </head>
 <body>
 
-<div id="guide-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 style="font-size: 1.1em; color: #2c3e50;">✨ Strategic Social System</h2>
-      <span class="close-modal" onclick="toggleGuide()">&times;</span>
-    </div>
-    <div class="principles-list">
-      <div class="principle-item">
-        <div class="principle-title">1. Reduce Decisions, Not Increase Them</div>
-        <div class="principle-content">Predefine categories and rotation rules. Let a system (not mood) decide who/what next to save mental energy.</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">2. Use 3 Simple Social Buckets</div>
-        <div class="principle-content">
-          <span class="principle-tag tag-maintain">Maintain</span> Light touch: Texting, checking in (High frequency, low effort).<br>
-          <span class="principle-tag tag-deepen">Deepen</span> Shared experiences: Coffee, dinner, walks (Growth).<br>
-          <span class="principle-tag tag-support">Support</span> Intentional effort: Helping, favors (High impact).
-        </div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">3. Categorize by “Closeness Tier”</div>
-        <div class="principle-content">
-          <b>Tier 1 (Inner, 3-8):</b> High priority, frequent contact.<br>
-          <b>Tier 2 (Active, 8-20):</b> Friends to grow. Medium frequency.<br>
-          <b>Tier 3 (Outer, Unlimited):</b> Acquaintances. Low frequency.
-        </div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">4. Weekly “Social Rotation”</div>
-        <div class="principle-content">Aim for 3-4 actions/week: 2× Maintain, 1× Deepen, 1× Support (optional).</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">5. Use a “Rolling Queue”</div>
-        <div class="principle-content">Move people to the bottom after contact; always pick from the top. Ensures automatic fairness.</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">6. Frequency Rules per Tier</div>
-        <div class="principle-content">Tier 1: 1-2 weeks | Tier 2: 3-6 weeks | Tier 3: 2-4 months. Move up if they feel "due".</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">7. Make It Frictionless</div>
-        <div class="principle-content">Set recurring reminders: 2×/week for "Social Maintenance" (10m), 1×/week for "Plan Something" (15m).</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">8. “Default Action” Rule</div>
-        <div class="principle-content">Tired? <b>Maintain</b>. Normal? <b>Deepen</b>. Motivated? <b>Support</b>. No overthinking.</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">9. Prevent Overwhelm</div>
-        <div class="principle-content">Max 1 planned event/week. Max 3 outreach messages/session. Skip guilt.</div>
-      </div>
-      <div class="principle-item">
-        <div class="principle-title">10. Light Tracking</div>
-        <div class="principle-content">Only track last contact and next idea (e.g., "walk"). Avoid detailed logs.</div>
-      </div>
-    </div>
-  </div>
+<!-- Bottom sheet overlay -->
+<div id="sheet-overlay" class="sheet-overlay" onclick="closeSheet()"></div>
+<div id="bottom-sheet" class="bottom-sheet">
+  <div id="sheet-content"></div>
 </div>
 
 <header>
-  <a class="back" href="../index.html">← Home</a>
+  <a class="back" href="../index.html">← Hub</a>
   <h1>Applied Anthropology</h1>
-  <p>Social dynamics & networking</p>
+  <p>Social · Explore · Partner · Network</p>
 </header>
+
+<div class="nav-tabs">
+  <div class="nav-tab active"  onclick="showView('today')">Today</div>
+  <div class="nav-tab"         onclick="showView('people')">People</div>
+  <div class="nav-tab"         onclick="showView('explore')">Explore</div>
+  <div class="nav-tab"         onclick="showView('partner')">Partner</div>
+  <div class="nav-tab"         onclick="showView('network')">Network</div>
+</div>
 
 <div class="container">
 
-  <div class="section-card" style="padding: 16px 24px;">
-    <div class="section-title" style="margin-bottom: 0; justify-content: space-between;">
-      <span style="font-size: 0.9em; opacity: 0.8;">System Strategy</span>
-      <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75em;" onclick="toggleGuide()">Open Guide</button>
+<!-- ══════════════════════════ TODAY ══════════════════════════ -->
+<div id="view-today" class="view active">
+
+  <div class="week-strip">
+    <div class="week-strip-top">
+      <div class="week-count">This week: <strong id="week-count">0</strong> actions</div>
+      <div class="week-dots" id="week-dots"></div>
     </div>
+    <div style="font-size:0.72em; color:var(--muted);" id="week-sub">Keep the momentum going.</div>
   </div>
 
-  <div class="section-card">
-    <div class="section-title">✨ Prompt of the Day</div>
-    <div id="prompt" class="prompt-box">
-      Loading prompt...
-    </div>
-    <div style="display: flex; gap: 8px; margin-top: 10px;">
-      <button class="btn btn-secondary" style="flex: 1;" onclick="newPrompt()">New Prompt</button>
-      <button id="view-all-btn" class="btn btn-secondary" onclick="togglePrompts()">View All</button>
-    </div>
-    <div id="prompts-list-container" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-      <ul id="all-prompts-list" style="font-size: 0.85em; color: #34495e; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
-        <!-- Prompts will be injected here -->
-      </ul>
-    </div>
-  </div>
+  <div id="today-cards"></div>
 
-  <div class="section-card">
-    <div class="section-title" style="justify-content: space-between;">
-      <span>👥 Social Reminders</span>
-      <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7em;" onclick="togglePoolManager()">Manage Pool</button>
-    </div>
-    
-    <div id="due-container">
-      <p style="font-size: 0.8em; color: #7f8c8d; margin-bottom: 12px;">Due for contact based on your intervals:</p>
-      
-      <div class="section-title" style="font-size: 0.85em; color: #3498db; margin-top: 10px;">🌍 Long Distance Check-ins</div>
-      <ul id="contact-due-list" class="social-list" style="margin-bottom: 20px;">
-        <!-- Contact items will be injected here -->
-      </ul>
-
-      <div class="section-title" style="font-size: 0.85em; color: #27ae60;">📍 Local Activity Suggestions</div>
-      <ul id="meetup-due-list" class="social-list">
-        <!-- Meetup items will be injected here -->
-      </ul>
-    </div>
-
-    <div id="pool-manager" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 16px;">
-      <div class="section-title" style="font-size: 0.9em;">Add to Pool</div>
-      <div class="add-form">
-        <input type="text" id="name-input" placeholder="Name">
-        <input type="text" id="reason-input" placeholder="Context (e.g. 'College friend')">
-        <div style="display: flex; gap: 8px;">
-          <select id="type-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
-            <option value="remote">🌍 Long Distance</option>
-            <option value="local">📍 Local Connection</option>
-          </select>
-          <select id="tier-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
-            <option value="1">Tier 1 (Inner)</option>
-            <option value="2" selected>Tier 2 (Active)</option>
-            <option value="3">Tier 3 (Outer)</option>
-          </select>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <select id="bucket-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
-            <option value="maintain">Maintain (Light)</option>
-            <option value="deepen" selected>Deepen (Shared)</option>
-            <option value="support">Support (Effort)</option>
-          </select>
-          <select id="freq-input" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9em;">
-            <option value="7">Weekly</option>
-            <option value="14">Bi-weekly</option>
-            <option value="30" selected>Monthly</option>
-            <option value="60">Every 2mo</option>
-            <option value="120">Every 4mo</option>
-          </select>
-        </div>
-        <input type="text" id="ideas-input" placeholder="Ideas (e.g. coffee, podcast, share article)">
-        <button onclick="addPerson()">Add Person</button>
-      </div>
-      
-      <div class="section-title" style="font-size: 0.9em; margin-top: 20px;">Full Pool</div>
-      <ul id="full-pool-list" class="social-list">
-        <!-- All people will be injected here -->
-      </ul>
+  <div class="card" style="margin-top:8px;">
+    <div style="font-size:0.78em; color:var(--muted); line-height:1.7;">
+      <strong style="color:var(--text);">This week's focus:</strong>
+      one real conversation · one new experience · one moment with her · one professional touch
     </div>
   </div>
 
 </div>
 
+<!-- ══════════════════════════ PEOPLE ══════════════════════════ -->
+<div id="view-people" class="view">
+
+  <div id="people-due-section">
+    <div class="section-lbl">Due for contact</div>
+    <div id="people-due-list"></div>
+  </div>
+
+  <div id="people-upcoming-section" style="margin-top:4px;">
+    <div class="collapsible-toggle" id="upcoming-toggle" onclick="toggleUpcoming()">▾ Show upcoming</div>
+    <div id="people-upcoming-list" style="display:none;"></div>
+  </div>
+
+  <button class="add-btn" style="margin-top:12px;" onclick="openAddPerson()">+ Add person</button>
+</div>
+
+<!-- ══════════════════════════ EXPLORE ══════════════════════════ -->
+<div id="view-explore" class="view">
+
+  <div id="challenge-card-wrap"></div>
+
+  <div class="filter-bar" id="explore-filters">
+    <button class="filter-btn active" onclick="setExploreFilter('all')">All</button>
+    <button class="filter-btn" onclick="setExploreFilter('outdoors')">Outdoors</button>
+    <button class="filter-btn" onclick="setExploreFilter('food')">Food & Cook</button>
+    <button class="filter-btn" onclick="setExploreFilter('culture')">Culture</button>
+    <button class="filter-btn" onclick="setExploreFilter('social')">Social push</button>
+    <button class="filter-btn" onclick="setExploreFilter('hosting')">Hosting</button>
+  </div>
+
+  <div id="explore-list"></div>
+  <button class="add-btn" onclick="openAddActivity()">+ Add your own activity</button>
+
+  <div class="section-lbl" style="margin-top:16px;">Recently done</div>
+  <div id="explore-done-log"></div>
+</div>
+
+<!-- ══════════════════════════ PARTNER ══════════════════════════ -->
+<div id="view-partner" class="view">
+
+  <div class="partner-type-bar">
+    <button class="ptype-btn active" id="pt-date"       onclick="setPartnerType('date')">Date idea</button>
+    <button class="ptype-btn"        id="pt-cooking"    onclick="setPartnerType('cooking')">Cooking</button>
+    <button class="ptype-btn"        id="pt-connection" onclick="setPartnerType('connection')">Connect</button>
+    <button class="ptype-btn"        id="pt-repair"     onclick="setPartnerType('repair')">Growth</button>
+  </div>
+
+  <div class="card">
+    <div id="partner-prompt" class="prompt-card"></div>
+    <div class="prompt-actions">
+      <button class="btn btn-primary" style="flex:1;" onclick="logPartner()">Did this ✓</button>
+      <button class="btn btn-ghost"   onclick="nextPartnerPrompt()">Different idea</button>
+    </div>
+  </div>
+
+  <div class="section-lbl">Memory log</div>
+  <div class="card" id="partner-log-card">
+    <div id="partner-log-list"></div>
+    <button class="add-btn" onclick="openLogPartner()">+ Log a moment</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ NETWORK ══════════════════════════ -->
+<div id="view-network" class="view">
+
+  <div class="network-toggle">
+    <div class="net-tab active" id="net-office" onclick="setNetworkTab('office')">🏢 Office</div>
+    <div class="net-tab"        id="net-online" onclick="setNetworkTab('online')">🌐 Online</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="net-nudge-title" style="color:var(--network);">This week's nudge</div>
+    <div id="net-nudge" style="font-size:0.9em; line-height:1.5; margin-bottom:14px;"></div>
+    <button class="btn btn-full" style="background:var(--network);" onclick="logNetwork()">Done ✓</button>
+  </div>
+
+  <div class="section-lbl">Conversation starters</div>
+  <div id="net-starters"></div>
+  <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:4px;" onclick="refreshStarters()">Shuffle</button>
+
+  <div class="section-lbl">Log</div>
+  <div class="card">
+    <div id="net-log-list"></div>
+    <div id="net-log-empty" class="empty" style="padding:14px;">No entries yet this week.</div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
 <script>
-  const prompts = [
-    "Compliment a stranger on something they chose (e.g., their shoes, a book).",
-    "Ask a coworker about their weekend plans or a hobby they mentioned.",
-    "Call a family member you haven't spoken to in a while just to check in.",
-    "Send a 'thinking of you' text to a friend you haven't seen lately.",
-    "Strike up a conversation with someone while waiting in line.",
-    "Ask someone for a recommendation (book, movie, or restaurant).",
-    "Share a small personal win with someone today.",
-    "Listen actively to someone without interrupting for 5 minutes.",
-    "Offer a genuine thank you to someone who helped you today.",
-    "Invite someone for a quick coffee or walk.",
-    "Ask someone 'What's the best thing that happened to you this week?'",
-    "Reach out to a former colleague to see how their new role is going.",
-    "Ask a friend what they're currently most excited about.",
-    "Notice someone who is excluded in a group and bring them into the conversation.",
-    "Ask a colleague for feedback on a recent task or project.",
-    "Send a handwritten note or card to someone unexpectedly.",
-    "Practice mirroring someone's body language in a conversation to build rapport.",
-    "Ask someone about a challenge they've overcome recently.",
-    "Offer to mentor someone or share a skill you've mastered.",
-    "Ask a local shop owner or worker how their day is going.",
-    "Tell someone specifically why you appreciate their presence in your life.",
-    "Ask someone: 'What's a project you've always wanted to start but haven't yet?'",
-    "Invite a neighbor over for a brief chat or tea/coffee.",
-    "Send an article or resource to someone that reminds you of a conversation you had.",
-    "Ask a peer what their favorite way to recharge is.",
-    "Give a genuine compliment to a service worker (barista, cashier, etc.).",
-    "Ask someone: 'If you could learn any new skill instantly, what would it be?'",
-    "Initiate a conversation with someone you often see but rarely speak to.",
-    "Practice pausing for 2 seconds before responding in a conversation today.",
-    "Ask someone for their honest opinion on a topic you're curious about."
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const K = {
+  people:    'anthro-people',
+  explore:   'anthro-explore-custom',
+  expDone:   'anthro-explore-done',
+  challenge: 'anthro-challenge',
+  partner:   'anthro-partner-log',
+  pPrompt:   'anthro-partner-prompt',
+  network:   'anthro-network-log',
+  log:       'anthro-action-log',
+};
+
+const load  = k       => JSON.parse(localStorage.getItem(k) || 'null');
+const save  = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
+
+function logAction(area) {
+  const log = load(K.log) || [];
+  log.push({ area, date: today() });
+  save(K.log, log);
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function weekStart() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
+  return d;
+}
+
+function thisWeekActions() {
+  const ws  = weekStart();
+  const log = load(K.log) || [];
+  return log.filter(e => new Date(e.date) >= ws);
+}
+
+function daysAgo(dateStr) {
+  return Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+}
+
+function fmtDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelector(`.nav-tab[onclick="showView('${name}')"]`).classList.add('active');
+  if (name === 'today')   renderToday();
+  if (name === 'people')  renderPeople();
+  if (name === 'explore') renderExplore();
+  if (name === 'partner') renderPartner();
+  if (name === 'network') renderNetwork();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TODAY
+// ══════════════════════════════════════════════════════════════
+function renderToday() {
+  renderWeekStrip();
+  renderTodayCards();
+}
+
+function renderWeekStrip() {
+  const ws      = weekStart();
+  const actions = thisWeekActions();
+  const count   = actions.length;
+  document.getElementById('week-count').innerText = count;
+
+  const dotsEl = document.getElementById('week-dots');
+  const days   = ['M','T','W','T','F','S','S'];
+  dotsEl.innerHTML = days.map((d, i) => {
+    const date = new Date(ws); date.setDate(ws.getDate() + i);
+    const ds   = date.toISOString().split('T')[0];
+    const done = actions.some(a => a.date === ds);
+    const isToday = ds === today();
+    return `<div class="day-dot${done ? ' done' : ''}${isToday ? ' today-dot' : ''}" title="${d}"></div>`;
+  }).join('');
+
+  const msgs = ['Just getting started — push yourself today.','One down, keep it going!','Nice — you\'re building momentum.','Halfway there — strong week.','Really solid week.','Almost a perfect week!','Perfect week. 🔥'];
+  document.getElementById('week-sub').innerText = msgs[Math.min(count, 6)];
+}
+
+function renderTodayCards() {
+  const container = document.getElementById('today-cards');
+  const wActions  = thisWeekActions();
+  const todayActs = wActions.filter(a => a.date === today());
+
+  const cards = [
+    buildPeopleCard(todayActs),
+    buildExploreCard(todayActs),
+    buildPartnerCard(todayActs),
+    buildNetworkCard(todayActs),
   ];
 
-  function getBelgiumDate() {
-    return new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Europe/Brussels',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).format(new Date());
+  container.innerHTML = cards.join('');
+}
+
+function buildPeopleCard(todayActs) {
+  const done    = todayActs.some(a => a.area === 'people');
+  const people  = getPeople();
+  const due     = people.filter(p => daysAgo(p.lastContact) >= p.frequency).sort((a,b) => daysAgo(b.lastContact) - daysAgo(a.lastContact));
+  const next    = due[0];
+  const main    = next ? next.name : (people.length ? 'Everyone\'s up to date ✓' : 'Add people to your pool');
+  const sub     = next ? (next.memoryNote ? '💬 ' + next.memoryNote : (next.category === 'family' ? 'Family · ' : 'Friend · ') + daysAgo(next.lastContact) + 'd ago') : '';
+  const btnTxt  = done ? 'Done ✓' : 'Reach out';
+  return makeCard('people', '👥 People', main, sub, `onTodayDone('people', ${next ? next.id : 0})`, btnTxt, done);
+}
+
+function buildExploreCard(todayActs) {
+  const done = todayActs.some(a => a.area === 'explore');
+  const ch   = getChallenge();
+  return makeCard('explore', '🗺️ Explore', ch ? ch.title : 'Pick this week\'s challenge', ch ? ch.category : '', `onTodayDone('explore', 0)`, done ? 'Done ✓' : 'Did it', done);
+}
+
+function buildPartnerCard(todayActs) {
+  const done  = todayActs.some(a => a.area === 'partner');
+  const idx   = load(K.pPrompt) || 0;
+  const type  = partnerType || 'date';
+  const pool  = PARTNER_PROMPTS[type] || PARTNER_PROMPTS.date;
+  const p     = pool[idx % pool.length];
+  return makeCard('partner', '❤️ Partner', p, type, `onTodayDone('partner', 0)`, done ? 'Done ✓' : 'Did this', done);
+}
+
+function buildNetworkCard(todayActs) {
+  const done = todayActs.some(a => a.area === 'network');
+  const tab  = networkTab || 'office';
+  const pool = NETWORK_NUDGES[tab];
+  const idx  = Math.floor(Date.now() / (7 * 86400000)) % pool.length;
+  return makeCard('network', '🤝 Network', pool[idx], tab === 'office' ? 'At the office' : 'Online', `onTodayDone('network', 0)`, done ? 'Done ✓' : 'Done it', done);
+}
+
+function makeCard(area, areaLabel, main, sub, onclickStr, btnTxt, done) {
+  const colors = { people:' style="border-left-color:var(--people)"', explore:' style="border-left-color:var(--explore)"', partner:' style="border-left-color:var(--partner)"', network:' style="border-left-color:var(--network)"' };
+  const dotColors = { people:'background:var(--people)', explore:'background:var(--explore)', partner:'background:var(--partner)', network:'background:var(--network)' };
+  const btnColors = { people:'background:var(--people);color:white', explore:'background:var(--explore);color:white', partner:'background:var(--partner);color:white', network:'background:var(--network);color:white' };
+  return `<div class="today-card${done?' done-today':''}"${colors[area]}>
+    <div class="area-dot" style="${dotColors[area]}"></div>
+    <div class="card-body">
+      <div class="card-area" style="color:var(--${area})">${areaLabel}</div>
+      <div class="card-main">${esc(main)}</div>
+      ${sub ? `<div class="card-sub">${esc(sub)}</div>` : ''}
+    </div>
+    <button class="today-done-btn" style="${done ? 'background:var(--border);color:var(--muted)' : btnColors[area]}" onclick="${onclickStr}" ${done?'disabled':''}>${btnTxt}</button>
+  </div>`;
+}
+
+function onTodayDone(area, personId) {
+  if (area === 'people' && personId) {
+    openDoneNote(personId, true);
+  } else {
+    logAction(area);
+    renderToday();
   }
+}
 
-  function getPromptState() {
-    const state = localStorage.getItem('prompt-state');
-    return state ? JSON.parse(state) : { history: [], current: null, date: null };
+// ══════════════════════════════════════════════════════════════
+// PEOPLE
+// ══════════════════════════════════════════════════════════════
+function getPeople() {
+  // migrate old data
+  const old = localStorage.getItem('social-reminders-pool');
+  if (old && !localStorage.getItem(K.people)) {
+    try {
+      const oldData = JSON.parse(old).map(p => ({
+        id: p.id, name: p.name, category: p.type === 'remote' ? 'friend' : 'friend',
+        type: p.type === 'remote' ? 'remote' : 'local', tier: parseInt(p.tier) || 2,
+        frequency: p.frequency || 21, lastContact: p.lastContact || today(),
+        memoryNote: p.ideas || '', history: []
+      }));
+      save(K.people, oldData);
+    } catch(e) {}
   }
+  return load(K.people) || [];
+}
 
-  function savePromptState(state) {
-    localStorage.setItem('prompt-state', JSON.stringify(state));
+function savePeople(p) { save(K.people, p); }
+
+function renderPeople() {
+  const people = getPeople().sort((a, b) => daysAgo(b.lastContact) - daysAgo(a.lastContact));
+  const due    = people.filter(p => daysAgo(p.lastContact) >= p.frequency);
+  const rest   = people.filter(p => daysAgo(p.lastContact) <  p.frequency);
+
+  const dueEl = document.getElementById('people-due-list');
+  dueEl.innerHTML = due.length
+    ? due.map(p => personCard(p, true)).join('')
+    : '<div class="empty">All caught up ✨</div>';
+
+  const upEl = document.getElementById('people-upcoming-list');
+  upEl.innerHTML = rest.length
+    ? rest.map(p => personCard(p, false)).join('')
+    : '<div class="empty" style="padding:12px;">Nothing upcoming yet.</div>';
+}
+
+function personCard(p, isDue) {
+  const avatarColor = p.category === 'family' ? 'var(--partner)' : 'var(--people)';
+  const initials    = p.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  const ago         = daysAgo(p.lastContact);
+  const overdue     = isDue ? `<span class="overdue-badge">${ago}d overdue</span>` : `<span style="font-size:0.7em;color:var(--muted);">in ${p.frequency - ago}d</span>`;
+  const catBadge    = `<span class="cat-badge cat-${p.category}">${p.category}</span>`;
+  const tierBadge   = `<span class="tier-badge t${p.tier}">T${p.tier}</span>`;
+
+  return `<div class="person-item" id="pi-${p.id}">
+    <div class="person-row">
+      <div class="person-avatar" style="background:${avatarColor}">${initials}</div>
+      <div class="person-body">
+        <div class="person-name">${esc(p.name)} ${catBadge} ${tierBadge}</div>
+        <div class="person-meta">${p.type === 'remote' ? '🌍' : '📍'} Every ${p.frequency}d · ${overdue}</div>
+      </div>
+      <div style="display:flex;gap:5px;">
+        ${isDue ? `<button class="btn btn-primary btn-sm" onclick="openDoneNote(${p.id})">Done</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="deletePerson(${p.id})">✕</button>
+      </div>
+    </div>
+    ${p.memoryNote ? `<div class="person-memory">💬 Last time: ${esc(p.memoryNote)}</div>` : ''}
+  </div>`;
+}
+
+function openDoneNote(id, fromToday = false) {
+  const people = getPeople();
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  openSheet(`
+    <div class="sheet-title">Done with ${esc(p.name)} ✓</div>
+    ${p.memoryNote ? `<div style="font-size:0.8em;color:#2980b9;background:#eaf4fb;padding:8px 12px;border-radius:8px;margin-bottom:10px;">💬 Remember: ${esc(p.memoryNote)}</div>` : ''}
+    <div style="font-size:0.82em;color:var(--muted);margin-bottom:6px;">What did you talk about? What should you remember for next time?</div>
+    <textarea id="done-note-txt" placeholder="e.g. mentioned job interview next week, stressed about moving..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.88em;resize:none;height:80px;font-family:inherit;"></textarea>
+    <div class="sheet-btns">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="confirmDone(${id}, ${fromToday})">Save & Done ✓</button>
+    </div>
+  `);
+}
+
+function confirmDone(id, fromToday) {
+  const note   = document.getElementById('done-note-txt').value.trim();
+  const people = getPeople();
+  const p      = people.find(x => x.id === id);
+  if (!p) return;
+  p.history    = p.history || [];
+  p.history.push({ date: today(), note });
+  p.memoryNote  = note || p.memoryNote;
+  p.lastContact = today();
+  savePeople(people);
+  logAction('people');
+  closeSheet();
+  if (fromToday) renderToday(); else renderPeople();
+}
+
+function deletePerson(id) {
+  if (!confirm('Remove from your pool?')) return;
+  savePeople(getPeople().filter(p => p.id !== id));
+  renderPeople();
+}
+
+function openAddPerson() {
+  openSheet(`
+    <div class="sheet-title">Add person</div>
+    <div class="mb8"><input type="text" id="ap-name" placeholder="Name"></div>
+    <div class="form-row mb8">
+      <select id="ap-cat"><option value="friend">Friend</option><option value="family">Family</option></select>
+      <select id="ap-type"><option value="local">📍 Local</option><option value="remote">🌍 Remote</option></select>
+    </div>
+    <div class="form-row mb8">
+      <select id="ap-tier"><option value="1">Tier 1 — Inner</option><option value="2" selected>Tier 2 — Active</option><option value="3">Tier 3 — Outer</option></select>
+      <select id="ap-freq"><option value="7">Weekly</option><option value="14">Bi-weekly</option><option value="21" selected>Every 3w</option><option value="30">Monthly</option><option value="60">Every 2mo</option></select>
+    </div>
+    <div class="mb8"><input type="text" id="ap-memory" placeholder="Anything to remember about them?"></div>
+    <div class="sheet-btns">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="savePerson()">Add ✓</button>
+    </div>
+  `);
+}
+
+function savePerson() {
+  const name = document.getElementById('ap-name').value.trim();
+  if (!name) return;
+  const people = getPeople();
+  people.push({
+    id:          Date.now(),
+    name,
+    category:    document.getElementById('ap-cat').value,
+    type:        document.getElementById('ap-type').value,
+    tier:        parseInt(document.getElementById('ap-tier').value),
+    frequency:   parseInt(document.getElementById('ap-freq').value),
+    lastContact: today(),
+    memoryNote:  document.getElementById('ap-memory').value.trim(),
+    history:     []
+  });
+  savePeople(people);
+  closeSheet();
+  renderPeople();
+}
+
+function toggleUpcoming() {
+  const el  = document.getElementById('people-upcoming-list');
+  const tog = document.getElementById('upcoming-toggle');
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  tog.innerText = open ? '▴ Hide upcoming' : '▾ Show upcoming';
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPLORE
+// ══════════════════════════════════════════════════════════════
+const EXPLORE_BUILT_IN = [
+  // Outdoors
+  { id:'e1',  title:'Bike a route you\'ve never done',                         category:'outdoors', cost:'free' },
+  { id:'e2',  title:'Run in a neighbourhood you don\'t know',                  category:'outdoors', cost:'free' },
+  { id:'e3',  title:'Find the best view in your city',                        category:'outdoors', cost:'free' },
+  { id:'e4',  title:'Walk somewhere new for an hour with no plan',            category:'outdoors', cost:'free' },
+  { id:'e5',  title:'Visit a park or nature spot you haven\'t been to',       category:'outdoors', cost:'free' },
+  { id:'e25', title:'Watch a sunrise or sunset from somewhere new',           category:'outdoors', cost:'free' },
+  { id:'e26', title:'Find a riverside or canal walk you\'ve never done',      category:'outdoors', cost:'free' },
+  { id:'e27', title:'Join a free group run or Parkrun',                       category:'outdoors', cost:'free' },
+  { id:'e28', title:'Explore a forest or nature trail for half a day',        category:'outdoors', cost:'free' },
+  { id:'e29', title:'Take your bike somewhere by train and ride back',        category:'outdoors', cost:'cheap' },
+  { id:'e30', title:'Find a rooftop or high point with a city view at night', category:'outdoors', cost:'free' },
+  // Food & Cooking
+  { id:'e6',  title:'Cook a dish from a cuisine you\'ve never tried',         category:'food',    cost:'cheap' },
+  { id:'e7',  title:'Visit a local food market',                              category:'food',    cost:'free' },
+  { id:'e8',  title:'Perfect one dish you know — make it genuinely great',   category:'food',    cost:'cheap' },
+  { id:'e9',  title:'Cook a proper dinner for your GF',                      category:'food',    cost:'cheap' },
+  { id:'e10', title:'Try a recipe requiring a technique you haven\'t used',  category:'food',    cost:'cheap' },
+  { id:'e31', title:'Make homemade pasta or bread from scratch',             category:'food',    cost:'cheap' },
+  { id:'e32', title:'Recreate a dish from a restaurant you love',            category:'food',    cost:'cheap' },
+  { id:'e33', title:'Cook a full three-course meal at home',                 category:'food',    cost:'cheap' },
+  { id:'e34', title:'Try fermenting or pickling something',                  category:'food',    cost:'cheap' },
+  { id:'e35', title:'Cook exclusively from what\'s already in the fridge',   category:'food',    cost:'free' },
+  { id:'e36', title:'Find the best coffee in a neighbourhood you don\'t know',category:'food',   cost:'cheap' },
+  // Culture
+  { id:'e11', title:'Go to a free concert or open-air gig',                  category:'culture', cost:'free' },
+  { id:'e12', title:'Visit a free museum or gallery',                        category:'culture', cost:'free' },
+  { id:'e13', title:'Find a local festival or neighbourhood event',          category:'culture', cost:'free' },
+  { id:'e14', title:'Go to a comedy or spoken word night',                   category:'culture', cost:'cheap' },
+  { id:'e15', title:'Watch a classic film you\'ve never seen',               category:'culture', cost:'free' },
+  { id:'e37', title:'Take a free walking tour of a part of the city you don\'t know', category:'culture', cost:'free' },
+  { id:'e38', title:'Find a live jazz bar or acoustic session',              category:'culture', cost:'cheap' },
+  { id:'e39', title:'Go to an open-air or pop-up cinema',                   category:'culture', cost:'cheap' },
+  { id:'e40', title:'Visit a historic neighbourhood and read about it after', category:'culture', cost:'free' },
+  { id:'e41', title:'Browse a flea market or antique fair',                  category:'culture', cost:'free' },
+  { id:'e42', title:'Attend a free lecture, talk or panel event',           category:'culture', cost:'free' },
+  // Social push
+  { id:'e16', title:'Go to a café alone with a book for 2 hours',           category:'social',  cost:'cheap' },
+  { id:'e17', title:'Attend a local meetup or club event',                  category:'social',  cost:'free' },
+  { id:'e18', title:'Say hi to someone you see regularly but never speak to',category:'social', cost:'free' },
+  { id:'e19', title:'Go to an event alone and talk to at least one stranger',category:'social', cost:'cheap' },
+  { id:'e20', title:'Join a local sports session (running club, football…)', category:'social',  cost:'free' },
+  { id:'e43', title:'Volunteer for something local, even just once',        category:'social',  cost:'free' },
+  { id:'e44', title:'Go to a board game café and join a strangers\' table', category:'social',  cost:'cheap' },
+  { id:'e45', title:'Take a beginner class in something you know nothing about', category:'social', cost:'cheap' },
+  { id:'e46', title:'Strike up a conversation with someone at a bar or café', category:'social', cost:'free' },
+  { id:'e47', title:'Go somewhere you\'ve always said "I should go there" and never have', category:'social', cost:'free' },
+  // Hosting
+  { id:'e21', title:'Have 2–3 friends over for dinner you cook',            category:'hosting', cost:'cheap' },
+  { id:'e22', title:'Host a casual movie night',                            category:'hosting', cost:'free' },
+  { id:'e23', title:'Invite someone for lunch or brunch at yours',         category:'hosting', cost:'cheap' },
+  { id:'e24', title:'Cook for your GF — set the table, make it a proper evening', category:'hosting', cost:'cheap' },
+  { id:'e48', title:'Host a themed dinner party (pick a cuisine, go all in)', category:'hosting', cost:'cheap' },
+  { id:'e49', title:'Have a board game or card game night at yours',       category:'hosting', cost:'free' },
+  { id:'e50', title:'Invite family over and cook the whole meal yourself', category:'hosting', cost:'cheap' },
+  { id:'e51', title:'Host a Sunday brunch — make it proper, not just cereal', category:'hosting', cost:'cheap' },
+];
+
+const CAT_COLORS = { outdoors:'#27ae60', food:'#e67e22', culture:'#8e44ad', social:'#2980b9', hosting:'#c0392b' };
+
+let exploreFilter = 'all';
+
+function getAllActivities() {
+  const custom = load(K.explore) || [];
+  return [...EXPLORE_BUILT_IN, ...custom];
+}
+
+function getExploreDone() { return load(K.expDone) || {}; }
+
+function getChallenge() {
+  const stored = load(K.challenge);
+  const ws     = weekStart().toISOString().split('T')[0];
+  if (stored && stored.weekStart === ws) return stored.activity;
+  // pick a new challenge
+  const done  = getExploreDone();
+  const all   = getAllActivities();
+  const pool  = all.filter(a => !done[a.id] || daysAgo(done[a.id]) > 30);
+  const pick  = pool.length ? pool[Math.floor(Math.random() * pool.length)] : all[0];
+  save(K.challenge, { weekStart: ws, activity: pick });
+  return pick;
+}
+
+function renderExplore() {
+  renderChallengeCard();
+  renderActivityList();
+  renderExploreDoneLog();
+}
+
+function renderChallengeCard() {
+  const ch  = getChallenge();
+  const el  = document.getElementById('challenge-card-wrap');
+  if (!ch) { el.innerHTML = ''; return; }
+  const doneMap = getExploreDone();
+  const isDone  = doneMap[ch.id] && daysAgo(doneMap[ch.id]) < 7;
+  el.innerHTML  = `
+    <div class="challenge-card">
+      <div class="challenge-label">This week's challenge</div>
+      <div class="challenge-title">${esc(ch.title)}</div>
+      <div class="challenge-cat">${ch.category} · ${ch.cost}</div>
+      <div class="challenge-btns">
+        <button class="ch-done"  onclick="markChallengeDone()" ${isDone?'disabled':''} style="${isDone?'opacity:.6':''}">
+          ${isDone ? 'Done ✓' : 'Mark done'}
+        </button>
+        <button class="ch-other" onclick="pickNewChallenge()">Different one</button>
+      </div>
+    </div>
+  `;
+}
+
+function markChallengeDone() {
+  const ch    = getChallenge();
+  if (!ch) return;
+  const done  = getExploreDone();
+  done[ch.id] = today();
+  save(K.expDone, done);
+  logAction('explore');
+  renderExplore();
+  if (document.getElementById('view-today').classList.contains('active')) renderToday();
+}
+
+function pickNewChallenge() {
+  localStorage.removeItem(K.challenge);
+  renderExplore();
+}
+
+function setExploreFilter(f) {
+  exploreFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('onclick') === `setExploreFilter('${f}')`)
+  );
+  renderActivityList();
+}
+
+function renderActivityList() {
+  const all    = getAllActivities();
+  const done   = getExploreDone();
+  const filter = exploreFilter;
+  const list   = filter === 'all' ? all : all.filter(a => a.category === filter);
+
+  document.getElementById('explore-list').innerHTML = list.map(a => {
+    const isDone = done[a.id];
+    const color  = CAT_COLORS[a.category] || '#7f8c8d';
+    return `<div class="activity-item${isDone?' done-item':''}">
+      <div class="act-dot" style="background:${color}"></div>
+      <div class="act-body">
+        <div class="act-title">${esc(a.title)}</div>
+        <div class="act-meta">${a.category} · ${a.cost}${isDone?' · done '+fmtDate(isDone):''}</div>
+      </div>
+      <div class="act-check${isDone?' checked':''}" onclick="toggleActivity('${a.id}')">${isDone?'✓':''}</div>
+    </div>`;
+  }).join('') || '<div class="empty">Nothing here yet.</div>';
+}
+
+function toggleActivity(id) {
+  const done = getExploreDone();
+  if (done[id]) {
+    delete done[id];
+  } else {
+    done[id] = today();
+    logAction('explore');
   }
+  save(K.expDone, done);
+  renderActivityList();
+  renderExploreDoneLog();
+}
 
-  function newPrompt(isAutoReset = false) {
-    const state = getPromptState();
-    const excluded = [...state.history];
-    if (state.current) excluded.push(state.current);
+function renderExploreDoneLog() {
+  const done   = getExploreDone();
+  const all    = getAllActivities();
+  const recent = Object.entries(done)
+    .map(([id, date]) => ({ act: all.find(a => a.id === id), date }))
+    .filter(x => x.act)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 8);
 
-    const available = prompts.filter(p => !excluded.includes(p));
-    const pool = available.length > 0 ? available : prompts;
-    const nextPrompt = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('explore-done-log').innerHTML = recent.length
+    ? recent.map(x => `
+        <div class="log-entry">
+          <div class="log-dot" style="background:${CAT_COLORS[x.act.category]}"></div>
+          <div><div class="log-text">${esc(x.act.title)}</div><div class="log-date">${fmtDate(x.date)}</div></div>
+        </div>`).join('')
+    : '<div class="empty">Nothing done yet — pick something above.</div>';
+}
 
-    if (state.current) {
-      state.history.push(state.current);
-      if (state.history.length > 3) state.history.shift();
-    }
+function openAddActivity() {
+  openSheet(`
+    <div class="sheet-title">Add your own activity</div>
+    <div class="mb8"><input type="text" id="na-title" placeholder="Activity name"></div>
+    <div class="form-row mb8">
+      <select id="na-cat">
+        <option value="outdoors">Outdoors</option>
+        <option value="food">Food & Cook</option>
+        <option value="culture">Culture</option>
+        <option value="social">Social push</option>
+        <option value="hosting">Hosting</option>
+      </select>
+      <select id="na-cost"><option value="free">Free</option><option value="cheap">Cheap</option></select>
+    </div>
+    <div class="sheet-btns">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="saveActivity()">Add ✓</button>
+    </div>
+  `);
+}
 
-    state.current = nextPrompt;
-    if (isAutoReset) state.date = getBelgiumDate();
+function saveActivity() {
+  const title = document.getElementById('na-title').value.trim();
+  if (!title) return;
+  const custom = load(K.explore) || [];
+  custom.push({ id: 'c' + Date.now(), title, category: document.getElementById('na-cat').value, cost: document.getElementById('na-cost').value });
+  save(K.explore, custom);
+  closeSheet();
+  renderExplore();
+}
 
-    savePromptState(state);
-    document.getElementById('prompt').innerText = nextPrompt;
-  }
+// ══════════════════════════════════════════════════════════════
+// PARTNER
+// ══════════════════════════════════════════════════════════════
+const PARTNER_PROMPTS = {
+  date: [
+    'Cook a new recipe together from a cuisine neither of you knows well',
+    'Explore a neighbourhood you\'ve never been to together',
+    'Have a proper dinner at home — no phones, set the table, make an effort',
+    'Bike somewhere together and find a spot to sit',
+    'Go to a free concert or outdoor event together',
+    'Visit a free museum or gallery together',
+    'Go to a food market and cook with what you find',
+    'Have a lazy morning somewhere new — new café, new park',
+    'Watch a film in a language neither of you speaks (with subtitles)',
+    'Plan a spontaneous day trip to a nearby town',
+    'Find a rooftop or view spot and go there in the evening',
+    'Go to a flea market together — set a small budget each, find each other something',
+    'Take a long walk with no destination and see where you end up',
+    'Have a "yes day" — one of you plans everything, the other just says yes',
+    'Find a new brunch spot in a neighbourhood neither of you knows',
+    'Go to a comedy night or improv show',
+    'Pack a bag and go somewhere by train without booking ahead',
+    'Rent bikes and explore somewhere you\'ve never cycled',
+    'Go stargazing — find a spot outside the city on a clear night',
+    'Take a cooking class or workshop together',
+    'Pack a proper picnic and go somewhere you\'ve never been',
+    'Find an escape room and do it together',
+    'Spend a Sunday afternoon in a neighbourhood you always pass through but never stop in',
+    'Go to a botanical garden or greenhouse',
+    'Find a pub quiz and enter as a team of two',
+    'Try a climbing wall together for the first time',
+    'Go to a night market or street food event',
+    'Find a swimming spot — river, lake or lido — and go on a warm day',
+    'Take a one-off dance class — just one, no commitment',
+    'Visit a photo or art exhibition and talk properly about what you each like',
+    'Go to a local live sport event — doesn\'t need to be big, just live',
+    'Go to an open studio or craft event',
+    'Find a hidden or tucked-away bar you\'ve never been to',
+    'Rent a canoe or kayak for an afternoon',
+    'Take a night train somewhere and back — just for the ride',
+  ],
+  cooking: [
+    'Cook her favourite meal as a surprise, without being asked',
+    'Try a recipe from a country you\'d both like to visit',
+    'Bake something together — bread, cake, whatever',
+    'Have a "market run" — buy interesting ingredients, figure out the dish after',
+    'Cook a three-course meal at home instead of going out',
+    'Let her teach you something she knows how to cook that you don\'t',
+    'Try making a dish from scratch that you\'d normally just buy ready-made',
+    'Have a cooking challenge: same main ingredient, both make something different',
+    'Make homemade pizza together — dough included, no shortcuts',
+    'Cook a dish that one of your families makes, and share the story behind it',
+    'Watch a cooking video together and recreate the dish that night',
+    'Do a full Sunday roast from scratch — make it an afternoon thing',
+    'Make fresh pasta together, any shape you like',
+    'Cook a multi-course meal and serve it properly — she sits, you cook',
+    'Have a "leftover challenge" — only use what\'s already in the fridge',
+    'Make something you\'ve both never eaten before and try it together',
+    'Make dumplings or gyoza together — the folding is half the fun',
+    'Make sushi or a DIY maki-roll spread at home',
+    'Do a "blind taste test" — one cooks, the other guesses the ingredients',
+    'Recreate a meal from a trip or memory you share',
+    'Make ice cream or sorbet from scratch — no machine needed',
+    'Try making ramen or a rich broth entirely from scratch',
+    'Make croissants or laminated dough on a free weekend — it takes all day, that\'s the point',
+    'Cook a feast with way too much food — just the two of you',
+    'Do a "cookbook challenge" — pick one you\'ve never opened, cook from it blind',
+    'Make a mezze or charcuterie spread where you make everything yourself',
+    'Cook the same classic dish in two different regional styles, then compare',
+    'Make homemade stock first, then build an entire meal around it',
+  ],
+  connection: [
+    'What\'s something she\'s been excited about lately that you haven\'t properly asked about?',
+    'Plan something this month that she\'d love but wouldn\'t suggest herself',
+    'Tell her one specific thing you appreciate about her — not generic, something real',
+    'Ask her about something from her past you\'ve never thought to ask about',
+    'Do one thing today that makes her day easier without mentioning it',
+    'Put your phone away for a full evening and just be present',
+    'Ask her: what\'s one thing she\'s always wanted to try but hasn\'t?',
+    'Write down three things you love about her right now. Tell her one.',
+    'Ask her what she was like as a child — and actually listen',
+    'Plan a future trip together, even if it\'s hypothetical for now',
+    'Ask what she needs more of from you. Don\'t get defensive.',
+    'Look through old photos together — yours, hers, or both',
+    'Make a list together of things you want to do this year',
+    'Ask her: what\'s something she\'s proud of that most people don\'t know about?',
+    'Tell her about something you\'ve been anxious about but haven\'t shared yet',
+    'Ask what she found hard this week. Just listen — don\'t fix.',
+    'Share a piece of music that means something to you and explain why',
+    'Ask her what she imagines your lives looking like in ten years',
+    'Tell her about a moment when you were proud of her but never said so',
+    'Ask: what\'s something she wishes you understood better about her?',
+    'Go through your bucket lists independently, then compare them',
+    'Share something about your childhood you\'ve never told her',
+    'Ask her what she thought of you the first time you met',
+    'Ask: what\'s the most important thing in her life right now that isn\'t you or work?',
+    'Tell her one fear you have that you don\'t often admit to',
+    'Ask her what she\'d do with her life if money and practicality weren\'t a factor',
+    'Notice something she\'s been carrying lately and name it — "you seem tired/stressed/flat, are you ok?"',
+    'Ask her: what\'s a version of yourself you used to be that you miss?',
+    'Tell her what you were thinking about her today before you saw her',
+  ],
+  repair: [
+    'Is there a conversation you\'ve been putting off? Today\'s the day.',
+    'Think of one way you could be a better partner this week — and actually do it',
+    'Did anything feel unresolved between you recently? Address it calmly',
+    'Is there something she\'s asked for that you\'ve been slow to act on?',
+    'What\'s one habit of yours that might be affecting her negatively? Be honest.',
+    'When did you last properly apologise for something? Do you owe one now?',
+    'Are you listening to understand, or listening to respond? Check yourself today.',
+    'Say sorry for something you brushed off but know you shouldn\'t have',
+    'Ask her: is there something I do that makes you feel unseen or unheard?',
+    'Think about your last disagreement — what was really going on beneath the surface?',
+    'What are you assuming about her that you should actually just ask?',
+    'When did you last make her feel genuinely prioritised? What would that look like today?',
+    'Are you showing up as the partner you want to be, or just the one you default to when tired?',
+    'Name one thing you could do this week to make her feel more loved. Do it without announcing it.',
+  ],
+};
 
-  function initPrompt() {
-    const state = getPromptState();
-    const today = getBelgiumDate();
+let partnerType = 'date';
 
-    if (state.date !== today) {
-      newPrompt(true);
-    } else {
-      document.getElementById('prompt').innerText = state.current || "Click 'New Prompt' to start!";
-    }
-  }
+function setPartnerType(type) {
+  partnerType = type;
+  ['date','cooking','connection','repair'].forEach(t =>
+    document.getElementById('pt-' + t).classList.toggle('active', t === type)
+  );
+  renderPartnerPrompt();
+}
 
-  function togglePrompts() {
-    const container = document.getElementById('prompts-list-container');
-    const btn = document.getElementById('view-all-btn');
-    const list = document.getElementById('all-prompts-list');
-    
-    if (container.style.display === 'none') {
-      list.innerHTML = prompts.map(p => `<li>${p}</li>`).join('');
-      container.style.display = 'block';
-      btn.innerText = 'Hide All';
-    } else {
-      container.style.display = 'none';
-      btn.innerText = 'View All';
-    }
-  }
+function renderPartner() {
+  renderPartnerPrompt();
+  renderPartnerLog();
+}
 
-  function getSocialData() {
-    const defaultPool = [
-      {
-        id: 1,
-        name: "Joshua Clark",
-        reason: "General catch-up",
-        type: "local",
-        tier: "2",
-        bucket: "deepen",
-        frequency: 21,
-        ideas: "coffee, walking, share book",
-        lastContact: new Date().toISOString().split('T')[0]
-      }
-    ];
-    const stored = localStorage.getItem('social-reminders-pool');
-    if (!stored) {
-      localStorage.setItem('social-reminders-pool', JSON.stringify(defaultPool));
-      return defaultPool;
-    }
-    return JSON.parse(stored);
-  }
+function renderPartnerPrompt() {
+  const idx   = (load(K.pPrompt) || 0);
+  const pool  = PARTNER_PROMPTS[partnerType];
+  document.getElementById('partner-prompt').innerText = pool[idx % pool.length];
+}
 
-  function saveSocialData(data) {
-    localStorage.setItem('social-reminders-pool', JSON.stringify(data));
-    renderSocialList();
-  }
+function nextPartnerPrompt() {
+  const current = load(K.pPrompt) || 0;
+  save(K.pPrompt, current + 1);
+  renderPartnerPrompt();
+}
 
-  function togglePoolManager() {
-    const manager = document.getElementById('pool-manager');
-    const due = document.getElementById('due-container');
-    if (manager.style.display === 'none') {
-      manager.style.display = 'block';
-      due.style.display = 'none';
-    } else {
-      manager.style.display = 'none';
-      due.style.display = 'block';
-    }
-  }
+function logPartner() {
+  const idx  = load(K.pPrompt) || 0;
+  const pool = PARTNER_PROMPTS[partnerType];
+  const text = pool[idx % pool.length];
+  addPartnerEntry(partnerType, text);
+  nextPartnerPrompt();
+  logAction('partner');
+  renderPartner();
+}
 
-  function toggleGuide() {
-    const modal = document.getElementById('guide-modal');
-    modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
-  }
+function openLogPartner() {
+  openSheet(`
+    <div class="sheet-title">Log a moment</div>
+    <div class="mb8">
+      <select id="pm-type">
+        <option value="date">Date / activity</option>
+        <option value="cooking">Cooking together</option>
+        <option value="connection">Connection moment</option>
+        <option value="repair">Growth / repair</option>
+      </select>
+    </div>
+    <div class="mb8"><textarea id="pm-note" placeholder="What did you do or feel?" style="height:80px;resize:none;"></textarea></div>
+    <div class="sheet-btns">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="savePartnerLog()">Save ✓</button>
+    </div>
+  `);
+}
 
-  function addPerson() {
-    const nameInput = document.getElementById('name-input');
-    const reasonInput = document.getElementById('reason-input');
-    const freqInput = document.getElementById('freq-input');
-    const typeInput = document.getElementById('type-input');
-    const tierInput = document.getElementById('tier-input');
-    const bucketInput = document.getElementById('bucket-input');
-    const ideasInput = document.getElementById('ideas-input');
+function savePartnerLog() {
+  const type = document.getElementById('pm-type').value;
+  const note = document.getElementById('pm-note').value.trim();
+  if (!note) return;
+  addPartnerEntry(type, note);
+  logAction('partner');
+  closeSheet();
+  renderPartner();
+}
 
-    if (!nameInput.value) return;
+function addPartnerEntry(type, text) {
+  const log = load(K.partner) || [];
+  log.unshift({ id: Date.now(), date: today(), type, text });
+  save(K.partner, log.slice(0, 60));
+}
 
-    const newPerson = {
-      id: Date.now(),
-      name: nameInput.value,
-      reason: reasonInput.value,
-      type: typeInput.value,
-      tier: tierInput.value,
-      bucket: bucketInput.value,
-      frequency: parseInt(freqInput.value),
-      ideas: ideasInput.value,
-      lastContact: new Date().toISOString().split('T')[0]
-    };
+function renderPartnerLog() {
+  const log = load(K.partner) || [];
+  const typeColors = { date:'var(--partner)', cooking:'var(--today)', connection:'var(--people)', repair:'var(--explore)' };
+  const el  = document.getElementById('partner-log-list');
+  el.innerHTML = log.slice(0, 10).map(e => `
+    <div class="log-entry">
+      <div class="log-dot" style="background:${typeColors[e.type] || 'var(--border)'}"></div>
+      <div><div class="log-text">${esc(e.text)}</div><div class="log-date">${e.type} · ${fmtDate(e.date)}</div></div>
+    </div>`).join('');
+}
 
-    const data = getSocialData();
-    data.push(newPerson);
-    saveSocialData(data);
+// ══════════════════════════════════════════════════════════════
+// NETWORK
+// ══════════════════════════════════════════════════════════════
+const NETWORK_NUDGES = {
+  office: [
+    'Have a real conversation with a colleague today — not about work',
+    'Ask someone what they\'re working on outside their day job',
+    'Suggest coffee or lunch with someone you don\'t know well yet',
+    'Share something interesting you learned recently with your team',
+    'Ask a senior person for their opinion on something you\'re thinking about',
+    'Thank a colleague specifically for something concrete they did',
+    'Introduce yourself properly to someone new in the office',
+    'Join a meeting or project you\'d normally stay out of — just to listen',
+    'Offer to help a colleague who seems stuck on something',
+    'Ask someone about their career path and what they\'d do differently',
+    'Be the one who starts the conversation in the next meeting',
+    'Bring something in for the team — coffee, snacks, whatever. Small gesture.',
+    'Send a thoughtful follow-up message after a meeting or conversation',
+    'Ask a colleague what they think the team is getting wrong',
+  ],
+  online: [
+    'Comment thoughtfully on someone\'s post — add actual value, not just "great"',
+    'Message a former colleague you haven\'t spoken to in 6+ months',
+    'Share something you found interesting with a brief thought of your own',
+    'Connect with someone you met recently but haven\'t followed up with',
+    'Reply to someone\'s story or post you genuinely found interesting',
+    'Write a short post about something you learned or noticed recently',
+    'Send a genuine endorsement or recommendation to someone you\'ve worked with',
+    'Join a professional community or group chat relevant to your field',
+    'Engage publicly with someone\'s work you genuinely admire',
+    'Reach out to someone doing interesting work just to say you found it interesting',
+    'Share a resource that actually helped you, with context about why',
+    'Update your profile with something recent — project, skill, thought',
+  ],
+};
 
-    nameInput.value = '';
-    reasonInput.value = '';
-    ideasInput.value = '';
-  }
+const STARTERS = {
+  office: [
+    'What\'s been the most interesting thing you\'ve worked on recently?',
+    'Are you working on anything outside of work at the moment?',
+    'What do you think about [recent company/team news]?',
+    'How did you end up in this field?',
+    'What\'s one thing you\'d change about how we work as a team?',
+    'What do you do to switch off after work?',
+    'What are you reading or listening to lately?',
+    'Where\'s somewhere you\'ve been recently that surprised you?',
+    'What\'s the biggest thing you\'ve changed your mind about in your career?',
+    'If you could swap jobs with anyone in the company for a week, who would it be?',
+    'What\'s something you learned recently that genuinely surprised you?',
+    'What does a perfect work day look like for you?',
+    'What\'s one skill you wish you\'d developed earlier?',
+    'What made you choose this company when you joined?',
+    'What\'s the most useful feedback you\'ve ever been given?',
+    'What do you think we underestimate as a team?',
+  ],
+  online: [
+    'I came across your post on [X] — genuinely interesting take. How did you arrive at that view?',
+    'We connected at [event] — I\'d love to hear more about what you\'re working on',
+    'I saw you\'re doing [X] now — how\'s that going compared to what you were doing before?',
+    'I\'ve been thinking about [topic you both care about] — curious what your take is',
+    'Your recent post on [X] made me think differently. Would love to talk more about it.',
+    'I\'ve been following your work on [X] for a while — what\'s the story behind how you got into it?',
+    'I\'m working on something similar to [X] — would love to compare notes if you\'re open to it',
+    'What\'s a project you\'re excited about that you haven\'t talked about publicly yet?',
+    'I\'m trying to get better at [X] — you seem to know this space well. Any pointers?',
+    'You mentioned [X] recently — I\'ve been thinking about that. What\'s your latest view on it?',
+  ],
+};
 
-  function markContacted(id) {
-    const data = getSocialData();
-    const person = data.find(p => p.id === id);
-    if (person) {
-      person.lastContact = new Date().toISOString().split('T')[0];
-      saveSocialData(data);
-    }
-  }
+let networkTab = 'office';
 
-  function deletePerson(id) {
-    if (!confirm('Remove this person from your pool?')) return;
-    const data = getSocialData().filter(p => p.id !== id);
-    saveSocialData(data);
-  }
+function setNetworkTab(tab) {
+  networkTab = tab;
+  document.getElementById('net-office').classList.toggle('active', tab === 'office');
+  document.getElementById('net-online').classList.toggle('active', tab === 'online');
+  renderNetwork();
+}
 
-  function renderSocialList() {
-    const contactDueList = document.getElementById('contact-due-list');
-    const meetupDueList = document.getElementById('meetup-due-list');
-    const fullList = document.getElementById('full-pool-list');
-    const data = getSocialData();
-    const today = new Date();
+function renderNetwork() {
+  const pool = NETWORK_NUDGES[networkTab];
+  const idx  = Math.floor(Date.now() / (7 * 86400000)) % pool.length;
+  document.getElementById('net-nudge').innerText = pool[idx];
 
-    // Rolling Queue: Sort by lastContact (oldest first)
-    data.sort((a, b) => new Date(a.lastContact) - new Date(b.lastContact));
+  refreshStarters();
+  renderNetworkLog();
+}
 
-    contactDueList.innerHTML = '';
-    meetupDueList.innerHTML = '';
-    fullList.innerHTML = '';
+function refreshStarters() {
+  const pool    = STARTERS[networkTab];
+  const indices = shuffleIndices(pool.length).slice(0, 3);
+  document.getElementById('net-starters').innerHTML = indices.map(i =>
+    `<div class="starter-item">${esc(pool[i])}</div>`
+  ).join('');
+}
 
-    let contactCount = 0;
-    let meetupCount = 0;
+function logNetwork() {
+  openSheet(`
+    <div class="sheet-title">Log a network action</div>
+    <div class="mb8"><select id="nl-type" style="width:100%;"><option value="office">Office interaction</option><option value="online">Online interaction</option></select></div>
+    <div class="mb8"><input type="text" id="nl-note" placeholder="Brief note (optional)"></div>
+    <div class="sheet-btns">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="saveNetworkLog()">Save ✓</button>
+    </div>
+  `);
+}
 
-    data.forEach(p => {
-      const lastDate = new Date(p.lastContact);
-      const diffTime = Math.abs(today - lastDate);
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      const isDue = diffDays >= p.frequency;
-      const typeIcon = p.type === 'local' ? '📍' : '🌍';
-      
-      const bucketClass = `tag-${p.bucket || 'maintain'}`;
-      const tierText = p.tier ? `T${p.tier}` : '';
+function saveNetworkLog() {
+  const type = document.getElementById('nl-type').value;
+  const note = document.getElementById('nl-note').value.trim();
+  const log  = load(K.network) || [];
+  log.unshift({ id: Date.now(), date: today(), type, note: note || (type === 'office' ? 'Office interaction' : 'Online interaction') });
+  save(K.network, log.slice(0, 60));
+  logAction('network');
+  closeSheet();
+  renderNetwork();
+  if (document.getElementById('view-today').classList.contains('active')) renderToday();
+}
 
-      const ideasHtml = p.ideas ? `
-        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
-          ${p.ideas.split(',').map(i => `<span style="font-size: 0.65em; background: #eef2f3; color: #34495e; padding: 2px 6px; border-radius: 8px;">${i.trim()}</span>`).join('')}
-        </div>
-      ` : '';
+function renderNetworkLog() {
+  const log = (load(K.network) || []).slice(0, 8);
+  const el  = document.getElementById('net-log-list');
+  const emp = document.getElementById('net-log-empty');
+  if (!log.length) { el.innerHTML = ''; emp.style.display = 'block'; return; }
+  emp.style.display = 'none';
+  el.innerHTML = log.map(e => `
+    <div class="log-entry">
+      <div class="log-dot" style="background:var(--network)"></div>
+      <div><div class="log-text">${esc(e.note)}</div><div class="log-date">${e.type} · ${fmtDate(e.date)}</div></div>
+    </div>`).join('');
+}
 
-      const liContent = `
-        <div class="social-info" style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <h3 style="font-size: 0.9em;">${typeIcon} ${p.name}</h3>
-            ${tierText ? `<span style="font-size: 0.6em; background: #34495e; color: white; padding: 1px 4px; border-radius: 3px; font-weight: bold;">${tierText}</span>` : ''}
-            <span class="principle-tag ${bucketClass}" style="margin: 0; font-size: 0.6em; padding: 1px 6px;">${p.bucket || 'Maintain'}</span>
-          </div>
-          <p style="font-size: 0.75em; color: #7f8c8d;">${p.reason || 'No context'}</p>
-          ${ideasHtml}
-          <p style="font-size: 0.6em; color: #bdc3c7; margin-top: 4px;">
-            Every ${p.frequency}d | Last: ${p.lastContact}
-          </p>
-        </div>
-        <div class="social-actions" style="margin-left: 10px;">
-          ${isDue ? `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75em;" onclick="markContacted(${p.id})">Done</button>` : ''}
-          <button class="btn btn-delete" style="padding: 4px 8px; font-size: 0.75em;" onclick="deletePerson(${p.id})">✕</button>
-        </div>
-      `;
+// ══════════════════════════════════════════════════════════════
+// BOTTOM SHEET
+// ══════════════════════════════════════════════════════════════
+function openSheet(html) {
+  document.getElementById('sheet-content').innerHTML = html;
+  document.getElementById('sheet-overlay').classList.add('open');
+  requestAnimationFrame(() => document.getElementById('bottom-sheet').classList.add('open'));
+}
 
-      const fullLi = document.createElement('li');
-      fullLi.className = 'social-item';
-      fullLi.innerHTML = liContent;
-      fullList.appendChild(fullLi);
+function closeSheet() {
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
+}
 
-      if (isDue) {
-        const dueLi = document.createElement('li');
-        dueLi.className = 'social-item';
-        dueLi.innerHTML = liContent;
-        if (p.type === 'local') {
-          meetupCount++;
-          meetupDueList.appendChild(dueLi);
-        } else {
-          contactCount++;
-          contactDueList.appendChild(dueLi);
-        }
-      }
-    });
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-    if (contactCount === 0) contactDueList.innerHTML = '<p style="text-align:center; color:#95a5a6; font-size:0.8em; padding: 10px;">All check-ins done! ✨</p>';
-    if (meetupCount === 0) meetupDueList.innerHTML = '<p style="text-align:center; color:#95a5a6; font-size:0.8em; padding: 10px;">No pending activity suggestions. 🌟</p>';
-  }
+function shuffleIndices(n) {
+  const a = Array.from({length:n},(_,i)=>i);
+  for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return a;
+}
 
-  // Initialize
-  initPrompt();
-  renderSocialList();
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+renderToday();
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
 </script>
 </body>
 </html>

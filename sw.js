@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hub-v7';
+const CACHE_NAME = 'hub-v9';
 
 // Core assets to cache for offline use
 const PRE_CACHE = [

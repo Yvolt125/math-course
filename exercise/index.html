@@ -3,166 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Exercise Tracker — The Hub</title>
+  <title>Exercise Tracker</title>
   <link rel="manifest" href="../manifest.json">
   <meta name="theme-color" content="#c0392b">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="../icon.svg">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: #f0f2f5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      color: #2c3e50;
-    }
+    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 
-    header {
-      background: #c0392b;
-      color: white;
-      padding: 24px 20px;
-      text-align: center;
-      position: relative;
-    }
-    header h1 { font-size: 1.2em; letter-spacing: 1px; text-transform: uppercase; }
-    .back {
-      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-      color: white; text-decoration: none; font-size: 0.9em; opacity: 0.8;
-    }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; background:#1c1c2e; min-height:100vh; color:#ecf0f1; display:flex; flex-direction:column; }
 
-    .nav-tabs {
-      display: flex;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .nav-tab {
-      flex: 1;
-      text-align: center;
-      padding: 15px;
-      font-size: 0.9em;
-      font-weight: 600;
-      color: #7f8c8d;
-      border-bottom: 3px solid transparent;
-      cursor: pointer;
-    }
-    .nav-tab.active {
-      color: #c0392b;
-      border-bottom-color: #c0392b;
-    }
+    header { background:#c0392b; padding:18px 16px; text-align:center; position:relative; }
+    .back { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.9em; }
+    header h1 { font-size:1.1em; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; }
 
-    .container {
-      flex: 1;
-      padding: 20px;
-      max-width: 500px;
-      margin: 0 auto;
-      width: 100%;
-    }
+    .nav-tabs { display:flex; background:#16213e; overflow-x:auto; scrollbar-width:none; }
+    .nav-tabs::-webkit-scrollbar { display:none; }
+    .nav-tab { flex:1; min-width:70px; text-align:center; padding:13px 6px; font-size:0.8em; font-weight:600; color:#7f8c8d; cursor:pointer; border-bottom:3px solid transparent; transition:color .2s,border-color .2s; white-space:nowrap; }
+    .nav-tab.active { color:#e74c3c; border-bottom-color:#e74c3c; }
 
-    .view { display: none; }
-    .view.active { display: block; }
+    .container { flex:1; padding:14px; max-width:480px; margin:0 auto; width:100%; }
+    .view { display:none; }
+    .view.active { display:block; }
 
-    /* Tracker UI */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-    .stat-card {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-    .stat-value { font-size: 1.8em; font-weight: 700; color: #c0392b; display: block; }
-    .stat-label { font-size: 0.75em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+    /* ── Activity bar ── */
+    .act-bar { display:flex; gap:6px; background:#16213e; padding:5px; border-radius:13px; margin-bottom:16px; }
+    .act-btn { flex:1; padding:9px 4px; border:none; border-radius:9px; font-size:0.8em; font-weight:700; background:transparent; color:#7f8c8d; cursor:pointer; transition:all .2s; text-transform:uppercase; letter-spacing:.5px; }
+    .act-btn.active { background:#c0392b; color:white; }
+    .act-btn:disabled { opacity:.4; cursor:default; }
 
-    .btn-main {
-      width: 100%;
-      padding: 18px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.1em;
-      font-weight: 700;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      margin-bottom: 15px;
-    }
-    .btn-start { background: #27ae60; }
-    .btn-stop { background: #c0392b; }
-    .btn-secondary { background: #ecf0f1; color: #7f8c8d; border: none; border-radius: 8px; cursor: pointer; }
+    /* ── Primary stat ── */
+    .primary-card { background:#16213e; border-radius:18px; padding:24px 20px 18px; text-align:center; margin-bottom:10px; border:1px solid #0f3460; position:relative; }
+    .primary-val { font-size:3.8em; font-weight:700; color:#e74c3c; line-height:1; display:block; }
+    .primary-lbl { font-size:0.7em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1.5px; margin-top:7px; display:block; }
+    .est-tag { position:absolute; top:9px; right:11px; font-size:0.6em; color:#f39c12; background:#4a3800; padding:2px 7px; border-radius:10px; display:none; }
 
-    /* Gym UI */
-    .gym-form {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-    .gym-form select, .gym-form input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 1em;
-      background: #fff;
-    }
-    .exercise-list { list-style: none; }
-    .exercise-item {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .exercise-info h4 { font-size: 1em; margin-bottom: 4px; }
-    .exercise-info p { font-size: 0.85em; color: #7f8c8d; }
+    /* ── Stats row ── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+    .stat-card { background:#16213e; border-radius:13px; padding:12px 6px; text-align:center; border:1px solid #0f3460; }
+    .stat-val { font-size:1.25em; font-weight:700; color:#ecf0f1; display:block; line-height:1.1; }
+    .stat-lbl { font-size:0.6em; color:#7f8c8d; text-transform:uppercase; letter-spacing:.8px; margin-top:4px; display:block; }
 
-    .history-card {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      border-left: 4px solid #c0392b;
-    }
+    /* ── Buttons ── */
+    .btn-main { width:100%; padding:16px; border:none; border-radius:50px; font-size:1em; font-weight:700; color:white; cursor:pointer; transition:transform .1s,box-shadow .1s; box-shadow:0 4px 18px rgba(0,0,0,.35); margin-bottom:10px; letter-spacing:.5px; }
+    .btn-main:active { transform:scale(.97); }
+    .btn-row { display:flex; gap:8px; margin-bottom:10px; }
+    .btn-row .btn-main { margin-bottom:0; }
+    .btn-green  { background:#27ae60; }
+    .btn-red    { background:#c0392b; }
+    .btn-yellow { background:#f39c12; }
+    .btn-grey   { background:#2c3e50; color:#bdc3c7; }
 
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.7em;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-    .badge-run { background: #eafaf1; color: #27ae60; }
-    .badge-bike { background: #eaf4fb; color: #2980b9; }
-    .badge-walk { background: #fef9e7; color: #f39c12; }
-    .badge-gym { background: #fdedec; color: #c0392b; }
+    /* ── Pills ── */
+    .sensor-bar { display:flex; gap:7px; margin-bottom:4px; }
+    .pill { flex:1; padding:6px 7px; border-radius:20px; font-size:0.63em; font-weight:600; text-align:center; background:#16213e; color:#7f8c8d; border:1px solid #0f3460; transition:all .3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pill.ok    { color:#2ecc71; border-color:#27ae60; }
+    .pill.warn  { color:#f39c12; border-color:#f39c12; }
+    .pill.error { color:#e74c3c; border-color:#e74c3c; }
 
-    #gps-status {
-      text-align: center;
-      font-size: 0.7em;
-      color: #bdc3c7;
-      margin-top: 10px;
-    }
+    /* ── Info banners ── */
+    .banner { border-radius:11px; padding:12px 14px; margin-bottom:12px; font-size:0.8em; text-align:center; display:none; }
+    .banner.ios-perm { background:#1a3a1a; border:1px solid #27ae60; color:#2ecc71; }
+    .banner.bg-mode  { background:#1a3060; border:1px solid #2980b9; color:#3498db; }
+    .banner button { margin-top:9px; background:#27ae60; color:white; border:none; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; font-size:1em; }
+
+    /* ── Card / form ── */
+    .card { background:#16213e; border-radius:14px; padding:16px; margin-bottom:12px; border:1px solid #0f3460; }
+    .card h3 { font-size:0.92em; margin-bottom:12px; color:#ecf0f1; }
+    .field-lbl { font-size:0.67em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px; }
+    .card select, .card input[type=number], .card input[type=range] { width:100%; padding:10px 11px; margin-bottom:10px; border:1px solid #0f3460; border-radius:8px; font-size:0.93em; background:#0f3460; color:#ecf0f1; }
+    .card input[type=range] { padding:6px 0; cursor:pointer; }
+    .stepper { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+    .stepper button { background:#0f3460; color:#ecf0f1; border:1px solid #2c3e50; border-radius:8px; padding:9px 15px; font-size:1.1em; font-weight:700; cursor:pointer; flex-shrink:0; }
+    .stepper input { flex:1; text-align:center; margin:0; }
+    .btn-sm { width:100%; padding:12px; border:none; border-radius:10px; font-size:0.93em; font-weight:700; color:white; cursor:pointer; }
+
+    /* ── Gym set list ── */
+    .ex-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #0f3460; }
+    .ex-item:last-child { border-bottom:none; }
+    .ex-info h4 { font-size:0.9em; margin-bottom:2px; }
+    .ex-info p  { font-size:0.75em; color:#7f8c8d; }
+    .del-btn { background:none; border:none; color:#c0392b; font-size:1.25em; cursor:pointer; padding:4px 8px; }
+    .pb-badge { font-size:0.65em; background:#4a3800; color:#f1c40f; padding:1px 6px; border-radius:6px; margin-left:6px; }
+
+    /* ── Rest timer ── */
+    .rest-timer { background:#0f3460; border-radius:14px; padding:18px; margin-bottom:12px; text-align:center; display:none; border:1px solid #2980b9; }
+    .rest-timer-val { font-size:3em; font-weight:700; color:#3498db; display:block; }
+    .rest-timer-lbl { font-size:0.7em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1px; }
+    .rest-skip { background:#2c3e50; color:#bdc3c7; border:none; border-radius:8px; padding:8px 20px; font-size:0.82em; font-weight:700; cursor:pointer; margin-top:10px; }
+
+    /* ── Interval timer ── */
+    .interval-display { background:#16213e; border-radius:18px; padding:28px 20px; text-align:center; margin-bottom:12px; border:2px solid #0f3460; position:relative; overflow:hidden; }
+    .interval-phase { font-size:0.72em; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; display:block; }
+    .interval-time  { font-size:4.5em; font-weight:700; line-height:1; display:block; }
+    .interval-round { font-size:0.75em; color:#7f8c8d; margin-top:8px; display:block; }
+    .interval-bar { position:absolute; bottom:0; left:0; height:4px; background:#e74c3c; transition:width .1s linear; }
+    .presets { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
+    .preset-btn { background:#16213e; color:#bdc3c7; border:1px solid #0f3460; border-radius:8px; padding:7px 12px; font-size:0.78em; font-weight:600; cursor:pointer; }
+    .preset-btn:active { background:#0f3460; }
+
+    /* ── History / summary ── */
+    .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .sum-card { background:#16213e; border-radius:13px; padding:14px; border:1px solid #0f3460; }
+    .sum-val { font-size:1.6em; font-weight:700; color:#e74c3c; display:block; }
+    .sum-lbl { font-size:0.65em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1px; margin-top:4px; display:block; }
+
+    .filter-bar { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+    .filter-btn { padding:6px 13px; border-radius:20px; border:1px solid #0f3460; background:#16213e; color:#7f8c8d; font-size:0.78em; font-weight:600; cursor:pointer; }
+    .filter-btn.active { background:#c0392b; color:white; border-color:#c0392b; }
+
+    .chart-wrap { background:#16213e; border-radius:14px; padding:14px; margin-bottom:14px; border:1px solid #0f3460; }
+    .chart-wrap h4 { font-size:0.8em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+    .chart-bars { display:flex; align-items:flex-end; gap:4px; height:70px; }
+    .chart-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; height:100%; justify-content:flex-end; }
+    .chart-bar { width:100%; background:#c0392b; border-radius:4px 4px 0 0; min-height:2px; transition:height .4s; }
+    .chart-bar.bike { background:#2980b9; }
+    .chart-bar.walk { background:#f39c12; }
+    .chart-bar.gym  { background:#8e44ad; }
+    .chart-lbl { font-size:0.58em; color:#7f8c8d; }
+
+    .hist-card { background:#16213e; border-left:4px solid #c0392b; border-radius:0 12px 12px 0; padding:13px; margin-bottom:9px; }
+    .badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:0.65em; font-weight:700; text-transform:uppercase; }
+    .b-run  { background:#1a4731; color:#2ecc71; }
+    .b-walk { background:#4a3800; color:#f39c12; }
+    .b-bike { background:#1a3050; color:#3498db; }
+    .b-gym  { background:#4a1010; color:#e74c3c; }
+    .hist-date { font-size:0.68em; color:#7f8c8d; float:right; }
+    .hist-row { display:flex; justify-content:space-around; margin-top:10px; }
+    .h-val { font-size:1em; font-weight:700; display:block; text-align:center; }
+    .h-lbl { font-size:0.62em; color:#7f8c8d; text-transform:uppercase; display:block; text-align:center; }
+
+    .section-title { font-size:0.72em; color:#7f8c8d; text-transform:uppercase; letter-spacing:1.5px; margin:16px 0 8px; font-weight:700; }
+    .empty { text-align:center; color:#7f8c8d; padding:40px 20px; font-size:0.88em; line-height:1.9; }
+    .clear-btn { width:100%; padding:10px; background:#2c3e50; color:#7f8c8d; border:none; border-radius:8px; font-size:0.78em; cursor:pointer; margin-top:6px; }
+
+    /* ── Settings ── */
+    .settings-row { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid #0f3460; }
+    .settings-row:last-child { border-bottom:none; }
+    .settings-lbl { font-size:0.88em; }
+    .settings-sub { font-size:0.72em; color:#7f8c8d; margin-top:2px; }
+    .settings-input { background:#0f3460; color:#ecf0f1; border:1px solid #2c3e50; border-radius:8px; padding:8px 10px; font-size:0.9em; width:90px; text-align:center; }
+    .audio-toggle { display:flex; gap:6px; }
+    .audio-toggle button { padding:6px 12px; border-radius:8px; border:1px solid #2c3e50; background:#0f3460; color:#7f8c8d; font-size:0.8em; font-weight:600; cursor:pointer; }
+    .audio-toggle button.active { background:#27ae60; color:white; border-color:#27ae60; }
   </style>
 </head>
 <body>
-
-<audio id="silent-audio" loop>
-  <source src="data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
-</audio>
 
 <header>
   <a class="back" href="../index.html">← Hub</a>
@@ -170,310 +157,1090 @@
 </header>
 
 <div class="nav-tabs">
-  <div class="nav-tab active" onclick="showView('tracker')">Tracker</div>
-  <div class="nav-tab" onclick="showView('gym')">Gym</div>
-  <div class="nav-tab" onclick="showView('history')">History</div>
+  <div class="nav-tab active"  onclick="showView('tracker')">Tracker</div>
+  <div class="nav-tab"         onclick="showView('intervals')">Intervals</div>
+  <div class="nav-tab"         onclick="showView('gym')">Gym</div>
+  <div class="nav-tab"         onclick="showView('history')">History</div>
+  <div class="nav-tab"         onclick="showView('settings')">Settings</div>
 </div>
 
 <div class="container">
 
-  <!-- TRACKER VIEW -->
-  <div id="view-tracker" class="view active">
-    <div style="text-align: center; margin-bottom: 20px;">
-      <select id="activity-type" style="padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; font-weight: 600;">
-        <option value="run">🏃‍♂️ Running</option>
-        <option value="bike">🚴‍♂️ Biking</option>
-        <option value="walk" selected>🚶‍♂️ Walking</option>
-      </select>
-    </div>
+<!-- ══════════════════════════════════════════════
+     TRACKER
+══════════════════════════════════════════════ -->
+<div id="view-tracker" class="view active">
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span id="display-distance" class="stat-value">0.00</span>
-        <span class="stat-label">km</span>
-      </div>
-      <div id="timer" class="stat-card">
-        <span id="display-time" class="stat-value">00:00</span>
-        <span class="stat-label">Time</span>
-      </div>
-      <div class="stat-card">
-        <span id="display-speed" class="stat-value">0.0</span>
-        <span class="stat-label">km/h</span>
-      </div>
-      <div class="stat-card">
-        <span id="display-pace" class="stat-value">0:00</span>
-        <span class="stat-label">min/km</span>
-      </div>
-    </div>
-
-    <button id="btn-toggle" class="btn-main btn-start" onclick="toggleTracking()">Start Session</button>
-    <div id="gps-status">GPS Signal: Standby</div>
+  <div class="act-bar">
+    <button class="act-btn" id="act-run"  onclick="setActivity('run')">🏃 Run</button>
+    <button class="act-btn active" id="act-walk" onclick="setActivity('walk')">🚶 Walk</button>
+    <button class="act-btn" id="act-bike" onclick="setActivity('bike')">🚴 Bike</button>
   </div>
 
-  <!-- GYM VIEW -->
-  <div id="view-gym" class="view">
-    <div class="gym-form">
-      <h3 style="margin-bottom: 15px; font-size: 1.1em;">Log Set</h3>
-      
-      <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">EXERCISE</label>
-      <select id="gym-exercise">
-        <optgroup label="Chest">
-          <option value="Bench Press">Bench Press</option>
-          <option value="Incline Press">Incline Press</option>
-          <option value="Chest Fly">Chest Fly</option>
-          <option value="Push Ups">Push Ups</option>
-        </optgroup>
-        <optgroup label="Back">
-          <option value="Pull Ups">Pull Ups</option>
-          <option value="Lat Pulldown">Lat Pulldown</option>
-          <option value="Seated Row">Seated Row</option>
-          <option value="Deadlift">Deadlift</option>
-        </optgroup>
-        <optgroup label="Legs">
-          <option value="Squat">Squat</option>
-          <option value="Leg Press">Leg Press</option>
-          <option value="Lunges">Lunges</option>
-          <option value="Leg Curl">Leg Curl</option>
-        </optgroup>
-        <optgroup label="Arms/Shoulders">
-          <option value="Overhead Press">Overhead Press</option>
-          <option value="Lateral Raise">Lateral Raise</option>
-          <option value="Bicep Curl">Bicep Curl</option>
-          <option value="Tricep Extension">Tricep Extension</option>
-        </optgroup>
-      </select>
+  <div id="ios-perm" class="banner ios-perm">
+    Tap to enable motion sensor for step counting
+    <button onclick="requestMotionPerm()">Enable Step Counter</button>
+  </div>
+  <div id="bg-banner" class="banner bg-mode">
+    📱 Screen was off — steps estimated from GPS distance
+  </div>
 
-      <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">WEIGHT (KG)</label>
-          <div style="display: flex; align-items: center; gap: 5px;">
-            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-weight', -2.5)">-</button>
-            <input type="number" id="gym-weight" value="40" step="2.5" style="margin: 0; text-align: center; flex: 2;">
-            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-weight', 2.5)">+</button>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75em; color: #7f8c8d; display: block; margin-bottom: 5px;">REPS</label>
-          <div style="display: flex; align-items: center; gap: 5px;">
-            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-reps', -1)">-</button>
-            <input type="number" id="gym-reps" value="10" style="margin: 0; text-align: center; flex: 2;">
-            <button class="btn-secondary" style="padding: 10px; font-weight: bold; flex: 1;" onclick="adjustValue('gym-reps', 1)">+</button>
-          </div>
-        </div>
-      </div>
+  <div class="primary-card">
+    <span id="est-tag" class="est-tag">GPS est.</span>
+    <span id="primary-val" class="primary-val">0</span>
+    <span id="primary-lbl" class="primary-lbl">Steps</span>
+  </div>
 
-      <button class="btn-main btn-start" style="padding: 15px; margin-bottom: 0;" onclick="addGymSet()">Add Set</button>
-    </div>
+  <div class="stats-row">
+    <div class="stat-card"><span id="disp-dist" class="stat-val">0.00</span><span class="stat-lbl">km</span></div>
+    <div class="stat-card"><span id="disp-time" class="stat-val">0:00</span><span class="stat-lbl">Time</span></div>
+    <div class="stat-card"><span id="disp-pace" class="stat-val">—</span><span id="pace-lbl" class="stat-lbl">min/km</span></div>
+    <div class="stat-card"><span id="disp-cal"  class="stat-val">0</span><span class="stat-lbl">kcal</span></div>
+  </div>
 
-    <div id="current-gym-session">
-      <h3 style="margin-bottom: 10px; font-size: 1em;">Current Session</h3>
-      <ul id="gym-session-list" class="exercise-list">
-        <!-- Sets added here -->
-      </ul>
-      <button id="btn-finish-gym" class="btn-main btn-stop" style="display: none; margin-top: 15px;" onclick="finishGymSession()">Finish & Save Session</button>
+  <div id="tracker-btns">
+    <button id="btn-start" class="btn-main btn-green" onclick="startTracking()">Start</button>
+  </div>
+  <div id="tracker-active-btns" style="display:none;">
+    <div class="btn-row">
+      <button id="btn-pause" class="btn-main btn-yellow" onclick="pauseTracking()">Pause</button>
+      <button class="btn-main btn-red" onclick="stopTracking()">Finish</button>
     </div>
   </div>
 
-  <div id="view-history" class="view">
-    <h3 style="margin-bottom: 15px;">Recent Activities</h3>
-    <div id="history-list"></div>
-    <button class="btn-main btn-stop" style="background: #7f8c8d; font-size: 0.8em; padding: 10px;" onclick="clearHistory()">Clear All Data</button>
+  <div class="sensor-bar">
+    <div class="pill" id="pill-steps">Steps: —</div>
+    <div class="pill" id="pill-gps">GPS: —</div>
   </div>
-
 </div>
 
+
+<!-- ══════════════════════════════════════════════
+     INTERVAL TIMER
+══════════════════════════════════════════════ -->
+<div id="view-intervals" class="view">
+
+  <div class="interval-display" id="int-display">
+    <span id="int-phase" class="interval-phase" style="color:#2ecc71;">Ready</span>
+    <span id="int-time"  class="interval-time"  style="color:#ecf0f1;">—</span>
+    <span id="int-round" class="interval-round">Set up a timer below</span>
+    <div  id="int-bar"   class="interval-bar" style="width:100%;"></div>
+  </div>
+
+  <div class="presets" id="presets">
+    <button class="preset-btn" onclick="applyPreset(20,10,8,'Tabata')">Tabata</button>
+    <button class="preset-btn" onclick="applyPreset(60,30,10,'HIIT 1:30')">HIIT 1:30</button>
+    <button class="preset-btn" onclick="applyPreset(90,60,6,'HIIT 1:60')">HIIT 1:60</button>
+    <button class="preset-btn" onclick="applyPreset(120,60,5,'2 min intervals')">2 min run</button>
+    <button class="preset-btn" onclick="applyPreset(180,90,4,'3 min intervals')">3 min run</button>
+    <button class="preset-btn" onclick="applyPreset(300,90,3,'Pyramid')">Pyramid</button>
+  </div>
+
+  <div class="card">
+    <h3>Configure</h3>
+    <div style="display:flex; gap:10px;">
+      <div style="flex:1;">
+        <span class="field-lbl">Work (sec)</span>
+        <div class="stepper">
+          <button onclick="adjInt('int-work',-5)">−</button>
+          <input type="number" id="int-work" value="40">
+          <button onclick="adjInt('int-work', 5)">+</button>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <span class="field-lbl">Rest (sec)</span>
+        <div class="stepper">
+          <button onclick="adjInt('int-rest',-5)">−</button>
+          <input type="number" id="int-rest" value="20">
+          <button onclick="adjInt('int-rest', 5)">+</button>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <span class="field-lbl">Rounds</span>
+        <div class="stepper">
+          <button onclick="adjInt('int-rounds',-1)">−</button>
+          <input type="number" id="int-rounds" value="8">
+          <button onclick="adjInt('int-rounds', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="int-btns-idle">
+      <button class="btn-sm btn-green" onclick="startInterval()">Start Timer</button>
+    </div>
+    <div id="int-btns-active" style="display:none;">
+      <div class="btn-row">
+        <button id="int-pause-btn" class="btn-main btn-yellow" style="margin-bottom:0;" onclick="pauseInterval()">Pause</button>
+        <button class="btn-main btn-red" style="margin-bottom:0;" onclick="stopInterval()">Stop</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     GYM
+══════════════════════════════════════════════ -->
+<div id="view-gym" class="view">
+
+  <!-- Rest timer -->
+  <div id="rest-timer" class="rest-timer">
+    <span class="rest-timer-lbl">Rest Timer</span>
+    <span id="rest-val" class="rest-timer-val">90</span>
+    <br>
+    <button class="rest-skip" onclick="skipRest()">Skip ›</button>
+  </div>
+
+  <div class="card">
+    <h3>Log Set</h3>
+    <span class="field-lbl">Exercise</span>
+    <select id="gym-exercise" onchange="showPB()">
+      <optgroup label="Chest">
+        <option>Bench Press</option><option>Incline Press</option><option>Chest Fly</option><option>Push Ups</option>
+      </optgroup>
+      <optgroup label="Back">
+        <option>Pull Ups</option><option>Lat Pulldown</option><option>Seated Row</option><option>Deadlift</option>
+      </optgroup>
+      <optgroup label="Legs">
+        <option>Squat</option><option>Leg Press</option><option>Lunges</option><option>Leg Curl</option>
+      </optgroup>
+      <optgroup label="Arms / Shoulders">
+        <option>Overhead Press</option><option>Lateral Raise</option><option>Bicep Curl</option><option>Tricep Extension</option>
+      </optgroup>
+    </select>
+
+    <div id="pb-display" style="font-size:0.78em; color:#7f8c8d; margin:-4px 0 10px; display:none;"></div>
+
+    <div style="display:flex; gap:10px;">
+      <div style="flex:1;">
+        <span class="field-lbl">Weight (kg)</span>
+        <div class="stepper">
+          <button onclick="adj('gym-weight',-2.5)">−</button>
+          <input type="number" id="gym-weight" value="40" step="2.5">
+          <button onclick="adj('gym-weight', 2.5)">+</button>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <span class="field-lbl">Reps</span>
+        <div class="stepper">
+          <button onclick="adj('gym-reps',-1)">−</button>
+          <input type="number" id="gym-reps" value="10">
+          <button onclick="adj('gym-reps', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+      <span class="field-lbl" style="margin:0; flex-shrink:0;">Rest:</span>
+      <select id="rest-duration" style="flex:1; padding:8px; border:1px solid #0f3460; border-radius:8px; background:#0f3460; color:#ecf0f1; font-size:0.88em; margin-bottom:0;">
+        <option value="0">No rest timer</option>
+        <option value="45">45 sec</option>
+        <option value="60">60 sec</option>
+        <option value="90" selected>90 sec</option>
+        <option value="120">2 min</option>
+        <option value="180">3 min</option>
+      </select>
+    </div>
+
+    <button class="btn-sm btn-green" onclick="addSet()">Add Set</button>
+  </div>
+
+  <div class="card" id="gym-session-card" style="display:none;">
+    <h3>Current Session</h3>
+    <div id="gym-list"></div>
+    <button class="btn-sm btn-red" style="margin-top:12px;" onclick="finishGym()">Save Session</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     HISTORY
+══════════════════════════════════════════════ -->
+<div id="view-history" class="view">
+
+  <!-- This week summary -->
+  <div id="summary-section">
+    <div class="section-title">This Week</div>
+    <div class="summary-grid" id="summary-grid"></div>
+
+    <div class="chart-wrap">
+      <h4 id="chart-title">Distance — last 8 weeks</h4>
+      <div class="chart-bars" id="chart-bars"></div>
+      <div class="chart-bars" id="chart-labels" style="height:auto; margin-top:4px;"></div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" onclick="setFilter('run')">🏃 Run</button>
+      <button class="filter-btn" onclick="setFilter('walk')">🚶 Walk</button>
+      <button class="filter-btn" onclick="setFilter('bike')">🚴 Bike</button>
+      <button class="filter-btn" onclick="setFilter('gym')">🏋️ Gym</button>
+    </div>
+  </div>
+
+  <div class="section-title">Activity Log</div>
+  <div id="hist-list"></div>
+  <button class="clear-btn" onclick="clearHistory()">Clear All History</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SETTINGS
+══════════════════════════════════════════════ -->
+<div id="view-settings" class="view">
+  <div class="card">
+    <h3>Profile</h3>
+    <div class="settings-row">
+      <div><div class="settings-lbl">Body weight</div><div class="settings-sub">Used for calorie estimates</div></div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <input type="number" id="sett-weight" class="settings-input" value="75" min="30" max="200">
+        <span style="font-size:0.8em; color:#7f8c8d;">kg</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-lbl">Step length — walk</div><div class="settings-sub">Affects GPS-based step estimates</div></div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <input type="number" id="sett-stride-walk" class="settings-input" value="74" min="40" max="120">
+        <span style="font-size:0.8em; color:#7f8c8d;">cm</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-lbl">Step length — run</div></div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <input type="number" id="sett-stride-run" class="settings-input" value="95" min="50" max="180">
+        <span style="font-size:0.8em; color:#7f8c8d;">cm</span>
+      </div>
+    </div>
+    <button class="btn-sm btn-green" onclick="saveSettings()" style="margin-top:4px;">Save</button>
+  </div>
+
+  <div class="card">
+    <h3>Audio Cues (while running)</h3>
+    <div class="settings-row">
+      <div><div class="settings-lbl">km announcements</div><div class="settings-sub">Spoken distance + pace every km</div></div>
+      <div class="audio-toggle">
+        <button id="audio-on-btn"  onclick="setAudio(true)"  class="active">On</button>
+        <button id="audio-off-btn" onclick="setAudio(false)">Off</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
 <script>
-  // --- STATE ---
-  let isTracking = false;
-  let startTime = null;
-  let timerInterval = null;
-  let watchId = null;
-  let distance = 0;
-  let lastPosition = null;
-  let currentGymSession = [];
-  
-  // Professional Grade Filters
-  const MIN_ACCURACY = 35; // Meters
-  const MAX_SPEED = 12.5;  // Meters per second (~45km/h)
-  const MIN_DIST = 4;      // Ignore movements smaller than this to avoid jitter
+// ══════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════
+let cfg = {
+  weight:     75,
+  strideWalk: 74,
+  strideRun:  95,
+  audioOn:    true
+};
 
-  function showView(viewName) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(`view-${viewName}`).classList.add('active');
-    document.querySelector(`.nav-tab[onclick="showView('${viewName}')"]`).classList.add('active');
-    if (viewName === 'history') renderHistory();
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('ex-cfg') || '{}');
+  Object.assign(cfg, s);
+  document.getElementById('sett-weight').value      = cfg.weight;
+  document.getElementById('sett-stride-walk').value = cfg.strideWalk;
+  document.getElementById('sett-stride-run').value  = cfg.strideRun;
+  setAudio(cfg.audioOn, false);
+}
+
+function saveSettings() {
+  cfg.weight     = parseFloat(document.getElementById('sett-weight').value)      || 75;
+  cfg.strideWalk = parseFloat(document.getElementById('sett-stride-walk').value) || 74;
+  cfg.strideRun  = parseFloat(document.getElementById('sett-stride-run').value)  || 95;
+  localStorage.setItem('ex-cfg', JSON.stringify(cfg));
+  showView('tracker');
+}
+
+function setAudio(on, save = true) {
+  cfg.audioOn = on;
+  document.getElementById('audio-on-btn').classList.toggle('active', on);
+  document.getElementById('audio-off-btn').classList.toggle('active', !on);
+  if (save) localStorage.setItem('ex-cfg', JSON.stringify(cfg));
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelector(`.nav-tab[onclick="showView('${name}')"]`).classList.add('active');
+  if (name === 'history') renderHistory();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TRACKER — CONSTANTS & STATE
+// ══════════════════════════════════════════════════════════════
+const LP_ALPHA     = 0.85;
+const STEP_THRESH  = 1.4;
+const MIN_STEP_MS  = 270;
+const GPS_ACC_MAX  = 35;
+const GPS_SPD_MAX  = 13.9;
+const GPS_DIST_MIN = 3;
+const SAVE_MS      = 4000;
+
+// MET values for calorie calc (moderate intensity)
+const MET = { run: 9.0, walk: 3.5, bike: 6.0 };
+
+let activity     = 'walk';
+let tracking     = false;
+let paused       = false;
+let startTime    = 0;
+let pausedTime   = 0;   // total ms spent paused
+let pauseStart   = 0;   // when current pause began
+let rafId        = null;
+let gpsId        = null;
+let saveId       = null;
+
+let steps        = 0;
+let lowPass      = 9.8;
+let prevDyn      = 0;
+let lastStepMs   = 0;
+let motionOn     = false;
+
+let distM        = 0;
+let lastPos      = null;
+let lastKmAnnounced = 0;
+
+let bgDistAtHide = 0;
+let hiddenAt     = 0;
+
+// ══════════════════════════════════════════════════════════════
+// ACTIVITY SELECTOR
+// ══════════════════════════════════════════════════════════════
+function setActivity(type) {
+  if (tracking) return;
+  activity = type;
+  ['run','walk','bike'].forEach(t =>
+    document.getElementById('act-' + t).classList.toggle('active', t === type)
+  );
+  document.getElementById('primary-lbl').innerText = type === 'bike' ? 'Speed  km/h' : 'Steps';
+  document.getElementById('primary-val').innerText = '0';
+}
+
+// ══════════════════════════════════════════════════════════════
+// TRACKER — START / PAUSE / STOP
+// ══════════════════════════════════════════════════════════════
+function startTracking() {
+  if (!navigator.geolocation) { alert('Geolocation not available.'); return; }
+
+  tracking     = true;
+  paused       = false;
+  startTime    = Date.now();
+  pausedTime   = 0;
+  pauseStart   = 0;
+  steps        = 0;
+  distM        = 0;
+  lastPos      = null;
+  lowPass      = 9.8;
+  prevDyn      = 0;
+  lastStepMs   = 0;
+  bgDistAtHide = 0;
+  hiddenAt     = 0;
+  lastKmAnnounced = 0;
+
+  document.getElementById('tracker-btns').style.display       = 'none';
+  document.getElementById('tracker-active-btns').style.display = 'block';
+  document.querySelectorAll('.act-btn').forEach(b => b.disabled = true);
+  document.getElementById('est-tag').style.display    = 'none';
+  document.getElementById('bg-banner').style.display  = 'none';
+
+  scheduleTick();
+  gpsId  = navigator.geolocation.watchPosition(onGps, onGpsErr, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+  saveId = setInterval(persistSession, SAVE_MS);
+  startMotion();
+  persistSession();
+}
+
+function pauseTracking() {
+  if (!tracking) return;
+  if (!paused) {
+    paused = true;
+    pauseStart = Date.now();
+    navigator.geolocation.clearWatch(gpsId);
+    cancelAnimationFrame(rafId);
+    document.getElementById('btn-pause').innerText = 'Resume';
+    document.getElementById('btn-pause').classList.replace('btn-yellow', 'btn-green');
+    setPill('pill-gps', 'GPS: Paused', 'warn');
+  } else {
+    paused = false;
+    pausedTime += Date.now() - pauseStart;
+    gpsId = navigator.geolocation.watchPosition(onGps, onGpsErr, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+    scheduleTick();
+    document.getElementById('btn-pause').innerText = 'Pause';
+    document.getElementById('btn-pause').classList.replace('btn-green', 'btn-yellow');
   }
+}
 
-  function toggleTracking() {
-    const audio = document.getElementById('silent-audio');
-    if (!isTracking) {
-      if (!navigator.geolocation) return alert("GPS not supported.");
-      isTracking = true;
-      startTime = Date.now();
-      distance = 0;
-      lastPosition = null;
-      document.getElementById('btn-toggle').innerText = "Finish Session";
-      document.getElementById('btn-toggle').classList.replace('btn-start', 'btn-stop');
-      audio.play().catch(e => console.log(e));
-      timerInterval = setInterval(() => {
-        document.getElementById('display-time').innerText = formatTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
+function stopTracking() {
+  if (paused) { pausedTime += Date.now() - pauseStart; }
+  tracking = false;
+  paused   = false;
+  clearInterval(saveId);
+  cancelAnimationFrame(rafId);
+  navigator.geolocation.clearWatch(gpsId);
+  window.removeEventListener('devicemotion', onMotion);
+  motionOn = false;
 
-      watchId = navigator.geolocation.watchPosition(
-        (pos) => updatePosition(pos),
-        (err) => document.getElementById('gps-status').innerText = "GPS Error: " + err.message,
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-      );
+  document.getElementById('tracker-btns').style.display        = 'block';
+  document.getElementById('tracker-active-btns').style.display = 'none';
+  document.querySelectorAll('.act-btn').forEach(b => b.disabled = false);
+  document.getElementById('bg-banner').style.display = 'none';
+  document.getElementById('btn-pause').innerText = 'Pause';
+  document.getElementById('btn-pause').classList.replace('btn-green', 'btn-yellow');
+  setPill('pill-steps', 'Steps: —', '');
+  setPill('pill-gps',   'GPS: —', '');
+
+  const elapsed = activeSeconds();
+  const distKm  = distM / 1000;
+  const speed   = elapsed > 0 ? distKm / (elapsed / 3600) : 0;
+  const cal     = calcCal(elapsed);
+
+  if (elapsed >= 15) {
+    saveHistory({ type: activity, date: new Date().toISOString(), steps, distance: distKm.toFixed(2), duration: elapsed, avgSpeed: speed.toFixed(1), calories: Math.round(cal) });
+  }
+  localStorage.removeItem('active-session');
+  showView('history');
+}
+
+function activeSeconds() {
+  const total = (Date.now() - startTime) / 1000;
+  const pausedSec = pausedTime / 1000;
+  return Math.max(0, Math.floor(total - pausedSec));
+}
+
+// ══════════════════════════════════════════════════════════════
+// CALORIES
+// ══════════════════════════════════════════════════════════════
+function calcCal(elapsedSec) {
+  // MET × weight(kg) × hours
+  return MET[activity] * cfg.weight * (elapsedSec / 3600);
+}
+
+// ══════════════════════════════════════════════════════════════
+// DISPLAY LOOP
+// ══════════════════════════════════════════════════════════════
+function scheduleTick() {
+  if (!tracking || paused) return;
+  updateDisplay();
+  rafId = requestAnimationFrame(scheduleTick);
+}
+
+function updateDisplay() {
+  const elapsed = activeSeconds();
+  const distKm  = distM / 1000;
+  const cal     = Math.round(calcCal(elapsed));
+
+  document.getElementById('disp-time').innerText = fmt(elapsed);
+  document.getElementById('disp-dist').innerText = distKm.toFixed(2);
+  document.getElementById('disp-cal').innerText  = cal;
+
+  if (activity === 'bike') {
+    const spd = elapsed > 0 ? distKm / (elapsed / 3600) : 0;
+    document.getElementById('primary-val').innerText = spd.toFixed(1);
+    document.getElementById('disp-pace').innerText   = spd > 0.5 ? spd.toFixed(1) : '—';
+    document.getElementById('pace-lbl').innerText    = 'km/h';
+  } else {
+    document.getElementById('primary-val').innerText = steps.toLocaleString();
+    if (distKm > 0.01 && elapsed > 0) {
+      document.getElementById('disp-pace').innerText = fmtPace((elapsed / 60) / distKm);
+    }
+    document.getElementById('pace-lbl').innerText = 'min/km';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// GPS
+// ══════════════════════════════════════════════════════════════
+function onGps(pos) {
+  if (!tracking || paused) return;
+  const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+  if (accuracy > GPS_ACC_MAX) { setPill('pill-gps', 'GPS: Weak (' + Math.round(accuracy) + 'm)', 'warn'); return; }
+  setPill('pill-gps', 'GPS: ' + Math.round(accuracy) + 'm', 'ok');
+  if (lastPos) {
+    const d = haversine(lastPos.lat, lastPos.lon, lat, lon);
+    const dt = (pos.timestamp - lastPos.ts) / 1000;
+    const v  = dt > 0 ? d / dt : 0;
+    if (v < GPS_SPD_MAX && d > GPS_DIST_MIN) distM += d;
+  }
+  lastPos = { lat, lon, ts: pos.timestamp };
+  checkKmAnnouncement();
+}
+
+function onGpsErr() { setPill('pill-gps', 'GPS: Error', 'error'); }
+
+function checkKmAnnouncement() {
+  if (!cfg.audioOn) return;
+  const km = Math.floor(distM / 1000);
+  if (km > lastKmAnnounced) {
+    lastKmAnnounced = km;
+    const elapsed = activeSeconds();
+    const pace = elapsed > 0 && km > 0 ? fmtPace((elapsed / 60) / km) : null;
+    const msg = pace
+      ? `${km} kilometre${km > 1 ? 's' : ''}. Pace: ${pace.replace(':', ' minutes ')} seconds per kilometre.`
+      : `${km} kilometre${km > 1 ? 's' : ''}.`;
+    speak(msg);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUDIO CUES (Web Speech API)
+// ══════════════════════════════════════════════════════════════
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  u.volume = 1;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACCELEROMETER — STEP COUNTING
+// ══════════════════════════════════════════════════════════════
+function startMotion() {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    document.getElementById('ios-perm').style.display = 'block';
+    return;
+  }
+  attachMotion();
+}
+
+function requestMotionPerm() {
+  DeviceMotionEvent.requestPermission().then(s => {
+    document.getElementById('ios-perm').style.display = 'none';
+    if (s === 'granted') attachMotion();
+    else setPill('pill-steps', 'Steps: Denied', 'error');
+  }).catch(() => setPill('pill-steps', 'Steps: Error', 'error'));
+}
+
+function attachMotion() {
+  window.addEventListener('devicemotion', onMotion, { passive: true });
+  motionOn = true;
+  setPill('pill-steps', 'Steps: Active', 'ok');
+}
+
+function onMotion(e) {
+  if (!tracking || paused || activity === 'bike') return;
+  const acc = e.accelerationIncludingGravity;
+  if (!acc || acc.x === null) return;
+  const mag = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+  lowPass = LP_ALPHA * lowPass + (1 - LP_ALPHA) * mag;
+  const dyn = mag - lowPass;
+  const now = Date.now();
+  if (prevDyn > STEP_THRESH && dyn <= STEP_THRESH && (now - lastStepMs) > MIN_STEP_MS) {
+    steps++;
+    lastStepMs = now;
+  }
+  prevDyn = dyn;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN-OFF RECONCILIATION
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('visibilitychange', () => {
+  if (!tracking || paused) return;
+  if (document.hidden) {
+    bgDistAtHide = distM;
+    hiddenAt     = Date.now();
+    cancelAnimationFrame(rafId);
+  } else {
+    setTimeout(() => {
+      if (hiddenAt > 0 && activity !== 'bike') {
+        const gained = distM - bgDistAtHide;
+        if (gained > 5) {
+          const strideCm = activity === 'run' ? cfg.strideRun : cfg.strideWalk;
+          const est = Math.round((gained / (strideCm / 100)));
+          if (est > 0) {
+            steps += est;
+            document.getElementById('est-tag').style.display = 'block';
+            document.getElementById('bg-banner').style.display = 'block';
+            setTimeout(() => document.getElementById('bg-banner').style.display = 'none', 5000);
+          }
+        }
+      }
+      hiddenAt = 0; bgDistAtHide = 0;
+      scheduleTick();
+    }, 1500);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// SESSION PERSISTENCE
+// ══════════════════════════════════════════════════════════════
+function persistSession() {
+  if (!tracking) return;
+  localStorage.setItem('active-session', JSON.stringify({ activity, startTime, pausedTime, steps, distM, lastPos, savedAt: Date.now() }));
+}
+
+function tryResume() {
+  const raw = localStorage.getItem('active-session');
+  if (!raw) return;
+  let s; try { s = JSON.parse(raw); } catch { localStorage.removeItem('active-session'); return; }
+  if ((Date.now() - s.startTime) > 3 * 3600 * 1000) { localStorage.removeItem('active-session'); return; }
+  const elapsed = fmt(Math.round((s.savedAt - s.startTime - s.pausedTime) / 1000));
+  if (!confirm('Resume previous ' + s.activity + ' session?\n(' + elapsed + ' recorded)')) { localStorage.removeItem('active-session'); return; }
+  activity = s.activity; startTime = s.startTime; pausedTime = s.pausedTime || 0;
+  steps = s.steps; distM = s.distM; lastPos = s.lastPos; tracking = true;
+  setActivity(activity);
+  document.getElementById('tracker-btns').style.display        = 'none';
+  document.getElementById('tracker-active-btns').style.display = 'block';
+  document.querySelectorAll('.act-btn').forEach(b => b.disabled = true);
+  scheduleTick();
+  gpsId  = navigator.geolocation.watchPosition(onGps, onGpsErr, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+  saveId = setInterval(persistSession, SAVE_MS);
+  startMotion();
+}
+
+// ══════════════════════════════════════════════════════════════
+// INTERVAL TIMER
+// ══════════════════════════════════════════════════════════════
+let intRunning  = false;
+let intPaused   = false;
+let intPhase    = 'work';   // 'work' | 'rest' | 'countdown'
+let intRound    = 0;
+let intTotal    = 0;
+let intRemain   = 0;
+let intPhaseDur = 0;
+let intRaf      = null;
+let intLast     = 0;
+
+function applyPreset(work, rest, rounds, name) {
+  document.getElementById('int-work').value   = work;
+  document.getElementById('int-rest').value   = rest;
+  document.getElementById('int-rounds').value = rounds;
+  document.getElementById('int-time').innerText  = fmt(work);
+  document.getElementById('int-round').innerText = rounds + ' rounds · ' + name;
+}
+
+function startInterval() {
+  const work   = Math.max(1, parseInt(document.getElementById('int-work').value)   || 40);
+  const rest   = Math.max(1, parseInt(document.getElementById('int-rest').value)   || 20);
+  const rounds = Math.max(1, parseInt(document.getElementById('int-rounds').value) || 8);
+
+  intRunning  = true;
+  intPaused   = false;
+  intPhase    = 'countdown';
+  intRound    = 1;
+  intTotal    = rounds;
+  intRemain   = 3;
+  intPhaseDur = 3;
+  intLast     = performance.now();
+
+  document.getElementById('int-btns-idle').style.display   = 'none';
+  document.getElementById('int-btns-active').style.display = 'block';
+  document.getElementById('presets').style.display         = 'none';
+  renderIntervalDisplay(work, rest);
+  intRaf = requestAnimationFrame(tickInterval.bind(null, work, rest));
+}
+
+function tickInterval(work, rest, now) {
+  if (!intRunning || intPaused) return;
+  const dt = (now - intLast) / 1000;
+  intLast  = now;
+  intRemain -= dt;
+
+  if (intRemain <= 0) {
+    // Phase transition
+    if (intPhase === 'countdown') {
+      intPhase    = 'work';
+      intRemain   = work;
+      intPhaseDur = work;
+      speak('Go!');
+      vibrate([200]);
+    } else if (intPhase === 'work') {
+      if (intRound >= intTotal) {
+        finishIntervalComplete();
+        return;
+      }
+      intPhase    = 'rest';
+      intRemain   = rest;
+      intPhaseDur = rest;
+      speak('Rest.');
+      vibrate([100, 50, 100]);
     } else {
-      stopTracking();
+      intPhase    = 'work';
+      intRound++;
+      intRemain   = work;
+      intPhaseDur = work;
+      speak('Go!');
+      vibrate([200]);
     }
   }
 
-  function stopTracking() {
-    isTracking = false;
-    clearInterval(timerInterval);
-    navigator.geolocation.clearWatch(watchId);
-    document.getElementById('silent-audio').pause();
-    saveActivity({
-      type: document.getElementById('activity-type').value,
-      date: new Date().toISOString(),
-      distance: (distance / 1000).toFixed(2),
-      duration: Math.floor((Date.now() - startTime) / 1000),
-      avgSpeed: ((distance / 1000) / (Math.floor((Date.now() - startTime) / 1000) / 3600)).toFixed(1)
+  // 3-second warning beep
+  if (intRemain <= 3.05 && intRemain > 2.95 && intPhase !== 'countdown') {
+    vibrate([60]);
+  }
+
+  renderIntervalDisplay(work, rest);
+  intRaf = requestAnimationFrame(tickInterval.bind(null, work, rest));
+}
+
+function renderIntervalDisplay(work, rest) {
+  const secs  = Math.ceil(intRemain);
+  const pct   = intPhaseDur > 0 ? Math.max(0, intRemain / intPhaseDur) * 100 : 100;
+
+  let phaseColor, phaseLabel;
+  if (intPhase === 'countdown')  { phaseColor = '#f39c12'; phaseLabel = 'Get Ready'; }
+  else if (intPhase === 'work')  { phaseColor = '#e74c3c'; phaseLabel = 'Work'; }
+  else                           { phaseColor = '#2ecc71'; phaseLabel = 'Rest'; }
+
+  document.getElementById('int-phase').innerText    = phaseLabel;
+  document.getElementById('int-phase').style.color  = phaseColor;
+  document.getElementById('int-time').innerText     = fmt(secs);
+  document.getElementById('int-time').style.color   = phaseColor;
+  document.getElementById('int-bar').style.width    = pct + '%';
+  document.getElementById('int-bar').style.background = phaseColor;
+  document.getElementById('int-round').innerText =
+    intPhase === 'countdown' ? 'Round 1 of ' + intTotal :
+    'Round ' + intRound + ' of ' + intTotal;
+}
+
+function pauseInterval() {
+  if (!intRunning) return;
+  intPaused = !intPaused;
+  document.getElementById('int-pause-btn').innerText = intPaused ? 'Resume' : 'Pause';
+  if (!intPaused) {
+    intLast = performance.now();
+    const work = parseInt(document.getElementById('int-work').value) || 40;
+    const rest = parseInt(document.getElementById('int-rest').value) || 20;
+    intRaf = requestAnimationFrame(tickInterval.bind(null, work, rest));
+  }
+}
+
+function stopInterval() {
+  intRunning = false;
+  cancelAnimationFrame(intRaf);
+  document.getElementById('int-btns-idle').style.display   = 'block';
+  document.getElementById('int-btns-active').style.display = 'none';
+  document.getElementById('presets').style.display         = 'flex';
+  document.getElementById('int-phase').innerText  = 'Ready';
+  document.getElementById('int-phase').style.color = '#2ecc71';
+  document.getElementById('int-time').innerText   = '—';
+  document.getElementById('int-time').style.color  = '#ecf0f1';
+  document.getElementById('int-round').innerText  = 'Set up a timer below';
+  document.getElementById('int-bar').style.width  = '100%';
+  document.getElementById('int-bar').style.background = '#e74c3c';
+}
+
+function finishIntervalComplete() {
+  speak('Session complete. Well done!');
+  vibrate([200, 100, 200, 100, 400]);
+  stopInterval();
+}
+
+function adjInt(id, d) {
+  const el = document.getElementById(id);
+  el.value = Math.max(1, (parseInt(el.value) || 0) + d);
+}
+
+// ══════════════════════════════════════════════════════════════
+// GYM — REST TIMER
+// ══════════════════════════════════════════════════════════════
+let restId      = null;
+let restRemain  = 0;
+
+function startRest(sec) {
+  if (sec <= 0) return;
+  clearInterval(restId);
+  restRemain = sec;
+  document.getElementById('rest-timer').style.display = 'block';
+  document.getElementById('rest-val').innerText = restRemain;
+  restId = setInterval(() => {
+    restRemain--;
+    document.getElementById('rest-val').innerText = restRemain;
+    if (restRemain <= 3) vibrate([60]);
+    if (restRemain <= 0) {
+      clearInterval(restId);
+      document.getElementById('rest-timer').style.display = 'none';
+      vibrate([200, 100, 200]);
+      speak('Rest over. Start your set.');
+    }
+  }, 1000);
+}
+
+function skipRest() {
+  clearInterval(restId);
+  document.getElementById('rest-timer').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// GYM — SETS & PERSONAL BESTS
+// ══════════════════════════════════════════════════════════════
+let gymSets = [];
+
+function showPB() {
+  const ex  = document.getElementById('gym-exercise').value;
+  const pb  = getPersonalBest(ex);
+  const el  = document.getElementById('pb-display');
+  if (pb) {
+    el.style.display = 'block';
+    el.innerHTML = `🏆 Your best: <strong>${pb.weight} kg × ${pb.reps}</strong>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function getPersonalBest(exercise) {
+  const hist = JSON.parse(localStorage.getItem('exercise-history') || '[]');
+  let best = null;
+  for (const h of hist) {
+    if (h.type !== 'gym' || !h.sets) continue;
+    for (const s of h.sets) {
+      if (s.exercise !== exercise) continue;
+      const score = parseFloat(s.weight) * Math.log(parseInt(s.reps) + 1);
+      if (!best || score > best.score) best = { weight: s.weight, reps: s.reps, score };
+    }
+  }
+  return best;
+}
+
+function adj(id, delta) {
+  const el  = document.getElementById(id);
+  const val = Math.max(0, (parseFloat(el.value) || 0) + delta);
+  el.value  = Number.isInteger(delta) ? val : val.toFixed(1);
+}
+
+function addSet() {
+  const ex = document.getElementById('gym-exercise').value;
+  const wt = document.getElementById('gym-weight').value;
+  const rp = document.getElementById('gym-reps').value;
+
+  // Check if this is a new PB
+  const pb    = getPersonalBest(ex);
+  const score = parseFloat(wt) * Math.log(parseInt(rp) + 1);
+  const isNewPB = !pb || score > pb.score;
+
+  gymSets.push({ exercise: ex, weight: wt, reps: rp, newPB: isNewPB });
+  renderGym();
+
+  const restSec = parseInt(document.getElementById('rest-duration').value) || 0;
+  startRest(restSec);
+}
+
+function removeSet(i) { gymSets.splice(i, 1); renderGym(); }
+
+function renderGym() {
+  const card = document.getElementById('gym-session-card');
+  if (!gymSets.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  document.getElementById('gym-list').innerHTML = gymSets.map((s, i) => `
+    <div class="ex-item">
+      <div class="ex-info">
+        <h4>${s.exercise}${s.newPB ? '<span class="pb-badge">🏆 PB</span>' : ''}</h4>
+        <p>${s.weight} kg × ${s.reps} reps</p>
+      </div>
+      <button class="del-btn" onclick="removeSet(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function finishGym() {
+  if (!gymSets.length) return;
+  saveHistory({ type: 'gym', date: new Date().toISOString(), sets: gymSets.map(s => ({ exercise: s.exercise, weight: s.weight, reps: s.reps })) });
+  gymSets = [];
+  renderGym();
+  showView('history');
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY & SUMMARY
+// ══════════════════════════════════════════════════════════════
+let histFilter = 'all';
+
+function setFilter(f) {
+  histFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('onclick') === `setFilter('${f}')`)
+  );
+  renderHistory();
+}
+
+function saveHistory(entry) {
+  const h = JSON.parse(localStorage.getItem('exercise-history') || '[]');
+  h.unshift(entry);
+  localStorage.setItem('exercise-history', JSON.stringify(h.slice(0, 200)));
+}
+
+function renderHistory() {
+  const all = JSON.parse(localStorage.getItem('exercise-history') || '[]');
+  renderSummary(all);
+  renderChart(all);
+  renderLog(all);
+}
+
+function renderSummary(all) {
+  const now  = new Date();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); weekStart.setHours(0,0,0,0);
+  const week = all.filter(h => new Date(h.date) >= weekStart);
+
+  const runs  = week.filter(h => h.type === 'run');
+  const walks = week.filter(h => h.type === 'walk');
+  const bikes = week.filter(h => h.type === 'bike');
+  const gyms  = week.filter(h => h.type === 'gym');
+
+  const sumDist = arr => arr.reduce((s, h) => s + parseFloat(h.distance || 0), 0);
+  const sumSteps = arr => arr.reduce((s, h) => s + (h.steps || 0), 0);
+  const sumCal  = arr => arr.reduce((s, h) => s + (h.calories || 0), 0);
+  const allCardo = [...runs, ...walks, ...bikes];
+
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML = `
+    <div class="sum-card"><span class="sum-val">${sumDist(allCardo).toFixed(1)}</span><span class="sum-lbl">km this week</span></div>
+    <div class="sum-card"><span class="sum-val">${sumSteps([...runs,...walks]).toLocaleString()}</span><span class="sum-lbl">steps this week</span></div>
+    <div class="sum-card"><span class="sum-val">${Math.round(sumCal(allCardo)).toLocaleString()}</span><span class="sum-lbl">kcal this week</span></div>
+    <div class="sum-card"><span class="sum-val">${week.length}</span><span class="sum-lbl">sessions this week</span></div>
+    <div class="sum-card"><span class="sum-val">${sumDist(runs).toFixed(1)}</span><span class="sum-lbl">km running</span></div>
+    <div class="sum-card"><span class="sum-val">${sumDist(bikes).toFixed(1)}</span><span class="sum-lbl">km cycling</span></div>
+    <div class="sum-card"><span class="sum-val">${gyms.length}</span><span class="sum-lbl">gym sessions</span></div>
+    <div class="sum-card"><span class="sum-val">${allTimeDist(all).toFixed(0)}</span><span class="sum-lbl">km all time</span></div>
+  `;
+}
+
+function allTimeDist(all) {
+  return all.filter(h => h.type !== 'gym').reduce((s, h) => s + parseFloat(h.distance || 0), 0);
+}
+
+function renderChart(all) {
+  // 8-week bar chart of distance by activity type
+  const now = new Date();
+  const weeks = [];
+  for (let i = 7; i >= 0; i--) {
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay() - i * 7);
+    start.setHours(0,0,0,0);
+    const end = new Date(start); end.setDate(start.getDate() + 7);
+    const label = start.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const entries = all.filter(h => { const d = new Date(h.date); return d >= start && d < end; });
+    weeks.push({
+      label,
+      run:  entries.filter(h => h.type === 'run').reduce((s, h) => s + parseFloat(h.distance || 0), 0),
+      walk: entries.filter(h => h.type === 'walk').reduce((s, h) => s + parseFloat(h.distance || 0), 0),
+      bike: entries.filter(h => h.type === 'bike').reduce((s, h) => s + parseFloat(h.distance || 0), 0),
+      gym:  entries.filter(h => h.type === 'gym').length,
     });
-    document.getElementById('btn-toggle').innerText = "Start Session";
-    document.getElementById('btn-toggle').classList.replace('btn-stop', 'btn-start');
-    resetStats();
-    showView('history');
   }
 
-  function updatePosition(pos) {
-    const { latitude, longitude, accuracy, speed, timestamp } = pos.coords;
-    const time = pos.timestamp || Date.now();
+  const activeType = histFilter === 'all' ? 'run' : histFilter;
+  const key  = (histFilter === 'all' || histFilter === 'run') ? 'run' :
+               histFilter === 'walk' ? 'walk' :
+               histFilter === 'bike' ? 'bike' : 'gym';
+  const vals = weeks.map(w => key === 'gym' ? w.gym : w[key]);
+  const max  = Math.max(...vals, 0.1);
 
-    // 1. Accuracy Lock
-    if (accuracy > MIN_ACCURACY) {
-      document.getElementById('gps-status').innerText = "Signal: Weak (" + Math.round(accuracy) + "m)";
-      return;
-    }
-    document.getElementById('gps-status').innerText = "Signal: Strong (" + Math.round(accuracy) + "m)";
+  const barsEl   = document.getElementById('chart-bars');
+  const labelsEl = document.getElementById('chart-labels');
+  const colorMap = { run:'', walk:'walk', bike:'bike', gym:'gym' };
 
-    if (lastPosition) {
-      const d = haversine(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude);
-      const dt = (time - lastPosition.timestamp) / 1000; // seconds
-      const velocity = d / dt;
-
-      // 2. Velocity Filter: Ignore impossible speeds or standing still jitter
-      if (velocity < MAX_SPEED && d > MIN_DIST) {
-        distance += d;
-        
-        // Prefer native hardware speed, fallback to calculated
-        const speedKmh = (speed && speed > 0) ? (speed * 3.6) : (velocity * 3.6);
-        updateStats(speedKmh);
-      }
-    }
-    lastPosition = pos;
-  }
-
-  function updateStats(speedKmh) {
-    const distKm = distance / 1000;
-    document.getElementById('display-distance').innerText = distKm.toFixed(2);
-    document.getElementById('display-speed').innerText = speedKmh.toFixed(1);
-    const elapsedSec = (Date.now() - startTime) / 1000;
-    if (distKm > 0) {
-      const pace = (elapsedSec / 60) / distKm;
-      document.getElementById('display-pace').innerText = formatPace(pace);
-    }
-  }
-
-  function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
-    const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
-    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  function formatTime(sec) {
-    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-    return (h > 0 ? h + ":" : "") + m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
-  }
-
-  function formatPace(minPerKm) {
-    const m = Math.floor(minPerKm), s = Math.floor((minPerKm - m) * 60);
-    return m + ":" + s.toString().padStart(2, '0');
-  }
-
-  function resetStats() {
-    distance = 0;
-    document.getElementById('display-distance').innerText = "0.00";
-    document.getElementById('display-time').innerText = "00:00";
-    document.getElementById('display-speed').innerText = "0.0";
-    document.getElementById('display-pace').innerText = "0:00";
-  }
-
-  function adjustValue(id, delta) {
-    const input = document.getElementById(id);
-    input.value = Math.max(0, (parseFloat(input.value) || 0) + delta);
-  }
-
-  function addGymSet() {
-    const ex = document.getElementById('gym-exercise').value;
-    const wt = document.getElementById('gym-weight').value;
-    const rp = document.getElementById('gym-reps').value;
-    if (!ex || !wt || !rp) return;
-    currentGymSession.push({ exercise: ex, weight: wt, reps: rp });
-    renderCurrentGymSession();
-    document.getElementById('btn-finish-gym').style.display = 'block';
-  }
-
-  function renderCurrentGymSession() {
-    document.getElementById('gym-session-list').innerHTML = currentGymSession.map((s, i) => `
-      <li class="exercise-item">
-        <div class="exercise-info"><h4>${s.exercise}</h4><p>${s.weight}kg × ${s.reps}</p></div>
-        <button onclick="removeSet(${i})" style="background:none; border:none; color:#e74c3c; font-weight:bold;">✕</button>
-      </li>
-    `).join('');
-  }
-
-  function removeSet(i) {
-    currentGymSession.splice(i, 1);
-    renderCurrentGymSession();
-    if (currentGymSession.length === 0) document.getElementById('btn-finish-gym').style.display = 'none';
-  }
-
-  function finishGymSession() {
-    if (currentGymSession.length === 0) return;
-    saveActivity({ type: 'gym', date: new Date().toISOString(), sets: [...currentGymSession] });
-    currentGymSession = [];
-    renderCurrentGymSession();
-    document.getElementById('btn-finish-gym').style.display = 'none';
-    showView('history');
-  }
-
-  function saveActivity(activity) {
-    const history = JSON.parse(localStorage.getItem('exercise-history') || '[]');
-    history.unshift(activity);
-    localStorage.setItem('exercise-history', JSON.stringify(history.slice(0, 50)));
-  }
-
-  function renderHistory() {
-    const history = JSON.parse(localStorage.getItem('exercise-history') || '[]');
-    document.getElementById('history-list').innerHTML = history.map(h => {
-      const date = new Date(h.date).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      if (h.type === 'gym') {
-        const summary = Object.entries(h.sets.reduce((acc, s) => { acc[s.exercise] = (acc[s.exercise] || 0) + 1; return acc; }, {})).map(([n, c]) => `${c}× ${n}`).join(', ');
-        return `<div class="history-card"><span class="badge badge-gym">Gym</span><div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div><div style="font-size: 0.9em; font-weight: 600; margin-top: 5px;">${summary}</div></div>`;
-      } else {
-        const badge = h.type === 'run' ? 'badge-run' : (h.type === 'bike' ? 'badge-bike' : 'badge-walk');
-        return `<div class="history-card" style="border-left-color: ${h.type === 'run' ? '#27ae60' : (h.type === 'bike' ? '#2980b9' : '#f39c12')};"><span class="badge ${badge}">${h.type}</span><div style="font-size: 0.75em; color: #bdc3c7; float: right;">${date}</div><div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;"><div><span style="font-size: 1.2em; font-weight: 700;">${h.distance}</span> <span style="font-size: 0.8em; color:#7f8c8d;">km</span></div><div style="text-align: right; font-size: 0.85em;"><div>${formatTime(h.duration)}</div><div style="color: #7f8c8d; font-size: 0.8em;">${h.avgSpeed} km/h</div></div></div></div>`;
-      }
+  // For 'all', stack run/walk/bike
+  if (histFilter === 'all') {
+    const maxAll = Math.max(...weeks.map(w => w.run + w.walk + w.bike), 0.1);
+    document.getElementById('chart-title').innerText = 'Distance — last 8 weeks';
+    barsEl.innerHTML = weeks.map(w => {
+      const total = w.run + w.walk + w.bike;
+      const h = (total / maxAll * 60);
+      return `<div class="chart-bar-wrap"><div style="width:100%; height:${h}px; background:linear-gradient(to top,#c0392b,#e74c3c); border-radius:4px 4px 0 0; min-height:2px;"></div></div>`;
+    }).join('');
+  } else {
+    const unit = key === 'gym' ? 'sessions' : 'km';
+    document.getElementById('chart-title').innerText = `${histFilter} ${unit} — last 8 weeks`;
+    barsEl.innerHTML = weeks.map((w, i) => {
+      const h = (vals[i] / max * 60);
+      return `<div class="chart-bar-wrap"><div class="chart-bar ${colorMap[key]}" style="height:${h}px;"></div></div>`;
     }).join('');
   }
+  labelsEl.innerHTML = weeks.map(w =>
+    `<div style="flex:1; text-align:center;"><span class="chart-lbl">${w.label.split(' ')[0]}<br>${w.label.split(' ')[1] || ''}</span></div>`
+  ).join('');
+}
 
-  function clearHistory() { if (confirm("Clear all?")) { localStorage.removeItem('exercise-history'); renderHistory(); } }
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+function renderLog(all) {
+  const filtered = histFilter === 'all' ? all : all.filter(h => h.type === histFilter);
+  const el = document.getElementById('hist-list');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty">No activities yet.<br>Start your first session!</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(h => {
+    const date   = new Date(h.date).toLocaleDateString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    const color  = { run:'#2ecc71', walk:'#f39c12', bike:'#3498db', gym:'#9b59b6' }[h.type] || '#e74c3c';
+    const bClass = { run:'b-run', walk:'b-walk', bike:'b-bike', gym:'b-gym' }[h.type] || 'b-gym';
+    if (h.type === 'gym') {
+      const summary = Object.entries(
+        (h.sets || []).reduce((acc, s) => { acc[s.exercise] = (acc[s.exercise] || 0) + 1; return acc; }, {})
+      ).map(([n, c]) => c + '× ' + n).join(', ');
+      return `<div class="hist-card" style="border-left-color:${color}">
+        <span class="badge ${bClass}">Gym</span>
+        <span class="hist-date">${date}</span>
+        <div style="font-size:0.8em; color:#bdc3c7; margin-top:8px;">${summary || '—'}</div>
+      </div>`;
+    }
+    return `<div class="hist-card" style="border-left-color:${color}">
+      <span class="badge ${bClass}">${h.type}</span>
+      <span class="hist-date">${date}</span>
+      <div class="hist-row">
+        ${h.type !== 'bike' ? `<div><span class="h-val">${(h.steps||0).toLocaleString()}</span><span class="h-lbl">steps</span></div>` : ''}
+        <div><span class="h-val">${h.distance}</span><span class="h-lbl">km</span></div>
+        <div><span class="h-val">${fmt(h.duration)}</span><span class="h-lbl">time</span></div>
+        <div><span class="h-val">${h.avgSpeed}</span><span class="h-lbl">km/h</span></div>
+        ${h.calories ? `<div><span class="h-val">${h.calories}</span><span class="h-lbl">kcal</span></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Clear all history?')) { localStorage.removeItem('exercise-history'); renderHistory(); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
+  const a  = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function fmt(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return (h > 0 ? h + ':' : '') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function fmtPace(minPerKm) {
+  const m = Math.floor(minPerKm), s = Math.floor((minPerKm - m) * 60);
+  return m + ':' + String(s).padStart(2,'0');
+}
+
+function setPill(id, text, state) {
+  const el = document.getElementById(id);
+  el.innerText = text;
+  el.className = 'pill' + (state ? ' ' + state : '');
+}
+
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+loadSettings();
+setActivity('walk');
+showPB();
+tryResume();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
 </script>
 </body>
 </html>

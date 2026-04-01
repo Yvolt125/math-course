@@ -144,33 +144,77 @@
     <button class="start-btn" id="btn-unit3">Start</button>
   </div>
 
-  <div class="unit-divider"><span>More units coming soon</span></div>
+  <div class="unit-divider"><span>NumPy · Data Analysis</span></div>
+  <div class="section-heading">NumPy</div>
 
-  <div class="skill-node right locked">
-    <div class="skill-icon">🌍</div>
+  <!-- numpy1 -->
+  <div class="skill-node left" id="node-numpy1" onclick="startUnit('numpy1')">
+    <div class="skill-icon" id="icon-numpy1">🔢</div>
     <div class="skill-body">
-      <div class="skill-name">Environment &amp; Processes</div>
-      <div class="skill-meta">os.environ · subprocess · system info</div>
+      <div class="skill-name">Array Fundamentals</div>
+      <div class="skill-meta">stats · boolean masks · reshape · normalise · argsort</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-numpy1" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-numpy1">0 / 6</span>
+      </div>
     </div>
-    <button class="start-btn">Soon</button>
+    <button class="start-btn" id="btn-numpy1">Start</button>
   </div>
 
   <div class="path-segment"></div>
 
-  <div class="skill-node left locked">
-    <div class="skill-icon">🤖</div>
+  <!-- numpy2 -->
+  <div class="skill-node right" id="node-numpy2" onclick="startUnit('numpy2')">
+    <div class="skill-icon" id="icon-numpy2">📈</div>
     <div class="skill-body">
-      <div class="skill-name">Automation Scripts</div>
-      <div class="skill-meta">shutil · batch processing · pipelines</div>
+      <div class="skill-name">Real Analysis</div>
+      <div class="skill-meta">np.where · NaN · outliers · rolling avg · correlation · z-score</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-numpy2" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-numpy2">0 / 6</span>
+      </div>
     </div>
-    <button class="start-btn">Soon</button>
+    <button class="start-btn" id="btn-numpy2">Start</button>
+  </div>
+
+  <div class="unit-divider"><span>Pandas · Data Analysis</span></div>
+  <div class="section-heading">Pandas</div>
+
+  <!-- pandas1 -->
+  <div class="skill-node left" id="node-pandas1" onclick="startUnit('pandas1')">
+    <div class="skill-icon" id="icon-pandas1">🐼</div>
+    <div class="skill-body">
+      <div class="skill-name">DataFrame Basics</div>
+      <div class="skill-meta">inspect · filter · groupby · select · rename · multi-condition</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-pandas1" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-pandas1">0 / 6</span>
+      </div>
+    </div>
+    <button class="start-btn" id="btn-pandas1">Start</button>
+  </div>
+
+  <div class="path-segment"></div>
+
+  <!-- pandas2 -->
+  <div class="skill-node right" id="node-pandas2" onclick="startUnit('pandas2')">
+    <div class="skill-icon" id="icon-pandas2">🔄</div>
+    <div class="skill-body">
+      <div class="skill-name">Data Manipulation</div>
+      <div class="skill-meta">merge · pivot · apply · agg · rank · diff</div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-pandas2" style="width:0%"></div></div>
+        <span class="prog-text" id="prog-text-pandas2">0 / 6</span>
+      </div>
+    </div>
+    <button class="start-btn" id="btn-pandas2">Start</button>
   </div>
 
 </div>
 
 <script src="challenges.js"></script>
 <script>
-  const UNITS = ['unit1', 'unit2', 'unit3'];
+  const UNITS = ['unit1', 'unit2', 'unit3', 'numpy1', 'numpy2', 'pandas1', 'pandas2'];
 
   function init() {
     // XP
@@ -185,19 +229,23 @@
       const stats = getUnitStats(uid);
       totalDue += stats.due;
 
-      const pct = stats.total ? (stats.done / stats.total) * 100 : 0;
-      document.getElementById('prog-unit' + uid.replace('unit','')).style.width = pct + '%';
-      document.getElementById('prog-text-unit' + uid.replace('unit','')).textContent = stats.done + ' / ' + stats.total;
+      const progEl = document.getElementById('prog-' + uid);
+      const textEl = document.getElementById('prog-text-' + uid);
+      if (progEl) progEl.style.width = (stats.total ? (stats.done / stats.total) * 100 : 0) + '%';
+      if (textEl) textEl.textContent = stats.done + ' / ' + stats.total;
 
       // Crown level
       const crowns = stats.done === stats.total ? 3
                    : stats.done >= Math.ceil(stats.total * 0.5) ? 2
                    : stats.done > 0 ? 1 : 0;
       if (crowns > 0) {
-        document.getElementById('icon-unit' + uid.replace('unit','')).className = 'skill-icon done-' + crowns;
-        const btn = document.getElementById('btn-unit' + uid.replace('unit',''));
-        if (btn) btn.textContent = stats.due > 0 ? 'Review' : 'Practice';
-        if (stats.due > 0 && btn) btn.className = 'start-btn review';
+        const iconEl = document.getElementById('icon-' + uid);
+        if (iconEl) iconEl.className = 'skill-icon done-' + crowns;
+        const btn = document.getElementById('btn-' + uid);
+        if (btn) {
+          btn.textContent = stats.due > 0 ? 'Review' : 'Practice';
+          if (stats.due > 0) btn.className = 'start-btn review';
+        }
       }
     });
 
@@ -231,6 +279,14 @@
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('../../sw.js');
   init();
+
+  // Scroll to the relevant section if arriving from a sub-page
+  const section = new URLSearchParams(location.search).get('section');
+  if (section) {
+    const sectionMap = { os: 'node-unit1', numpy: 'node-numpy1', pandas: 'node-pandas1' };
+    const targetId = sectionMap[section];
+    if (targetId) setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  }
 </script>
 </body>
 </html>

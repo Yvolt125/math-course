@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Places</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="../icon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; color: #2c3e50; }
+
+    /* ── Header ── */
+    header {
+      background: #1a252f; color: white;
+      padding: 22px 20px 18px; text-align: center; position: relative;
+    }
+    .back { position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.88em; }
+    .back:hover { color: white; }
+    header h1 { font-size: 1.3em; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+    header p  { font-size: 0.75em; opacity: 0.5; }
+    .hdr-add {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: white; font-size: 1.5em;
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer; line-height: 36px;
+      text-align: center; transition: background 0.15s;
+    }
+    .hdr-add:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: #1a252f; padding: 0 12px 12px;
+      display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .fchip {
+      flex-shrink: 0; padding: 5px 13px; border-radius: 20px; border: none;
+      font-size: 0.75em; font-weight: 700; cursor: pointer; transition: all 0.15s;
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
+    }
+    .fchip.active { color: white; }
+
+    /* ── Map ── */
+    .map-wrap { position: relative; }
+    #map { height: 300px; width: 100%; }
+    .map-toggle {
+      position: absolute; bottom: 10px; right: 10px; z-index: 1000;
+      background: white; border: none; border-radius: 8px; padding: 6px 12px;
+      font-size: 0.75em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      color: #2c3e50;
+    }
+    .map-wrap.collapsed #map { display: none; }
+    .map-wrap.collapsed .map-toggle { position: static; display: block; width: 100%;
+      border-radius: 0; text-align: center; padding: 8px; background: #ecf0f1; }
+
+    /* ── Sort bar ── */
+    .sort-bar {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px 6px;
+      font-size: 0.74em; color: #7f8c8d;
+    }
+    .sort-bar select {
+      border: 1px solid #dce3ea; border-radius: 6px; padding: 4px 8px;
+      font-size: 0.9em; color: #2c3e50; background: white; cursor: pointer;
+    }
+    .sort-bar .count { margin-left: auto; font-weight: 700; color: #aab4bc; }
+
+    /* ── Place cards ── */
+    .place-list { padding: 6px 12px 80px; display: flex; flex-direction: column; gap: 10px; }
+
+    .place-card {
+      background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      border-left: 5px solid #dce3ea; overflow: hidden; transition: box-shadow 0.15s;
+    }
+    .place-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.11); }
+
+    .pc-main { display: flex; align-items: flex-start; gap: 12px; padding: 14px 14px 10px; cursor: pointer; }
+    .pc-icon {
+      width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.3em; flex-shrink: 0; background: #f0f2f5;
+    }
+    .pc-body { flex: 1; min-width: 0; }
+    .pc-name { font-size: 0.95em; font-weight: 700; color: #2c3e50; margin-bottom: 2px;
+               white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pc-address { font-size: 0.74em; color: #7f8c8d; margin-bottom: 5px;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pc-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pc-stars { color: #f39c12; font-size: 0.85em; letter-spacing: 1px; }
+    .pc-price { font-size: 0.72em; font-weight: 700; color: #27ae60; }
+    .pc-date  { font-size: 0.7em; color: #bdc3c7; }
+    .pc-actions { display: flex; gap: 0; border-top: 1px solid #f0f2f5; }
+    .pc-btn {
+      flex: 1; padding: 9px 0; border: none; background: transparent; cursor: pointer;
+      font-size: 0.78em; font-weight: 700; color: #7f8c8d; transition: background 0.12s;
+    }
+    .pc-btn:hover { background: #f8f9fa; }
+    .pc-btn.danger:hover { background: #fdf0ee; color: #c0392b; }
+    .pc-btn + .pc-btn { border-left: 1px solid #f0f2f5; }
+    .pc-notes {
+      font-size: 0.8em; color: #555; line-height: 1.5; padding: 0 14px 10px 68px;
+      display: none;
+    }
+    .place-card.expanded .pc-notes { display: block; }
+    .pc-tags { padding: 0 14px 10px 68px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .pc-tag {
+      font-size: 0.68em; padding: 2px 8px; border-radius: 10px;
+      background: #f0f2f5; color: #7f8c8d; font-weight: 600;
+    }
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: #bdc3c7;
+    }
+    .empty-state .es-icon { font-size: 3em; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.88em; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 2000; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px;
+      max-height: 92vh; overflow-y: auto; padding: 20px 20px 40px;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle { width: 40px; height: 4px; background: #dce3ea; border-radius: 2px; margin: 0 auto 16px; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 1.1em; font-weight: 700; }
+    .modal-close { background: #f0f2f5; border: none; border-radius: 50%; width: 32px; height: 32px;
+                   cursor: pointer; font-size: 1em; color: #7f8c8d; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 0.74em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+                  color: #7f8c8d; margin-bottom: 6px; display: block; }
+    .form-input {
+      width: 100%; border: 1.5px solid #dce3ea; border-radius: 10px; padding: 11px 14px;
+      font-size: 0.9em; font-family: inherit; color: #2c3e50; background: white;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { outline: none; border-color: #2980b9; }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+
+    /* Category picker */
+    .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .cat-opt {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 10px 4px; border: 2px solid #e1e8ed; border-radius: 10px;
+      cursor: pointer; font-size: 0.68em; font-weight: 700; color: #7f8c8d;
+      background: white; transition: all 0.15s;
+    }
+    .cat-opt .co-icon { font-size: 1.5em; }
+    .cat-opt.selected { color: white; border-color: transparent; }
+
+    /* Star rating */
+    .star-row { display: flex; gap: 6px; }
+    .star-btn {
+      background: none; border: none; font-size: 1.8em; cursor: pointer; color: #dce3ea;
+      transition: color 0.1s; padding: 2px; line-height: 1;
+    }
+    .star-btn.lit { color: #f39c12; }
+
+    /* Price range */
+    .price-row { display: flex; gap: 8px; }
+    .price-opt {
+      flex: 1; padding: 9px 4px; border: 2px solid #e1e8ed; border-radius: 8px;
+      background: white; cursor: pointer; font-size: 0.82em; font-weight: 700;
+      color: #7f8c8d; text-align: center; transition: all 0.15s;
+    }
+    .price-opt.selected { background: #eafaf1; border-color: #27ae60; color: #1e8449; }
+
+    /* Address + geocode */
+    .addr-row { display: flex; gap: 8px; }
+    .addr-row .form-input { flex: 1; }
+    .find-btn {
+      padding: 11px 14px; background: #2980b9; color: white; border: none;
+      border-radius: 10px; cursor: pointer; font-size: 0.82em; font-weight: 700;
+      white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0;
+    }
+    .find-btn:hover { opacity: 0.85; }
+    .find-btn:disabled { opacity: 0.5; cursor: default; }
+    .geo-status { font-size: 0.72em; color: #7f8c8d; margin-top: 4px; }
+    #geo-results { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+    .geo-result-btn {
+      width: 100%; text-align: left; background: #f8f9fa; border: 1.5px solid #e1e8ed;
+      border-radius: 8px; padding: 9px 12px; cursor: pointer; font-size: 0.8em;
+      color: #2c3e50; transition: border-color 0.12s, background 0.12s; font-family: inherit;
+    }
+    .geo-result-btn:hover { border-color: #2980b9; background: #eaf4fb; }
+
+    /* Tags */
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tag-chip {
+      display: flex; align-items: center; gap: 4px; background: #eaf4fb; color: #2471a3;
+      border-radius: 12px; padding: 4px 10px; font-size: 0.74em; font-weight: 600;
+    }
+    .tag-chip button { background: none; border: none; cursor: pointer; color: #2471a3;
+                       font-size: 0.9em; padding: 0; line-height: 1; }
+
+    /* Save button */
+    .save-btn {
+      width: 100%; padding: 15px; background: #1a252f; color: white; border: none;
+      border-radius: 12px; font-size: 0.95em; font-weight: 700; cursor: pointer;
+      margin-top: 8px; transition: opacity 0.15s;
+    }
+    .save-btn:hover { opacity: 0.88; }
+
+    /* Pin mode */
+    .pin-banner {
+      display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 1000; background: #27ae60; color: white; border-radius: 20px;
+      padding: 8px 18px; font-size: 0.82em; font-weight: 700; white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    }
+    .pin-banner.active { display: block; }
+    #map.pin-mode { cursor: crosshair; }
+
+    /* Popup */
+    .leaflet-popup-content { margin: 10px 14px; }
+    .lp-name { font-weight: 700; font-size: 0.92em; color: #2c3e50; margin-bottom: 3px; }
+    .lp-stars { color: #f39c12; font-size: 0.8em; }
+    .lp-link { display: block; margin-top: 6px; font-size: 0.75em; color: #2980b9;
+               font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="../index.html">← Hub</a>
+  <h1>My Places</h1>
+  <p id="hdr-count">0 places saved</p>
+  <button class="hdr-add" onclick="openModal()" title="Add place">+</button>
+</header>
+
+<div class="filter-bar" id="filter-bar"></div>
+
+<div class="map-wrap" id="map-wrap">
+  <div id="map"></div>
+  <div class="pin-banner" id="pin-banner">📍 Tap anywhere to place pin — tap again to cancel</div>
+  <button class="map-toggle" id="map-toggle" onclick="toggleMap()">▲ Hide map</button>
+</div>
+
+<div class="sort-bar">
+  <span>Sort by</span>
+  <select id="sort-select" onchange="render()">
+    <option value="date-desc">Date (newest)</option>
+    <option value="date-asc">Date (oldest)</option>
+    <option value="rating-desc">Rating (best)</option>
+    <option value="name-asc">Name (A–Z)</option>
+  </select>
+  <span class="count" id="sort-count"></span>
+</div>
+
+<div class="place-list" id="place-list"></div>
+
+<!-- ── Modal ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2 id="modal-title">Add Place</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="place-form" onsubmit="savePlace(event)">
+      <input type="hidden" id="f-id">
+
+      <div class="form-group">
+        <label class="form-label">Name *</label>
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. Monmouth Coffee" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <div class="cat-grid" id="f-cat-grid"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#aab4bc">— city or area helps narrow it down</span></label>
+        <div class="addr-row">
+          <input class="form-input" id="f-address" type="text" placeholder="e.g. London, Soho (optional hint)">
+          <button type="button" class="find-btn" id="find-btn" onclick="geocodeAddress()">Find</button>
+          <button type="button" class="find-btn" id="pin-btn" onclick="startPinMode()" style="background:#27ae60" title="Tap map to place pin">📍</button>
+        </div>
+        <input type="hidden" id="f-lat">
+        <input type="hidden" id="f-lng">
+        <div class="geo-status" id="geo-status"></div>
+        <div id="geo-results"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Rating</label>
+        <div class="star-row" id="f-stars">
+          <button type="button" class="star-btn" data-val="1">★</button>
+          <button type="button" class="star-btn" data-val="2">★</button>
+          <button type="button" class="star-btn" data-val="3">★</button>
+          <button type="button" class="star-btn" data-val="4">★</button>
+          <button type="button" class="star-btn" data-val="5">★</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Price range</label>
+        <div class="price-row" id="f-price-row">
+          <button type="button" class="price-opt" data-val="$">$</button>
+          <button type="button" class="price-opt" data-val="$$">$$</button>
+          <button type="button" class="price-opt" data-val="$$$">$$$</button>
+          <button type="button" class="price-opt" data-val="$$$$">$$$$</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date visited</label>
+        <input class="form-input" id="f-date" type="date">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Review / notes</label>
+        <textarea class="form-input" id="f-notes" placeholder="What did you think? Best dish? Would you return?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <div class="tags-wrap" id="f-tags-wrap"></div>
+        <input class="form-input" id="f-tag-input" type="text" placeholder="Type a tag and press Enter (e.g. quiet, wifi, outdoor)">
+      </div>
+
+      <button type="submit" class="save-btn">Save Place</button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+const PLACES_KEY = 'places_data';
+
+const CATS = [
+  { id: 'cafe',        label: 'Café',        icon: '☕', color: '#e67e22', bg: '#fef5e7' },
+  { id: 'restaurant',  label: 'Restaurant',  icon: '🍽️', color: '#e74c3c', bg: '#fdf0ee' },
+  { id: 'takeaway',    label: 'Takeaway',    icon: '🥡', color: '#c0392b', bg: '#fdf0ee' },
+  { id: 'bar',         label: 'Bar',         icon: '🍺', color: '#8e44ad', bg: '#f5eef8' },
+  { id: 'park',        label: 'Park',        icon: '🌳', color: '#27ae60', bg: '#eafaf1' },
+  { id: 'shop',        label: 'Shop',        icon: '🛍️', color: '#2980b9', bg: '#eaf4fb' },
+  { id: 'museum',      label: 'Museum',      icon: '🏛️', color: '#16a085', bg: '#e8f8f5' },
+  { id: 'attraction',  label: 'Attraction',  icon: '🎡', color: '#d35400', bg: '#fef0e7' },
+  { id: 'other',       label: 'Other',       icon: '📍', color: '#7f8c8d', bg: '#f4f6f7' },
+];
+const CAT_MAP = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+/* ── Storage ── */
+function loadPlaces() { try { return JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); } catch { return []; } }
+function savePlaces(p) { localStorage.setItem(PLACES_KEY, JSON.stringify(p)); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+/* ── State ── */
+let places = loadPlaces();
+let filterCat = 'all';
+let markers = {};   // id → L.marker
+let map, previewMarker;
+let editingTags = [];
+let selectedCat = 'cafe';
+let selectedRating = 0;
+let selectedPrice = '';
+let mapCollapsed = false;
+
+/* ── Map init ── */
+function initMap() {
+  map = L.map('map', { zoomControl: true });
+  map.on('click', e => { if (pinModeActive) handlePinDrop(e.latlng); });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  const withCoords = places.filter(p => p.lat && p.lng);
+  if (withCoords.length > 0) {
+    fitToMarkers(withCoords);
+  } else {
+    // Always set a default view immediately — Leaflet needs this before it can render
+    map.setView([51.505, -0.09], 5);
+    // Then refine to user location if available
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => map.setView([pos.coords.latitude, pos.coords.longitude], 12),
+        () => {}
+      );
+    }
+  }
+}
+
+function fitToMarkers(subset) {
+  const pts = subset.filter(p => p.lat && p.lng).map(p => [p.lat, p.lng]);
+  if (pts.length === 1) { map.setView(pts[0], 15); return; }
+  if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40] });
+}
+
+function makeIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
+    iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -14]
+  });
+}
+
+function renderMarkers() {
+  // Remove old
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+  const visible = places.filter(p => p.lat && p.lng && (filterCat === 'all' || p.category === filterCat));
+  visible.forEach(p => {
+    const cat = CAT_MAP[p.category] || CAT_MAP.other;
+    const m = L.marker([p.lat, p.lng], { icon: makeIcon(cat.color) });
+    const stars = '★'.repeat(p.rating || 0) + '☆'.repeat(5 - (p.rating || 0));
+    m.bindPopup(`
+      <div class="lp-name">${cat.icon} ${escHtml(p.name)}</div>
+      <div class="lp-stars">${stars}</div>
+      ${p.address ? `<div style="font-size:0.75em;color:#7f8c8d;margin-top:2px">${escHtml(p.address)}</div>` : ''}
+      <a class="lp-link" href="#" onclick="focusCard('${p.id}');return false">View details →</a>
+    `);
+    m.addTo(map);
+    markers[p.id] = m;
+  });
+}
+
+function focusCard(id) {
+  map.closePopup();
+  const card = document.getElementById('card-' + id);
+  if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.classList.add('expanded'); }
+}
+
+function toggleMap() {
+  mapCollapsed = !mapCollapsed;
+  document.getElementById('map-wrap').classList.toggle('collapsed', mapCollapsed);
+  document.getElementById('map-toggle').textContent = mapCollapsed ? '▼ Show map' : '▲ Hide map';
+  if (!mapCollapsed) setTimeout(() => map.invalidateSize(), 50);
+}
+
+/* ── Filter bar ── */
+function buildFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  const all = [{ id: 'all', label: 'All', icon: '🗺️', color: '#fff' }].concat(CATS);
+  bar.innerHTML = all.map(c => {
+    const active = filterCat === c.id;
+    const style = active && c.id !== 'all' ? `background:${c.color};` : '';
+    return `<button class="fchip${active ? ' active' : ''}" style="${style}" onclick="setFilter('${c.id}')">${c.icon} ${c.label}</button>`;
+  }).join('');
+}
+
+function setFilter(cat) {
+  filterCat = cat;
+  buildFilterBar();
+  render();
+}
+
+/* ── List render ── */
+function starsHtml(n) {
+  return '<span style="color:#f39c12">' + '★'.repeat(n || 0) + '</span>' +
+         '<span style="color:#dce3ea">' + '★'.repeat(5 - (n || 0)) + '</span>';
+}
+
+function render() {
+  const sort = document.getElementById('sort-select').value;
+  let list = places.filter(p => filterCat === 'all' || p.category === filterCat);
+
+  if (sort === 'date-desc') list.sort((a, b) => (b.dateVisited || '').localeCompare(a.dateVisited || ''));
+  else if (sort === 'date-asc') list.sort((a, b) => (a.dateVisited || '').localeCompare(b.dateVisited || ''));
+  else if (sort === 'rating-desc') list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  else if (sort === 'name-asc') list.sort((a, b) => a.name.localeCompare(b.name));
+
+  document.getElementById('hdr-count').textContent = places.length + ' place' + (places.length !== 1 ? 's' : '') + ' saved';
+  document.getElementById('sort-count').textContent = list.length + ' shown';
+
+  const el = document.getElementById('place-list');
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="es-icon">📍</div>
+      <p>${places.length === 0 ? 'No places yet — tap <strong>+</strong> to add your first!' : 'No places in this category.'}</p>
+    </div>`;
+    renderMarkers();
+    return;
+  }
+
+  el.innerHTML = list.map(p => {
+    const cat = CAT_MAP[p.category] || CAT_MAP.other;
+    const tags = (p.tags || []).map(t => `<span class="pc-tag">${escHtml(t)}</span>`).join('');
+    return `
+    <div class="place-card" id="card-${p.id}" style="border-left-color:${cat.color}" onclick="toggleCard('${p.id}')">
+      <div class="pc-main">
+        <div class="pc-icon" style="background:${cat.bg}">${cat.icon}</div>
+        <div class="pc-body">
+          <div class="pc-name">${escHtml(p.name)}</div>
+          <div class="pc-address">${escHtml(p.address || p.city || '—')}</div>
+          <div class="pc-meta">
+            <span class="pc-stars">${starsHtml(p.rating)}</span>
+            ${p.price ? `<span class="pc-price">${p.price}</span>` : ''}
+            ${p.dateVisited ? `<span class="pc-date">${formatDate(p.dateVisited)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${p.notes ? `<div class="pc-notes">${escHtml(p.notes)}</div>` : ''}
+      ${tags ? `<div class="pc-tags">${tags}</div>` : ''}
+      <div class="pc-actions">
+        ${p.lat && p.lng ? `<button class="pc-btn" onclick="event.stopPropagation();panTo('${p.id}')">🗺️ Map</button>` : ''}
+        <button class="pc-btn" onclick="event.stopPropagation();openModal('${p.id}')">✏️ Edit</button>
+        <button class="pc-btn danger" onclick="event.stopPropagation();deletePlace('${p.id}')">🗑️ Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderMarkers();
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.toggle('expanded');
+}
+
+function panTo(id) {
+  const p = places.find(x => x.id === id);
+  if (!p || !p.lat) return;
+  if (mapCollapsed) toggleMap();
+  map.setView([p.lat, p.lng], 16);
+  if (markers[id]) markers[id].openPopup();
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Delete ── */
+function deletePlace(id) {
+  if (!confirm('Delete this place?')) return;
+  places = places.filter(p => p.id !== id);
+  savePlaces(places);
+  render();
+}
+
+/* ── Pin placement mode ── */
+let pinModeActive = false;
+
+function startPinMode() {
+  if (mapCollapsed) toggleMap();
+  pinModeActive = true;
+  document.getElementById('map').classList.add('pin-mode');
+  document.getElementById('pin-banner').classList.add('active');
+  document.getElementById('pin-btn').style.background = '#c0392b';
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function stopPinMode() {
+  pinModeActive = false;
+  document.getElementById('map').classList.remove('pin-mode');
+  document.getElementById('pin-banner').classList.remove('active');
+  document.getElementById('pin-btn').style.background = '#27ae60';
+}
+
+async function handlePinDrop(latlng) {
+  stopPinMode();
+  const lat = latlng.lat, lng = latlng.lng;
+  document.getElementById('f-lat').value = lat;
+  document.getElementById('f-lng').value = lng;
+  if (previewMarker) map.removeLayer(previewMarker);
+  previewMarker = L.marker([lat, lng]).addTo(map);
+  const status = document.getElementById('geo-status');
+  status.textContent = 'Getting address…';
+  document.getElementById('modal-overlay').classList.add('open');
+  try {
+    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`);
+    const data = await res.json();
+    const f = (data.features || [])[0];
+    if (f) {
+      const label = photonLabel(f.properties);
+      document.getElementById('f-address').value = label;
+      status.textContent = '📍 ' + label;
+    } else {
+      document.getElementById('f-address').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      status.textContent = '📍 Pin placed';
+    }
+  } catch {
+    document.getElementById('f-address').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    status.textContent = '📍 Pin placed';
+  }
+}
+
+/* ── Modal ── */
+function buildCatGrid() {
+  document.getElementById('f-cat-grid').innerHTML = CATS.map(c => `
+    <button type="button" class="cat-opt${selectedCat === c.id ? ' selected' : ''}"
+      style="${selectedCat === c.id ? `background:${c.color};border-color:${c.color}` : ''}"
+      onclick="selectCat('${c.id}')">
+      <span class="co-icon">${c.icon}</span>${c.label}
+    </button>`).join('');
+}
+
+function selectCat(id) { selectedCat = id; buildCatGrid(); }
+
+function buildStars() {
+  document.querySelectorAll('#f-stars .star-btn').forEach(btn => {
+    const v = parseInt(btn.dataset.val);
+    btn.classList.toggle('lit', v <= selectedRating);
+    btn.onclick = () => { selectedRating = v; buildStars(); };
+  });
+}
+
+function buildPrice() {
+  document.querySelectorAll('#f-price-row .price-opt').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.val === selectedPrice);
+    btn.onclick = () => { selectedPrice = btn.dataset.val; buildPrice(); };
+  });
+}
+
+function buildTagsWrap() {
+  document.getElementById('f-tags-wrap').innerHTML = editingTags.map((t, i) =>
+    `<span class="tag-chip">${escHtml(t)}<button type="button" onclick="removeTag(${i})">×</button></span>`
+  ).join('');
+}
+
+function removeTag(i) { editingTags.splice(i, 1); buildTagsWrap(); }
+
+function openModal(id) {
+  const p = id ? places.find(x => x.id === id) : null;
+  document.getElementById('modal-title').textContent = p ? 'Edit Place' : 'Add Place';
+  document.getElementById('f-id').value = p ? p.id : '';
+  document.getElementById('f-name').value = p ? p.name : '';
+  document.getElementById('f-address').value = p ? (p.address || '') : '';
+  document.getElementById('f-lat').value = p ? (p.lat || '') : '';
+  document.getElementById('f-lng').value = p ? (p.lng || '') : '';
+  document.getElementById('f-date').value = p ? (p.dateVisited || today()) : today();
+  document.getElementById('f-notes').value = p ? (p.notes || '') : '';
+  document.getElementById('geo-status').textContent = p && p.lat ? '📍 Location set' : '';
+  selectedCat    = p ? (p.category || 'cafe') : 'cafe';
+  selectedRating = p ? (p.rating  || 0)       : 0;
+  selectedPrice  = p ? (p.price   || '')       : '';
+  editingTags    = p ? [...(p.tags || [])]      : [];
+  buildCatGrid(); buildStars(); buildPrice(); buildTagsWrap();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+  if (previewMarker) { map.removeLayer(previewMarker); previewMarker = null; }
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+
+/* ── Tag input ── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-tag-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.trim().replace(/,$/, '');
+      if (val && !editingTags.includes(val)) { editingTags.push(val); buildTagsWrap(); }
+      e.target.value = '';
+    }
+  });
+});
+
+/* ── Geocoding (Photon / Komoot — OSM-based, browser-friendly) ── */
+function photonLabel(props) {
+  return [props.name, props.street, props.city || props.town || props.village, props.country]
+    .filter(Boolean).join(', ');
+}
+
+function applyGeoResult(feature) {
+  const [lng, lat] = feature.geometry.coordinates;
+  const p = feature.properties;
+  document.getElementById('f-lat').value = lat;
+  document.getElementById('f-lng').value = lng;
+  if (p.name) document.getElementById('f-name').value = p.name;
+  const label = photonLabel(p);
+  document.getElementById('f-address').value = label;
+  document.getElementById('geo-status').textContent = '📍 ' + label;
+  document.getElementById('geo-results').innerHTML = '';
+  if (previewMarker) map.removeLayer(previewMarker);
+  previewMarker = L.marker([lat, lng]).addTo(map);
+  map.setView([lat, lng], 16);
+  if (mapCollapsed) toggleMap();
+}
+
+async function geocodeAddress() {
+  const name = document.getElementById('f-name').value.trim();
+  const hint = document.getElementById('f-address').value.trim();
+  if (!name) { document.getElementById('geo-status').textContent = '⚠️ Enter a name first'; return; }
+  const osmTagMap = {
+    cafe: 'amenity:cafe', restaurant: 'amenity:restaurant', takeaway: 'amenity:fast_food',
+    bar: 'amenity:bar', park: 'leisure:park', shop: 'shop',
+    museum: 'tourism:museum', attraction: 'tourism:attraction',
+  };
+  const query = [name, hint].filter(Boolean).join(' ');
+  const osmTag = osmTagMap[selectedCat];
+  const base = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`;
+  const btn = document.getElementById('find-btn');
+  const status = document.getElementById('geo-status');
+  document.getElementById('geo-results').innerHTML = '';
+  btn.disabled = true; btn.textContent = '…';
+  status.textContent = 'Searching…';
+  try {
+    let res = await fetch(osmTag ? `${base}&osm_tag=${encodeURIComponent(osmTag)}` : base);
+    let data = await res.json();
+    let features = data.features || [];
+    // Fall back to unfiltered if tag-filtered search returned nothing
+    if (features.length === 0 && osmTag) {
+      res = await fetch(base);
+      data = await res.json();
+      features = data.features || [];
+    }
+    if (features.length === 0) {
+      status.textContent = '⚠️ Not found — try adding a city as a hint';
+    } else {
+      status.textContent = features.length === 1 ? 'Found — confirm below:' : 'Pick the right one:';
+      window._geo = features;
+      document.getElementById('geo-results').innerHTML = features.map((f, i) =>
+        `<button type="button" class="geo-result-btn" onclick="applyGeoResult(window._geo[${i}])">${escHtml(photonLabel(f.properties))}</button>`
+      ).join('');
+    }
+  } catch (err) {
+    status.textContent = '⚠️ Search failed — check your connection';
+    console.error('Geocode error:', err);
+  }
+  btn.disabled = false; btn.textContent = 'Find';
+}
+
+/* ── Save ── */
+function savePlace(e) {
+  e.preventDefault();
+  const id = document.getElementById('f-id').value;
+  const place = {
+    id:          id || genId(),
+    name:        document.getElementById('f-name').value.trim(),
+    category:    selectedCat,
+    address:     document.getElementById('f-address').value.trim(),
+    lat:         parseFloat(document.getElementById('f-lat').value) || null,
+    lng:         parseFloat(document.getElementById('f-lng').value) || null,
+    rating:      selectedRating || null,
+    price:       selectedPrice || null,
+    dateVisited: document.getElementById('f-date').value || null,
+    notes:       document.getElementById('f-notes').value.trim() || null,
+    tags:        [...editingTags],
+    updatedAt:   Date.now(),
+  };
+  if (id) {
+    const idx = places.findIndex(p => p.id === id);
+    if (idx >= 0) places[idx] = place; else places.unshift(place);
+  } else {
+    places.unshift(place);
+  }
+  savePlaces(places);
+  if (previewMarker) { map.removeLayer(previewMarker); previewMarker = null; }
+  document.getElementById('modal-overlay').classList.remove('open');
+  render();
+}
+
+/* ── Boot ── */
+initMap();
+buildFilterBar();
+render();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+</script>
+</body>
+</html>

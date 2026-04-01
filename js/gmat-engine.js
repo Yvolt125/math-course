@@ -27,11 +27,42 @@ const GmatEngine = (() => {
 
   /* ── State ── */
   let cfg = {};
-  let pool = [];       // questions for current difficulty
+  let pool = [];       // questions for current difficulty / review
   let qIndex = 0;
   let score = 0;
   let total = 0;
   let submitted = false;
+
+  /* ── SRS helpers ── */
+  const SRS_KEY = 'gmat_srs_pool';
+  function getGmatSRSPool() {
+    try { return JSON.parse(localStorage.getItem(SRS_KEY) || '[]'); } catch { return []; }
+  }
+  function saveGmatSRSPool(p) { localStorage.setItem(SRS_KEY, JSON.stringify(p)); }
+  function applyGmatSRS(id, correct) {
+    localStorage.setItem('gmat-last-practice', Date.now().toString());
+    const p = getGmatSRSPool();
+    let item = p.find(i => i.id === id);
+    const now = Date.now();
+    if (!item) {
+      item = { id, interval: 1, easeFactor: 2.5, streak: 0, timesWrong: 0, nextDue: now, lastSeen: now };
+      p.push(item);
+    }
+    item.lastSeen = now;
+    if (correct) {
+      item.streak++;
+      item.interval = item.streak === 1 ? 1 : item.streak === 2 ? 6 : Math.round(item.interval * item.easeFactor);
+      item.easeFactor = Math.max(1.3, item.easeFactor + 0.1);
+      item.nextDue = now + item.interval * 86400000;
+    } else {
+      item.timesWrong = (item.timesWrong || 0) + 1;
+      item.streak = 0;
+      item.interval = 1;
+      item.easeFactor = Math.max(1.3, item.easeFactor - 0.2);
+      item.nextDue = now + 86400000;
+    }
+    saveGmatSRSPool(p);
+  }
 
   /* TPA state */
   let tpaSel = [null, null];
@@ -44,11 +75,26 @@ const GmatEngine = (() => {
 
   /* ── Init ── */
   function init(options) {
-    cfg = Object.assign({ rootId: 'engine-root', topic: null }, options);
+    cfg = Object.assign({ rootId: 'engine-root', topic: null, reviewPool: null }, options);
     const root = document.getElementById(cfg.rootId);
     if (!root) { console.error('GmatEngine: root element not found'); return; }
     root.innerHTML = buildShell();
-    bindDiffButtons();
+    if (cfg.reviewPool) {
+      root.querySelector('.ge-difficulty-row').style.display = 'none';
+      const ids = cfg.reviewPool.map(item => item.id);
+      pool = GMAT_DB.filter(q => ids.includes(q.id));
+      qIndex = 0; score = 0; total = 0;
+      bindControls();
+      if (!pool.length) {
+        document.getElementById('ge-question-area').innerHTML =
+          '<div class="ge-question-card"><p style="color:#27ae60;text-align:center;padding:16px;font-size:1em">🎉 All caught up! No questions due for review.</p></div>';
+      } else {
+        updateStats();
+        loadQuestion();
+      }
+    } else {
+      bindDiffButtons();
+    }
   }
 
   /* ── Shell HTML (difficulty bar + stats bar + question area) ── */
@@ -80,6 +126,10 @@ const GmatEngine = (() => {
   }
 
   /* ── Bind difficulty buttons ── */
+  function bindControls() {
+    document.getElementById('ge-submit').addEventListener('click', submitAnswer);
+    document.getElementById('ge-next').addEventListener('click', nextQuestion);
+  }
   function bindDiffButtons() {
     document.querySelectorAll('.ge-diff-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -88,8 +138,7 @@ const GmatEngine = (() => {
         startDifficulty(btn.dataset.diff);
       });
     });
-    document.getElementById('ge-submit').addEventListener('click', submitAnswer);
-    document.getElementById('ge-next').addEventListener('click', nextQuestion);
+    bindControls();
   }
 
   /* ── Start difficulty ── */
@@ -377,6 +426,7 @@ const GmatEngine = (() => {
     }
 
     if (correct) score++;
+    applyGmatSRS(q.id, correct);
     updateStats();
 
     const expEl = document.getElementById('ge-explanation');
@@ -389,7 +439,19 @@ const GmatEngine = (() => {
 
   /* ── Next ── */
   function nextQuestion() {
-    qIndex = (qIndex + 1) % pool.length;
+    if (cfg.reviewPool) {
+      qIndex++;
+      if (qIndex >= pool.length) {
+        document.getElementById('ge-question-area').innerHTML =
+          `<div class="ge-question-card"><p style="color:#27ae60;text-align:center;padding:16px;font-size:1em">🎉 Session complete! ${score} / ${total} correct.</p></div>`;
+        document.getElementById('ge-next').classList.remove('visible');
+        document.getElementById('ge-explanation').classList.remove('visible');
+        if (cfg.onComplete) cfg.onComplete(score, total);
+        return;
+      }
+    } else {
+      qIndex = (qIndex + 1) % pool.length;
+    }
     loadQuestion();
   }
 

@@ -1,175 +1,768 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hub</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a252f">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="The Hub">
-    <link rel="apple-touch-icon" href="icon.svg">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html, body { 
-            height: 100%; 
-            width: 100%;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Hub</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="The Hub">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #2c3e50; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: #f0f2f5;
-            display: flex;
-            flex-direction: column;
-            /* Force GPU repaint to fix blank screen bug */
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-        }
+    /* ── Header ── */
+    header {
+      background: #1a252f;
+      color: white;
+      padding: 22px 20px 18px;
+      text-align: center;
+    }
+    .hdr-date {
+      font-size: 0.72em;
+      opacity: 0.5;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: 1.4em;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
 
-        header {
-            background: #1a252f;
-            color: white;
-            padding: 40px 20px 32px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        header h1 {
-            font-size: 1.6em;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        header p { font-size: 0.85em; opacity: 0.5; letter-spacing: 1px; }
+    /* Streak display — the core motivation mechanic */
+    .streak-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+    .streak-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+    }
+    .streak-num {
+      font-size: 2em;
+      font-weight: 800;
+      line-height: 1;
+      color: white;
+    }
+    .streak-num.active { color: #ffa500; }
+    .streak-label {
+      font-size: 0.62em;
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .streak-fire {
+      font-size: 2em;
+      line-height: 1;
+    }
+    .streak-divider {
+      width: 1px;
+      height: 36px;
+      background: rgba(255,255,255,0.12);
+    }
 
-        .hub {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* Changed from center to prevent content jumping on mobile */
-            justify-content: flex-start; 
-            padding: 20px 20px 60px;
-            gap: 20px;
-            max-width: 520px;
-            margin: 0 auto;
-            width: 100%;
-        }
+    /* Weekly chips row */
+    .hdr-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hchip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 0.7em;
+      color: rgba(255,255,255,0.65);
+      white-space: nowrap;
+    }
+    .hchip strong { color: white; }
 
-        .hub-card {
-            width: 100%;
-            background: white;
-            border-radius: 18px;
-            padding: 32px 28px;
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            text-decoration: none;
-            color: inherit;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border-left: 5px solid transparent;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .hub-card:active { transform: scale(0.97); }
-        .hub-card:hover  { box-shadow: 0 6px 28px rgba(0,0,0,0.13); }
+    /* ── Page body ── */
+    .body-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 14px 60px;
+    }
 
-        .hub-card.math { border-left-color: #2980b9; }
-        .hub-card.lang { border-left-color: #27ae60; }
-        .hub-card.code { border-left-color: #8e44ad; }
-        .hub-card.anthro { border-left-color: #e67e22; }
-        .hub-card.exercise { border-left-color: #c0392b; }
+    .section-label {
+      font-size: 0.65em;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #aab4bc;
+      margin: 18px 2px 8px;
+    }
+    .section-label:first-child { margin-top: 4px; }
 
-        .hub-icon {
-            width: 58px; height: 58px;
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.8em;
-            flex-shrink: 0;
-        }
-        .math .hub-icon { background: #eaf4fb; }
-        .lang .hub-icon { background: #eafaf1; }
-        .code .hub-icon { background: #f5eef8; }
-        .anthro .hub-icon { background: #fef5e7; }
-        .exercise .hub-icon { background: #fdedec; }
+    /* ── Focus strip ── */
+    .focus-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .focus-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border-radius: 12px;
+      padding: 11px 14px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      border-left: 4px solid #e74c3c;
+      transition: transform 0.12s;
+    }
+    .focus-item:active { transform: scale(0.97); }
+    .focus-item.orange { border-left-color: #e67e22; }
+    .focus-item.blue   { border-left-color: #2980b9; }
+    .focus-item.purple { border-left-color: #8e44ad; }
+    .focus-item.green  { border-left-color: #27ae60; }
 
-        .hub-text h2 { font-size: 1.15em; font-weight: 700; color: #2c3e50; margin-bottom: 4px; }
-        .hub-text p  { font-size: 0.82em; color: #7f8c8d; }
+    .fi-icon { font-size: 1.1em; flex-shrink: 0; }
+    .fi-body { flex: 1; min-width: 0; }
+    .fi-title {
+      font-size: 0.86em;
+      font-weight: 700;
+      color: #2c3e50;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fi-sub {
+      font-size: 0.72em;
+      color: #7f8c8d;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fi-badge {
+      font-size: 0.7em;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .b-red    { background: #fdedec; color: #c0392b; }
+    .b-orange { background: #fef5e7; color: #d35400; }
+    .b-blue   { background: #eaf4fb; color: #2471a3; }
+    .b-purple { background: #f5eef8; color: #7d3c98; }
+    .b-green  { background: #eafaf1; color: #1e8449; }
+    .b-grey   { background: #f2f3f4; color: #7f8c8d; }
 
-        .hub-arrow { margin-left: auto; color: #bdc3c7; font-size: 1.4em; flex-shrink: 0; }
+    /* All-clear message */
+    .all-clear {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #eafaf1;
+      border: 1.5px solid #a9dfbf;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.84em;
+      font-weight: 600;
+      color: #1e8449;
+    }
+    .all-clear .ac-icon { font-size: 1.3em; }
 
-        footer {
-            text-align: center;
-            padding: 24px;
-            color: #bdc3c7;
-            font-size: 0.75em;
-        }
-    </style>
+    /* ── Section cards ── */
+    .sc {
+      background: white;
+      border-radius: 14px;
+      border-left: 5px solid #dce3ea;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-bottom: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+    .sc:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.10); }
+    .sc.s-red    { border-left-color: #e74c3c; }
+    .sc.s-orange { border-left-color: #e67e22; }
+    .sc.s-green  { border-left-color: #27ae60; }
+    .sc.s-blue   { border-left-color: #2980b9; }
+    .sc.s-purple { border-left-color: #8e44ad; }
+    .sc.s-grey   { border-left-color: #bdc3c7; }
+
+    .sc-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px 10px;
+    }
+    .sc-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: #dce3ea;
+    }
+    .s-red    .sc-dot { background: #e74c3c; }
+    .s-orange .sc-dot { background: #e67e22; }
+    .s-green  .sc-dot { background: #27ae60; }
+    .s-blue   .sc-dot { background: #2980b9; }
+    .s-purple .sc-dot { background: #8e44ad; }
+    .s-grey   .sc-dot { background: #bdc3c7; }
+
+    .sc-icon { font-size: 1.15em; flex-shrink: 0; }
+    .sc-name {
+      flex: 1;
+      font-size: 0.93em;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    .sc-status-badge {
+      font-size: 0.68em;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* Action links inside a card */
+    .sc-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 14px 12px 33px;
+    }
+    .sc-btn {
+      font-size: 0.75em;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: opacity 0.12s;
+    }
+    .sc-btn:active { opacity: 0.7; }
+    .sc-btn.primary {
+      background: #2c3e50;
+      color: white;
+    }
+    .sc-btn.red    { background: #fdedec; color: #c0392b; }
+    .sc-btn.orange { background: #fef5e7; color: #d35400; }
+    .sc-btn.blue   { background: #eaf4fb; color: #2471a3; }
+    .sc-btn.purple { background: #f5eef8; color: #7d3c98; }
+    .sc-btn.green  { background: #eafaf1; color: #1e8449; }
+    .sc-btn.grey   { background: #f2f3f4; color: #7f8c8d; }
+
+    /* ── Footer quote ── */
+    footer {
+      text-align: center;
+      padding: 18px 20px 24px;
+      color: #bdc3c7;
+      font-size: 0.72em;
+      font-style: italic;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 <body>
 
 <header>
-    <h1>The Hub</h1>
-    <p>Study · Social · Exercise</p>
+  <div class="hdr-date" id="hdr-date"></div>
+  <h1>The Hub</h1>
+  <div class="streak-row" id="streak-row"></div>
+  <div class="hdr-chips" id="hdr-chips"></div>
 </header>
 
-<div class="hub">
+<div class="body-wrap">
 
-    <a class="hub-card math" href="maths/index.html">
-        <div class="hub-icon">📐</div>
-        <div class="hub-text">
-            <h2>Math</h2>
-            <p>Math for ML · GMAT</p>
-        </div>
-        <div class="hub-arrow">›</div>
-    </a>
+  <div class="section-label">Needs attention</div>
+  <div id="focus-list"></div>
 
-    <a class="hub-card lang" href="languages/index.html">
-        <div class="hub-icon">🌍</div>
-        <div class="hub-text">
-            <h2>Languages</h2>
-            <p>Spanish · Dutch · more to come</p>
-        </div>
-        <div class="hub-arrow">›</div>
-    </a>
-
-
-    <a class="hub-card code" href="programming/index.html">
-        <div class="hub-icon">💻</div>
-        <div class="hub-text">
-            <h2>Programming</h2>
-            <p>Package overviews · references</p>
-        </div>
-        <div class="hub-arrow">›</div>
-    </a>
-
-    <a class="hub-card anthro" href="applied-anthropology/index.html">
-        <div class="hub-icon">👥</div>
-        <div class="hub-text">
-            <h2>Applied Anthropology</h2>
-            <p>Social Tracking · Prompts · Reminders</p>
-        </div>
-        <div class="hub-arrow">›</div>
-    </a>
-
-    <a class="hub-card exercise" href="exercise/index.html">
-        <div class="hub-icon">🏃‍♂️</div>
-        <div class="hub-text">
-            <h2>Exercise</h2>
-            <p>Running · Biking · Gym Tracker</p>
-        </div>
-        <div class="hub-arrow">›</div>
-    </a>
+  <div class="section-label">Sections</div>
+  <div id="sections-list"></div>
 
 </div>
 
-<footer>Study Hub</footer>
+<footer id="footer-quote"></footer>
 
 <script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
+// ════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════
+function dayOfYear() {
+  const n = new Date(), s = new Date(n.getFullYear(), 0, 0);
+  return Math.floor((n - s) / 86400000);
 }
+function pick(arr) { return arr[dayOfYear() % arr.length]; }
+function load(k)   { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+
+function daysAgo(dateStr) {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+}
+function weekStart() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+function trackVisit(section) {
+  localStorage.setItem('hub-visit-' + section, new Date().toISOString());
+}
+function lastVisit(section) {
+  const ts = localStorage.getItem('hub-visit-' + section);
+  return ts ? daysAgo(ts) : null;
+}
+function updateAndGetStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  let log = load('study-log') || [];
+  if (!log.includes(today)) {
+    log = [...log, today].slice(-400);
+    localStorage.setItem('study-log', JSON.stringify(log));
+  }
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    if (log.includes(d.toISOString().slice(0, 10))) streak++;
+    else break;
+  }
+  return streak;
+}
+function lessonsThisWeek() {
+  const ws = weekStart().getTime(); let c = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('lesson_')) {
+      try { const d = JSON.parse(localStorage.getItem(k)); if (d?.completedAt >= ws) c++; } catch {}
+    }
+  }
+  return c;
+}
+
+// ════════════════════════════════════════════
+// DAILY PROMPTS (shown in section cards when nothing due)
+// ════════════════════════════════════════════
+const PROMPTS = {
+  math: [
+    'Why does the gradient always point in the direction of steepest ascent?',
+    'What makes a matrix singular — and why does that break everything?',
+    'PCA in one idea: find the directions of maximum variance in your data',
+    'The chain rule is how gradients flow backwards through a neural network',
+    'What does it mean for a function to be convex — and why does it matter?',
+    'Why does L1 regularisation produce sparse weights but L2 doesn\'t?',
+    'The rank of a matrix is the true dimensionality of its output space',
+    'Bayes\' theorem: how to update beliefs rationally when new evidence arrives',
+    'Why is the covariance matrix always symmetric and positive semi-definite?',
+    'Cross-entropy loss: measuring the distance between two distributions',
+  ],
+  lang: [
+    'Word: madrugada — the hours between midnight and dawn.',
+    '¿Sabes la diferencia entre "ser" y "estar"? Each has a different philosophy.',
+    'Word: sobremesa — the time spent talking at the table after a meal ends.',
+    'The subjunctive: for doubt, desire, emotion, and hypotheticals.',
+    'Word: añoranza — a deep longing for something from your past.',
+    '"Se me olvidó" — not "I forgot" but "it forgot itself to me."',
+    'Word: entrañable — deeply loveable, close to your heart.',
+    'Por vs Para: two words for "for" that mean completely different things.',
+    'Word: vergüenza ajena — the embarrassment you feel for someone else.',
+    'The preterite vs imperfect: completed action vs ongoing state.',
+  ],
+  code: [
+    'Why does NumPy vectorisation beat a Python loop by 100x?',
+    'The difference between a view and a copy in NumPy — and why it matters',
+    'Generator expressions: lazy evaluation that saves memory on large datasets',
+    'Broadcasting rules: when shapes are compatible and when they\'re not',
+    'Why is pandas\' apply() often slower than you expect?',
+    'SQL window functions: running totals, rankings, and lag/lead',
+    'When to use groupby().agg() vs groupby().transform()',
+    'Mutable default arguments in Python: the classic trap',
+    'Why does float arithmetic produce surprising results in every language?',
+    'When is it worth using a database instead of just a CSV?',
+  ],
+};
+
+const QUOTES = [
+  'Consistency beats intensity every time.',
+  'The goal is progress, not perfection.',
+  'Small efforts compound into large results.',
+  'Showing up is most of it.',
+  'Build the habit. The results follow.',
+  'Do a little every day. It adds up faster than you think.',
+  'Every expert was once a complete beginner.',
+];
+
+// ════════════════════════════════════════════
+// RENDER HEADER
+// ════════════════════════════════════════════
+function renderHeader() {
+  const h = new Date().getHours();
+  const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    greeting + ' · ' + days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+
+  // ── Streak ──
+  const streak = updateAndGetStreak();
+  const streakHtml = streak >= 2
+    ? `<div class="streak-block">
+         <span class="streak-fire">🔥</span>
+       </div>
+       <div class="streak-block">
+         <span class="streak-num active">${streak}</span>
+         <span class="streak-label">day streak</span>
+       </div>`
+    : `<div class="streak-block">
+         <span class="streak-num">${streak}</span>
+         <span class="streak-label">day streak · build it!</span>
+       </div>`;
+  document.getElementById('streak-row').innerHTML = streakHtml;
+
+  // ── Weekly chips ──
+  const ws = weekStart();
+  const chips = [];
+
+  const exHist = load('exercise-history') || [];
+  const weekKm = exHist.filter(e => e.type !== 'gym' && new Date(e.date) >= ws)
+                       .reduce((s, e) => s + parseFloat(e.distance || 0), 0);
+  const gyms   = exHist.filter(e => e.type === 'gym' && new Date(e.date) >= ws).length;
+  if (weekKm > 0) chips.push(`<span class="hchip">🏃 <strong>${weekKm.toFixed(1)} km</strong> this week</span>`);
+  if (gyms > 0)   chips.push(`<span class="hchip">💪 <strong>${gyms}</strong> gym</span>`);
+
+  const lessons = lessonsThisWeek();
+  if (lessons > 0) chips.push(`<span class="hchip">✅ <strong>${lessons}</strong> lesson${lessons > 1 ? 's' : ''} this week</span>`);
+
+  const srsPool  = load('srs_pool')       || [];
+  const progPool = load('prog_srs_pool')  || [];
+  const gmatPool = load('gmat_srs_pool')  || [];
+  const wsMs = ws.getTime();
+  const reviewed = [...srsPool, ...progPool, ...gmatPool].filter(q => q.lastSeen && q.lastSeen >= wsMs).length;
+  if (reviewed > 0) chips.push(`<span class="hchip">🔁 <strong>${reviewed}</strong> reviewed</span>`);
+
+  document.getElementById('hdr-chips').innerHTML = chips.join('');
+}
+
+// ════════════════════════════════════════════
+// COMPUTE SECTION DATA
+// ════════════════════════════════════════════
+function getSectionData() {
+  const now  = Date.now();
+  const ws   = weekStart();
+
+  // Math for ML
+  const srsPool  = load('srs_pool') || [];
+  const srsDue   = srsPool.filter(q => q.nextDue <= now).length;
+  const errCount = srsPool.filter(q => (q.timesWrong || 0) > 0).length;
+  const mathStatus = srsDue > 0 ? 'red' : errCount > 0 ? 'orange' : srsPool.length > 0 ? 'green' : 'grey';
+
+  // GMAT
+  const gmatSrsPool = load('gmat_srs_pool') || [];
+  const gmatDue     = gmatSrsPool.filter(q => q.nextDue <= now).length;
+  const gmatTs      = localStorage.getItem('gmat-last-practice');
+  const gmatDays    = gmatTs ? Math.floor((now - parseInt(gmatTs)) / 86400000) : null;
+  let gmatStatus;
+  if (gmatSrsPool.length > 0) {
+    gmatStatus = gmatDue > 0 ? 'red' : 'green';
+  } else {
+    gmatStatus = gmatDays === null ? 'grey' : gmatDays >= 5 ? 'red' : gmatDays >= 3 ? 'orange' : 'green';
+  }
+  // GMAT daily lesson
+  const GMAT_DAILY_TOPICS = [
+    { id: 'arithmetic', label: 'Arithmetic' }, { id: 'algebra', label: 'Algebra' },
+    { id: 'word', label: 'Word Problems' }, { id: 'statistics', label: 'Statistics' },
+    { id: 'geometry', label: 'Geometry' }, { id: 'ds', label: 'Data Sufficiency' },
+    { id: 'combinatorics', label: 'Combinatorics' }, { id: 'rc', label: 'Reading Comprehension' },
+    { id: 'cr', label: 'Critical Reasoning' }, { id: 'table', label: 'Table Analysis' },
+    { id: 'graphics', label: 'Graphics Interpretation' }, { id: 'tpa', label: 'Two-Part Analysis' },
+    { id: 'msr', label: 'Multi-Source Reasoning' },
+  ];
+  const gmatDaily       = load('gmat_daily') || { topicIndex: 0, sessions: 0, lastSessionDate: null };
+  const gmatDailyTopic  = GMAT_DAILY_TOPICS[gmatDaily.topicIndex % GMAT_DAILY_TOPICS.length];
+  const todayStr        = new Date().toISOString().slice(0, 10);
+  const gmatLessonDone  = gmatDaily.lastSessionDate === todayStr;
+
+  // Programming
+  const progPool = load('prog_srs_pool') || [];
+  const progDue  = progPool.filter(q => q.nextDue <= now).length;
+  const progXp   = parseInt(localStorage.getItem('prog_xp') || '0');
+  const progStatus = progDue > 0 ? 'purple' : 'green';
+
+  // Languages
+  const langDays   = lastVisit('lang');
+  const langStatus = langDays === null ? 'grey' : langDays >= 3 ? 'red' : langDays >= 1 ? 'orange' : 'green';
+
+  // Exercise
+  const exHist = load('exercise-history') || [];
+  const exDays = exHist.length ? daysAgo(exHist[0].date) : null;
+  const weekKm = exHist.filter(e => e.type !== 'gym' && new Date(e.date) >= ws)
+                       .reduce((s, e) => s + parseFloat(e.distance || 0), 0);
+  const exStatus = exDays === null ? 'grey' : exDays >= 4 ? 'red' : exDays >= 2 ? 'orange' : 'green';
+
+  // People
+  const people     = load('anthro-people') || [];
+  const peopleDue  = people.filter(p => daysAgo(p.lastContact) >= p.frequency);
+  const anthroStatus = peopleDue.length > 0 ? 'orange' : people.length > 0 ? 'green' : 'grey';
+
+  // Places
+  const places      = load('places_data') || [];
+  const placesStatus = places.length > 0 ? 'green' : 'grey';
+
+  return {
+    math:   { status: mathStatus,  srsDue, errCount, poolSize: srsPool.length },
+    gmat:   { status: gmatStatus,  days: gmatDays, due: gmatDue, poolSize: gmatSrsPool.length,
+              dailyTopic: gmatDailyTopic, lessonDone: gmatLessonDone },
+    prog:   { status: progStatus,  progDue, progXp },
+    lang:   { status: langStatus,  days: langDays },
+    ex:     { status: exStatus,    days: exDays, weekKm },
+    anthro: { status: anthroStatus, peopleDue: peopleDue.length, total: people.length },
+    places: { status: placesStatus, total: places.length },
+  };
+}
+
+// ════════════════════════════════════════════
+// BUILD FOCUS STRIP
+// ════════════════════════════════════════════
+function buildFocus(d) {
+  const items = [];
+
+  if (d.math.srsDue > 0) {
+    items.push({ href: 'math-ml/review.html', color: 'blue', icon: '📐',
+      title: `${d.math.srsDue} math card${d.math.srsDue > 1 ? 's' : ''} due for review`,
+      sub: 'Spaced repetition · do it before they pile up', badge: `${d.math.srsDue} due`, bc: 'b-blue',
+      onclick: "trackVisit('math')" });
+  }
+  if (d.math.errCount > 0 && d.math.srsDue === 0) {
+    items.push({ href: 'math-ml/errors.html', color: '', icon: '❌',
+      title: `Error practice · ${d.math.errCount} question${d.math.errCount > 1 ? 's' : ''}`,
+      sub: 'Questions you\'ve got wrong — work your weak spots', badge: 'Fix', bc: 'b-red',
+      onclick: "trackVisit('math')" });
+  }
+  if (d.gmat.due > 0) {
+    items.push({ href: 'gmat/review.html', color: '', icon: '🎯',
+      title: `${d.gmat.due} GMAT card${d.gmat.due > 1 ? 's' : ''} due for review`,
+      sub: 'Spaced repetition · keep your skills sharp', badge: `${d.gmat.due} due`, bc: 'b-red',
+      onclick: "trackVisit('gmat')" });
+  } else if (d.gmat.status === 'red') {
+    items.push({ href: 'gmat/practice.html', color: '', icon: '🎯',
+      title: `GMAT · ${d.gmat.days}d since last practice`,
+      sub: 'Consistency matters — aim for every 2-3 days', badge: 'Overdue', bc: 'b-red',
+      onclick: "trackVisit('gmat')" });
+  }
+  if (d.prog.progDue > 0) {
+    items.push({ href: 'programming/review.html', color: 'purple', icon: '💻',
+      title: `${d.prog.progDue} programming card${d.prog.progDue > 1 ? 's' : ''} due`,
+      sub: 'Programming lesson review', badge: `${d.prog.progDue} due`, bc: 'b-purple',
+      onclick: "trackVisit('code')" });
+  }
+  if (d.lang.status === 'red') {
+    items.push({ href: 'languages/index.html', color: 'green', icon: '🌍',
+      title: `Spanish · ${d.lang.days}d without practice`,
+      sub: pick(PROMPTS.lang), badge: 'Due', bc: 'b-orange',
+      onclick: "trackVisit('lang')" });
+  } else if (d.lang.status === 'orange') {
+    items.push({ href: 'languages/index.html', color: 'orange', icon: '🌍',
+      title: 'Spanish · do a quick session',
+      sub: pick(PROMPTS.lang), badge: 'Today', bc: 'b-orange',
+      onclick: "trackVisit('lang')" });
+  }
+  if (d.anthro.peopleDue > 0) {
+    items.push({ href: 'applied-anthropology/index.html', color: 'orange', icon: '👥',
+      title: `${d.anthro.peopleDue} person${d.anthro.peopleDue > 1 ? 's' : ''} to reach out to`,
+      sub: 'You said you\'d stay in touch — a text takes 30 seconds', badge: 'Overdue', bc: 'b-orange',
+      onclick: "trackVisit('anthro')" });
+  }
+  if (d.ex.status === 'red') {
+    items.push({ href: 'exercise/index.html', color: '', icon: '🏃',
+      title: `No workout in ${d.ex.days} days`,
+      sub: 'Even a short run breaks the slump', badge: 'Move', bc: 'b-red',
+      onclick: "trackVisit('exercise')" });
+  }
+  if (d.gmat.status === 'orange') {
+    items.push({ href: 'gmat/practice.html', color: 'orange', icon: '🎯',
+      title: `GMAT · ${d.gmat.days}d since last practice`,
+      sub: 'Keep the momentum going', badge: 'Soon', bc: 'b-orange',
+      onclick: "trackVisit('gmat')" });
+  }
+  if (d.gmat.due === 0 && !d.gmat.lessonDone) {
+    items.push({ href: 'gmat/daily-lesson.html', color: 'blue', icon: '🎯',
+      title: `GMAT · Daily Lesson · ${d.gmat.dailyTopic.label}`,
+      sub: 'No reviews due — keep momentum with today\'s lesson', badge: 'Today', bc: 'b-blue',
+      onclick: "trackVisit('gmat')" });
+  }
+
+  const el = document.getElementById('focus-list');
+  if (items.length === 0) {
+    el.innerHTML = `<div class="all-clear"><span class="ac-icon">✅</span> All clear — nothing urgent right now. Keep it up!</div>`;
+    return;
+  }
+  el.innerHTML = items.map(it => `
+    <a class="focus-item ${it.color}" href="${it.href}" onclick="${it.onclick}">
+      <span class="fi-icon">${it.icon}</span>
+      <div class="fi-body">
+        <div class="fi-title">${it.title}</div>
+        <div class="fi-sub">${it.sub}</div>
+      </div>
+      <span class="fi-badge ${it.bc}">${it.badge}</span>
+    </a>`).join('');
+}
+
+// ════════════════════════════════════════════
+// BUILD SECTION CARDS
+// ════════════════════════════════════════════
+function statusBadge(status, text) {
+  const map = { red: 'b-red', orange: 'b-orange', green: 'b-green',
+                blue: 'b-blue', purple: 'b-purple', grey: 'b-grey' };
+  return `<span class="sc-status-badge ${map[status] || 'b-grey'}">${text}</span>`;
+}
+
+function buildSections(d) {
+  const cards = [];
+
+  // ── Math ──
+  {
+    let badgeText = d.math.srsDue > 0 ? `${d.math.srsDue} due`
+                  : d.math.errCount > 0 ? `${d.math.errCount} errors`
+                  : d.math.poolSize > 0 ? 'caught up ✓' : 'start here';
+    const actions = [];
+    if (d.math.srsDue > 0)
+      actions.push(`<a class="sc-btn red" href="math-ml/review.html" onclick="trackVisit('math')">🔁 Review ${d.math.srsDue} cards</a>`);
+    if (d.math.errCount > 0)
+      actions.push(`<a class="sc-btn orange" href="math-ml/errors.html" onclick="trackVisit('math')">❌ Error practice</a>`);
+    actions.push(`<a class="sc-btn blue" href="math-ml/index.html" onclick="trackVisit('math')">📚 Lessons</a>`);
+    actions.push(`<a class="sc-btn grey" href="maths/index.html" onclick="trackVisit('math')">⬡ Math hub</a>`);
+    cards.push({ status: d.math.status, icon: '📐', name: 'Math for ML',
+      badge: statusBadge(d.math.status, badgeText), actions });
+  }
+
+  // ── GMAT ──
+  {
+    const gmatLabel = d.gmat.due > 0 ? `${d.gmat.due} due`
+                    : d.gmat.poolSize > 0 ? 'caught up ✓'
+                    : d.gmat.days === null ? 'not started'
+                    : d.gmat.days === 0 ? 'done today ✓'
+                    : d.gmat.days === 1 ? 'yesterday'
+                    : `${d.gmat.days}d ago`;
+    const gmatBtnCls = d.gmat.status === 'red' ? 'red' : d.gmat.status === 'orange' ? 'orange' : 'green';
+    const actions = [];
+    if (d.gmat.due > 0)
+      actions.push(`<a class="sc-btn red" href="gmat/review.html" onclick="trackVisit('gmat')">🔁 Review ${d.gmat.due} card${d.gmat.due > 1 ? 's' : ''}</a>`);
+    if (!d.gmat.lessonDone)
+      actions.push(`<a class="sc-btn blue" href="gmat/daily-lesson.html" onclick="trackVisit('gmat')">📚 ${d.gmat.dailyTopic.label}</a>`);
+    actions.push(`<a class="sc-btn ${gmatBtnCls}" href="gmat/practice.html" onclick="trackVisit('gmat')">🎯 Practice</a>`);
+    actions.push(`<a class="sc-btn grey" href="gmat/index.html" onclick="trackVisit('gmat')">📖 Study material</a>`);
+    cards.push({ status: d.gmat.status, icon: '🎯', name: 'GMAT',
+      badge: statusBadge(d.gmat.status, gmatLabel), actions });
+  }
+
+  // ── Programming ──
+  {
+    const progLabel = d.prog.progDue > 0 ? `${d.prog.progDue} due` : 'caught up ✓';
+    const actions = [];
+    if (d.prog.progDue > 0)
+      actions.push(`<a class="sc-btn purple" href="programming/review.html" onclick="trackVisit('code')">🔁 Review ${d.prog.progDue}</a>`);
+    actions.push(`<a class="sc-btn purple" href="programming/practice/index.html" onclick="trackVisit('code')">⌨️ Code challenges</a>`);
+    actions.push(`<a class="sc-btn blue" href="programming/data-analysis/index.html" onclick="trackVisit('code')">📊 Data Analysis</a>`);
+    actions.push(`<a class="sc-btn grey" href="programming/index.html" onclick="trackVisit('code')">💻 All courses</a>`);
+    cards.push({ status: d.prog.status, icon: '💻', name: 'Programming',
+      badge: statusBadge(d.prog.status === 'purple' ? 'purple' : 'green', progLabel), actions });
+  }
+
+  // ── Spanish ──
+  {
+    const langLabel = d.lang.days === null ? 'not started'
+                    : d.lang.days === 0 ? 'done today ✓'
+                    : d.lang.days === 1 ? 'yesterday'
+                    : `${d.lang.days}d ago`;
+    const langCls = d.lang.status === 'red' ? 'red' : d.lang.status === 'orange' ? 'orange' : 'green';
+    const actions = [
+      `<a class="sc-btn ${langCls}" href="languages/index.html" onclick="trackVisit('lang')">🌍 Open Spanish</a>`,
+    ];
+    // Add a daily prompt as sub-text (shown in the action area as a light hint)
+    cards.push({ status: d.lang.status, icon: '🌍', name: 'Spanish',
+      badge: statusBadge(d.lang.status, langLabel), actions,
+      prompt: pick(PROMPTS.lang) });
+  }
+
+  // ── Exercise ──
+  {
+    const exKmStr = d.ex.weekKm > 0 ? `${d.ex.weekKm.toFixed(1)} km this week` : 'no cardio this week';
+    const exLabel = d.ex.days === null ? 'no sessions yet'
+                  : d.ex.days === 0 ? 'trained today 💪'
+                  : d.ex.days === 1 ? 'yesterday'
+                  : `${d.ex.days}d ago`;
+    const exCls = d.ex.status === 'red' ? 'red' : d.ex.status === 'orange' ? 'orange' : 'green';
+    const actions = [
+      `<a class="sc-btn ${exCls}" href="exercise/index.html" onclick="trackVisit('exercise')">🏃 Log session</a>`,
+      `<a class="sc-btn grey" href="exercise/index.html" onclick="trackVisit('exercise')">📊 ${exKmStr}</a>`,
+    ];
+    cards.push({ status: d.ex.status, icon: '🏃', name: 'Exercise',
+      badge: statusBadge(d.ex.status, exLabel), actions });
+  }
+
+  // ── Anthropology ──
+  {
+    const anthroLabel = d.anthro.peopleDue > 0 ? `${d.anthro.peopleDue} overdue`
+                      : d.anthro.total > 0 ? 'all caught up ✓' : 'add contacts';
+    const actions = [
+      `<a class="sc-btn ${d.anthro.peopleDue > 0 ? 'orange' : 'green'}" href="applied-anthropology/index.html" onclick="trackVisit('anthro')">👥 People</a>`,
+      `<a class="sc-btn green" href="applied-anthropology/index.html#partner" onclick="trackVisit('anthro')">💛 Partner</a>`,
+      `<a class="sc-btn grey" href="applied-anthropology/index.html#explore" onclick="trackVisit('anthro')">🗺️ Explore</a>`,
+      `<a class="sc-btn grey" href="applied-anthropology/index.html#network" onclick="trackVisit('anthro')">🤝 Network</a>`,
+    ];
+    cards.push({ status: d.anthro.status, icon: '👥', name: 'Life & People',
+      badge: statusBadge(d.anthro.status, anthroLabel), actions });
+  }
+
+  // ── Places ──
+  {
+    const placesLabel = d.places.total > 0 ? `${d.places.total} place${d.places.total > 1 ? 's' : ''}` : 'none yet';
+    const actions = [
+      `<a class="sc-btn green" href="places/index.html">📍 My Places</a>`,
+      `<a class="sc-btn grey" href="places/index.html">➕ Add place</a>`,
+    ];
+    cards.push({ status: d.places.status, icon: '🗺️', name: 'Places',
+      badge: statusBadge(d.places.status, placesLabel), actions });
+  }
+
+  const el = document.getElementById('sections-list');
+  el.innerHTML = cards.map(c => `
+    <div class="sc s-${c.status}">
+      <div class="sc-head">
+        <div class="sc-dot"></div>
+        <span class="sc-icon">${c.icon}</span>
+        <span class="sc-name">${c.name}</span>
+        ${c.badge}
+      </div>
+      ${c.prompt ? `<div style="padding:0 14px 8px 33px;font-size:0.73em;color:#7f8c8d;font-style:italic">${c.prompt}</div>` : ''}
+      <div class="sc-actions">${c.actions.join('')}</div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+function render() {
+  renderHeader();
+  const d = getSectionData();
+  buildFocus(d);
+  buildSections(d);
+  document.getElementById('footer-quote').textContent = pick(QUOTES);
+}
+
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 </script>
 </body>
 </html>
